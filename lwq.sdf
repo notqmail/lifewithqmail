@@ -1887,7 +1887,7 @@ script (B<not> F<inetd.conf>):
 
 !block example
     tcpserver -v -R 0 I<pop3> /var/qmail/bin/qmail-popup I<FQDN> \
-	/bin/checkpasswd /var/qmail/bin/qmail-pop3d maildir 2>&1 | \
+	/bin/checkpassword /var/qmail/bin/qmail-pop3d maildir 2>&1 | \
 	/var/qmail/bin/splogger pop3d &
 !endblock
 
@@ -2119,7 +2119,7 @@ F<cyclog>, which is part of the
 I<{{CMD[jump="#daemontools"]daemontools}}> package, logs messages to a
 series of files in a specified directory. Unlike I<syslog>, F<cyclog>
 doesn't timestamp entries. F<accustamp>, from the
-I<{{CMD[jump="#qmailanalog"]qmailanalog}}> package can be used for
+I<{{CMD[jump="#daemontools"]daemontools}}> package can be used for
 that.
 
 The log directory is specified on the F<cyclog> command line, so
@@ -3145,13 +3145,19 @@ license. Basically, you can copy, redistribute, or modify
 U<[[DOC_TITLE]]> provided that modified versions, if redistributed,
 are also covered by the OpenContent License.
 
+A2[id="lwq-announce-list"]How can I be notified when new releases of
+LWQ are made available?
+
+Join the F<lwq-announce> mailing list by sending a message to
+{{EMAIL:lwq-announce-subscribe@sws1.ctd.ornl.gov}}.
+
+A2[id="lwq-list"]Where can LWQ contributors and fans talk about it?
+
+Join the F<lwq> mailing list by sending a message to
+{{EMAIL:lwq-subscribe@sws1.ctd.ornl.gov}}.
+
 A2[id="lwq-translations"]Has U<[[DOC_TITLE]]> been translated to
 I<language>?
-
-Not yet. U<[[DOC_TITLE]]> is still "pre-release": a little rough
-around the edges and incomplete in some places. I've had several
-offers to translate U<[[DOC_TITLE]]>, but I've encouraged prospective
-translators to wait until it's at "version 1.0".
 
 If you're interested in translating U<[[DOC_TITLE]]>, let me know so I
 can coordinate and prevent duplication of effort. I can also provide
@@ -3159,14 +3165,14 @@ translators a copy of the SDF source document so translations can also
 be done in SDF. I<(See the next question for one reason why that's>
 I<important.)>
 
+I also recommend that people translating LWQ join the F<lwq> mailing
+list (see the previous question) so they can discuss translation
+issues and make announcements.
+
 A2[id="lwq-formats"]Is U<[[DOC_TITLE]]> available in PostScript, PDF,
 plain text, or any other format beside HTML?
 
-Not yet. But U<[[DOC_TITLE]]> was written in SDF, so generating these
-other formats is very easy. I'm not going to bother with distributing
-these other formats until it's at "version 1.0".
-
-When they're available, alternative formats will be found at
+Yes, alternative formats can be found at
 {{URL:http://Web.InfoAve.net/~dsill/qmail.html}}.
 
 A2[id="lwq-warranty"]I used U<[[DOC_TITLE]]> and it crashed my
