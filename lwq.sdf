@@ -643,6 +643,36 @@ to make I<qmail> more compatible with poorly-connected systems. See
 the {{CMD[jump="#serialmail"]serialmail}} section in the Related
 Packages appendix for more information.
 
+Note: the queue must reside on a filesystem that allows the use of
+executable and F<setuid()> files. Some OS distributions automatically
+mount F</var> with the F<nosuid> or F<noexec> options enabled. On such
+systems, either these options should be disabled or F</var/qmail/bin>
+should reside on another filesystem without these options enabled. The
+{{CMD[jump="#create-dirs"]Create directories}} section describes how
+to use symbolic links to accompish the latter.
+
+!block note
+I<qmail> won't install properly under Apple's OS X following
+these directions or the ones in the F<INSTALL> file. Jay Soffian has
+documented a procedure for installing under OS X, available from
+{{URL:http://www.soffian.org/docs/qmail_on_os_x.html}}. Kyle Wheeler
+recommends the following modifications:
+
+>Before you compile, change line 4 of strerr_sys.c to read:
+>
+>struct strerr strerr_sys = {0,0,0,0};
+>
+>And change line 81 of hier.c to read:
+>
+>c(auto_qmail,"doc","INSTALL.txt",auto_uido,auto_gidq,0644);
+>
+>Also, as a supposed fix for qmail sometimes hanging at boot time, run
+>this command as root (after you create the users in the install
+>instructions):
+>
+>nidump passwd / > /etc/passwd
+!endblock
+
 H2[id="download"] Download the source
 
 OK, so you've got a system meeting the requirements ready for
@@ -650,7 +680,7 @@ installing I<qmail>. The first step is to download the source code for
 I<qmail> and any other add-ons. You'll need I<qmail>, of course, and you
 should probably also get I<ucspi-tcp> and I<daemontools>:
 
-* I<qmail>, {{URL:ftp://cr.yp.to/software/qmail-1.03.tar.gz}}
+* I<qmail>, {{URL:http://www.qmail.org/netqmail-1.04.tar.gz}}
 
 * I<ucspi-tcp>,
 {{URL:ftp://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz}} 
@@ -667,6 +697,12 @@ been updated. In that case, you should go to
 the current version. It's possible that upgraded versions aren't
 compatible with the following instructions, so be sure to read the
 release notes in the "Upgrading from previous versions..." sections.
+
+Note: This installation uses the I<netqmail> distribution of I<qmail>,
+which consists of the official I<qmail> 1.03 tarball and a patch that
+fixes a handful of bugs, deficiencies, and incompatibilities. See
+{{URL:http://www.qmail.org/netqmail/}} and the I<netqmail> F<CHANGES>
+file for more information.
 
 H2[id="build"] Build the source
 
@@ -727,7 +763,7 @@ already.
     su
     umask 022
     mkdir -p /usr/local/src
-    mv qmail-1.03.tar.gz ucspi-tcp-0.88.tar.gz /usr/local/src
+    mv netqmail-1.04.tar.gz ucspi-tcp-0.88.tar.gz /usr/local/src
     mkdir -p /package
     mv daemontools-0.76.tar.gz /package
     chmod 1755 /package
@@ -737,19 +773,22 @@ Now you can unpack the packages.
 
 !block example
     cd /usr/local/src
-    gunzip qmail-1.03.tar.gz
-    tar xpf qmail-1.03.tar
+    gunzip netqmail-1.04.tar.gz
+    tar xpf netqmail-1.04.tar
+    cd netqmail-1.04
+    ./collate.sh  I<# watch for errors here>
+    cd ..
     gunzip ucspi-tcp-0.88.tar.gz
     tar xpf ucspi-tcp-0.88.tar
-    rm *.tar	I<# optional, unless space is very tight>
+    rm *.tar  	  I<# optional, unless space is very tight>
     cd /package
     gunzip daemontools-0.76.tar.gz
     tar xpf daemontools-0.76.tar
-    rm *.tar	I<# optional, again>
+    rm *.tar	  I<# optional, again>
 !endblock
 
-There should now be directories called F</usr/local/src/qmail-1.03>,
-F</usr/local/src/ucspi-tcp-0.88>, and
+There should now be directories called
+F</usr/local/src/netqmail-1.04>, F</usr/local/src/ucspi-tcp-0.88>, and
 F</package/admin/daemontools-0.76>.
 
 H3[id="create-dirs"] Create directories
@@ -782,7 +821,7 @@ directory you'll find a file called  F<INSTALL.ids>.  It contains
 the command lines for many platforms, so copying the file to
 another name and editing that is quick and easy.
 
->    cd /usr/local/src/qmail-1.03
+>    cd /usr/local/src/netqmail-1.04/netqmail-1.04
 >    cp INSTALL.ids IDS
 
 Then, using your favorite editor, remove all of the file B<except>
@@ -861,7 +900,7 @@ H3[id="do-build"] Do the build
 Now you can start building I<qmail>. Change to the
 F</usr/local/src/qmail-1.03> directory and let's get started:
 
->    cd /usr/local/src/qmail-1.03
+>    cd /usr/local/src/netqmail-1.04/netqmail-1.04
 
 In the {{CMD[jump="#verify-compiler"]Verify Build Environment}}
 section, you located your C compiler. If it's not called F<cc> or the
@@ -873,14 +912,6 @@ F<conf-ld> and replace "cc" with "gcc".
 Now type the following:
 
 >    make setup check
-
-!block note
-If the build fails with an error about "errno" being undefined, you're
-probably using a system with glibc 2.3.1 or later (e.g., Red Hat
-9). See the {{CMD[jump="#patches"]Patches}} section for information
-about patches for I<qmail>, I<daemontools>, and I<ucspi-tcp> that fix
-this error.
-!endblock
 
 After the build is complete, you'll need to do your post installation
 configuration. A couple of scripts are provided to make this job a lot
@@ -927,6 +958,7 @@ this directory.
 
 Then do:
 !block example
+    patch < /usr/local/src/netqmail-1.04/errno-patches/ucspi-tcp-0.88.errno.patch
     make
     make setup check
 !endblock
@@ -945,6 +977,9 @@ you'll need to make the same changes in the F<src> directory.
 
 Then do:
 !block example
+    cd src
+    patch < /usr/local/src/netqmail-1.04/errno-patches/daemontools-0.76.errno.patch
+    cd ..
     package/install
 !endblock
 
@@ -1056,8 +1091,6 @@ following in F</var/qmail/bin/qmailctl>:
 !block example
 #!/bin/sh
 
-# For Red Hat chkconfig
-# chkconfig: - 80 30
 # description: the qmail MTA
 
 PATH=/var/qmail/bin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin
@@ -1206,20 +1239,24 @@ Create the F</var/qmail/supervise/qmail-smtpd/run> file:
 
 !block example
 #!/bin/sh
+
 QMAILDUID=`id -u qmaild`
 NOFILESGID=`id -g qmaild`
 MAXSMTPD=`cat /var/qmail/control/concurrencyincoming`
 LOCAL=`head -1 /var/qmail/control/me`
+
 if [ -z "$QMAILDUID" -o -z "$NOFILESGID" -o -z "$MAXSMTPD" -o -z "$LOCAL" ]; then
     echo QMAILDUID, NOFILESGID, MAXSMTPD, or LOCAL is unset in
     echo /var/qmail/supervise/qmail-smtpd/run
     exit 1
 fi
+
 if [ ! -f /var/qmail/control/rcpthosts ]; then
     echo "No /var/qmail/control/rcpthosts!"
     echo "Refusing to start SMTP listener because it'll create an open relay"
     exit 1
 fi
+
 exec /usr/local/bin/softlimit -m 2000000 \
     /usr/local/bin/tcpserver -v -R -l "$LOCAL" -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
         -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /var/qmail/bin/qmail-smtpd 2>&1
@@ -1428,7 +1465,23 @@ All four services should be "up" for more than a second. If they're
 not, you've probably got a typo in the associated run script or you
 skipped one or more steps in creating the necessary files,
 directories, or links. Go back through the installation step-by-step
-and double check your work.
+and double check your work. You can also download and run the
+F<inst_check> script, available from
+{{URL:http://lifewithqmail.org/inst_check}}. For example:
+
+!block example
+    # sh inst_check
+    ! /var/log/qmail has wrong owner, should be qmaill
+    ...try: chown qmaill /var/log/qmail
+    #
+!endblock
+
+If F<inst_check> finds problems, fix them and re-run it. When
+everything looks right, F<inst_check> will report:
+
+!block example
+    Congratulations, your LWQ installation looks good!
+!endblock
 
 The F<readproctitle> program keeps a log of error messages generated
 by services managed by svscan. To see these messages, use F<ps> or
@@ -1926,7 +1979,9 @@ the remainder of this section, I'll leave off the
 "@I<hostname>.I<domain>" part since we're considering actions that
 take place on the local system.
 
-The delivery instructions for F<I<username>-I<extension>> are in
+The delivery instructions for F<I<username>> are in
+F<~I<username>/.qmail> and the delivery instructions for
+F<I<username>-I<extension>> are in
 F<~I<username>/.qmail-I<extension>>.
 
 For example, F<dave-lwq@sparge.example.com> is controlled by
@@ -2186,10 +2241,10 @@ directions. Make sure you install it as F</bin/checkpassword>.
 4. Create a F</var/qmail/supervise/qmail-pop3d/run> script containing:
 
 !block example
-    #!/bin/sh
-    exec /usr/local/bin/softlimit -m 2000000 \
-        /usr/local/bin/tcpserver -v -R -H -l 0 0 110 /var/qmail/bin/qmail-popup \
-            I<FQDN> /bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir 2>&1
+#!/bin/sh
+exec /usr/local/bin/softlimit -m 2000000 \
+    /usr/local/bin/tcpserver -v -R -H -l 0 0 110 /var/qmail/bin/qmail-popup \
+        I<FQDN> /bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir 2>&1
 !endblock
 
 where I<FQDN> is the fully qualified domain name of the
@@ -2204,9 +2259,9 @@ fail mysteriously, try raising it to 3000000 or 5000000.
 containing:
 
 !block example
-    #!/bin/sh
-    exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t \
-        /var/log/qmail/pop3d
+#!/bin/sh
+exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t \
+    /var/log/qmail/pop3d
 !endblock
 
 6. Set up the log directory and permissions on the F<run> scripts, and
@@ -2279,12 +2334,17 @@ mailboxes. It's available from {{URL:http://solidpop3d.pld.org.pl/}}.
 
 H3[id="bincimap"]I<Binc IMAP>
 
-Andreas Hanssen has written the Binc IMAP server, which is currently
-in beta (development) mode. Binc IMAP is designed to use the same
-authentication mechanism (F<checkpassword>) that F<qmail-pop3d> uses,
-so it's a good fit for I<qmail> servers. Like F<qmail-pop3d>, it
+Andreas Hanssen has written the I<Binc IMAP> server. Binc IMAP is designed to use the
+same authentication mechanism (F<checkpassword>) that F<qmail-pop3d>
+uses, so it's a good fit for I<qmail> servers. Like F<qmail-pop3d>, it
 supports only Maildir mailboxes. See:
 {{URL:http://www.bincimap.org/}}.
+
+H3[id="dovecot"]I<Dovecot>
+
+Timo Sirainen has written I<Dovecot>, a IMAP and POP server that
+supports both mbox and maildir mailboxes. It's was designed to be
+secure. It's available from {{URL:http://dovecot.procontrol.fi/}}.
 
 H3[id="imap-maildir"]I<imap-maildir>
 
@@ -2298,6 +2358,15 @@ H3[id="courier-imap"]I<Courier-IMAP>
 Sam Varshavchik has written an IMAP server that supports maildir
 mailboxes B<only>. It's available from
 {{URL:http://www.inter7.com/courierimap/}}.
+
+H3[id="cyrus"]I<Cyrus>
+
+Carnegi Mellon University's Project Cyrus includes an IMAP
+server. It's available from
+{{URL:http://asg.web.cmu.edu/cyrus/imapd/}}. Rick Updegrove has
+written a F<qmail2cyrus> wrapper for delivering messages to a Cyrus
+mail store. This wrapper is available from
+{{URL:http://msgs.securepoint.com/cgi-bin/get/qmail0308/41/1/1.html}}.
 
 H2[id="pop-imap-clients"] POP and IMAP clients
 
@@ -2667,11 +2736,18 @@ qmail.org has a "Recommended Patches" section:
 {{URL:http://qmail.org/top.html#patches}}. These patches address the
 few known bugs in qmail.
 
-H4[id="errno-patch"] F<errno.h> patch
+Note: all of the Recommended Patches have been included in the
+I<netqmail> distribution. See {{URL:http://www.qmail.org/netqmail/}}.
+
+H4[id="errno-patch"] F<errno.h> patches
 
 This patch fixes a problem with missing F<errno.h> inclusions. See
 {{URL:http://news.gmane.org/article.php?id=13960&group=gmane.mail.qmail.general}}
 for a detailed explanation and the patch itself.
+
+Mate Wierdl has F<errno.h> patches for all of Dan Bernstein's software
+including I<qmail>, I<daemontools>, and I<ucspi-tcp>. These patches
+are available from {{URL:ftp://moni.csi.hu/pub/glibc-2.3.1/}}.
 
 H4[id="qmail-local-tab-patch"] qmail-local TAB patch
 
@@ -2713,7 +2789,7 @@ F<65536> in F<dns.c> and rebuild I<qmail>.
 H4[id="dns-davis"] Christopher K. Davis' patch,
 {{URL:http://www.ckdhr.com/ckd/qmail-103.patch}}
 
-This is an adaptation of a patch by Chuck Foster's which should work with
+This is an adaptation of a patch by Chuck Foster that should work with
 any resolver library, no matter how old, and uses a guard byte to
 avoid the "number of bytes placed in the buffer" library bug. It
 reallocates only once, to 65536, rather than just to the size needed,
@@ -2739,8 +2815,8 @@ QMTP is the Quick Mail Transfer Protocol, an SMTP replacement protocol
 designed by Dan Bernstein. The protocol is defined at
 {{URL:http://cr.yp.to/proto/qmtp.txt}}. QMTP is similar
 to SMTP, but is simpler, faster, and incompatible with SMTP. I<qmail>
-includes a QMTP server, F<qmail-qmtp>, which is run very much like
-F<qmail-smtp>. QMTP usually uses port 209.
+includes a QMTP server, F<qmail-qmtpd>, which is run very much like
+F<qmail-smtpd>. QMTP usually uses port 209.
 
 I<qmail> doesn't include a QMTP I<client>, but the I<serialmail>
 package does. F<maildirqmtp> takes a maildir mailbox and delivers the
@@ -2941,14 +3017,14 @@ For example, to run F<rblsmtpd> under F<tcpserver>, try something
 like:
 
 !block example
-    #!/bin/sh
-    QMAILDUID=`id -u qmaild`
-    NOFILESGID=`id -g qmaild`
-    MAXSMTPD=`cat /var/qmail/control/concurrencyincoming`
-    exec /usr/local/bin/softlimit -m 2000000 \
-    /usr/local/bin/tcpserver -v -R -H -l 0 -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
-        -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /usr/local/bin/rblsmtpd\
-        -r relays.ordb.org /var/qmail/bin/qmail-smtpd 2>&1
+#!/bin/sh
+QMAILDUID=`id -u qmaild`
+NOFILESGID=`id -g qmaild`
+MAXSMTPD=`cat /var/qmail/control/concurrencyincoming`
+exec /usr/local/bin/softlimit -m 2000000 \
+  /usr/local/bin/tcpserver -v -R -H -l 0 -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
+    -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /usr/local/bin/rblsmtpd\
+    -r relays.ordb.org /var/qmail/bin/qmail-smtpd 2>&1
 !endblock
 
 I<rblsmtpd> was previously available as a separate utility, but is
@@ -3682,11 +3758,23 @@ might not have either of these set.
 To cause your F<cron> jobs to have a valid F<From> field, set one
 these environment variables before sending any mail messages.
 
+A2[id="killing-qmail-send"]F<qmail-send> doesn't always exit immediately when
+killed.
+
+Sending F<qmail-send> a F<KILL> signal doesn't cause it to exit
+immediately if there are deliveries in progress. F<qmail-send> will
+wait for all F<qmail-local> and F<qmail-remote> processes to finish
+before it exits so it can record the results of these
+deliveries. Because of this, "F<qmailctl restart>" or "F<qmailctl
+stop>" might report that F<qmail-send> has been stopped, even though
+it's still running. Always run "F<qmailctl stat>" to verify that the
+stop or restart has actually completed.
+
 A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-version"]What version is U<[[DOC_TITLE]]>?
 
-This is LWQ version 2003-04-04.
+This is LWQ version 2003-10-30.
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
@@ -3758,6 +3846,42 @@ you sign up using this link:
 Another way to support LWQ at no cost to yourself is to shop at
 my bookstore, in association with Amazon.com, using this link:
 {{URL:http://www.amazon.com/exec/obidos/redirect-home/davesill}}.
+
+Thanks for your support!
+
+A2[id="changes"]What's changed in this version of LWQ?
+
+* Adjusted installation for I<netqmail> distribution.
+
+* Updated Binc IMAP entry.
+
+A3[id="2003-08-16"]What changed in the 2003-08-16 version of LWQ?
+
+* Added this change log section. Thanks to Jerry Asher for requesting
+  it.
+
+* Added note about noexec and nosuid to system requirements section.
+
+* Added link to inst_check and examples to the testing section.
+
+* Added link to Mate Wierdl's errno patches to the patch section.
+
+* Added OS X note to system requirements section.
+
+* Added Cyrus entry to IMAP server section. Thanks to Rick Updegrove.
+
+* Added Dovecot entry to IMAP server section.
+
+* Reworded part of the entension section. Thanks to Adrian Ho.
+
+* Reformatted the POP run scripts for easier copying and
+  pasting. Thanks to Woody Preston.
+
+* Fixed a typo in the section on Chuck Foster's DNS patch. Thanks to
+  Josh Parreco.
+
+* Fixed a couple typos in the QMTP section. Thanks to Marek
+  Gutkowski.
 
 !block inline
 <a href="http://www.opencontent.org/"> <img
