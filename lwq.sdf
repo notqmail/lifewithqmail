@@ -187,7 +187,7 @@ H3[id="feature-routing"] Routing by domain
 
 H3[id="feature-smtpdeliv"] SMTP delivery
 
-* {{CMD[jump="#rfcs"]RFC 821, RFC 974, and RFC 1123}} complaint
+* {{CMD[jump="#rfcs"]RFC 821, RFC 974, and RFC 1123}} compliant
 * 8-bit clean 
 * Automatic downed host backoffs 
 * Artificial routing--smarthost, localnet, mailertable (See
@@ -467,6 +467,13 @@ H3[id="consultants"] Consultants
 See {{URL:http://www.qmail.org/top.html#paidsup}} for a list of
 commercial support providers.
 
+H3[id="faqts"] FAQTS Knowledgebase
+
+A database of I<qmail>-related questions and answers is available at
+{{URL:http://qmail.faqts.com}}. If you have a question that the FAQ
+doesn't answer, try searching this knowledgebase. It's especially good 
+at answering "how to" questions.
+
 H2[id="y2k"] Year 2000
 
 I<qmail> is Y2K OK. See {{URL:http://www.qmail.org/qmaily2k.html}}.
@@ -600,14 +607,9 @@ should probably also get I<ucspi-tcp> and I<daemontools>:
 {{URL:ftp://koobera.math.uic.edu/www/software/ucspi-tcp-0.84.tar.gz}} 
 
 * I<daemontools>,
-{{URL:ftp://koobera.math.uic.edu/www/daemontools/daemontools-0.53.tar.gz}}
+{{URL:ftp://koobera.math.uic.edu/www/daemontools/daemontools-0.61.tar.gz}}
 
 Retrieve these files using your web browser or FTP client.
-
-Note: Although the latest version of daemontools is 0.61, 0.53 is
-still available and adequate for our purposes. The user interface
-changed substantially in 0.60, and these instructions will only work
-right with 0.53.
 
 H2[id="build"] Build the source
 
@@ -677,13 +679,13 @@ you're not already. At a prompt, type the following:
     tar xvf qmail-1.03.tar
     gunzip ucspi-tcp-0.84.tar.gz
     tar xvf ucspi-tcp-0.84.tar
-    gunzip daemontools-0.53.tar.gz
-    tar xvf daemontools-0.53.tar
+    gunzip daemontools-0.61.tar.gz
+    tar xvf daemontools-0.61.tar
     rm *.tar	I<# optional, unless space is very tight>
 !endblock
 
 There should now be subdirectories called F<qmail-1.03>,
-F<ucspi-tcp-0.84>, and F<daemontools-0.53>. Change to the
+F<ucspi-tcp-0.84>, and F<daemontools-0.61>. Change to the
 F<qmail-1.03> directory and let's get started:
 
 >    cd qmail-1.03
@@ -855,10 +857,7 @@ H2[id="install-daemontools"] Install daemontools
 
 Change to the I<daemontools> build directory:
 
->    cd /usr/local/src/qmail/daemontools-0.53
-
-Edit F<conf-bin> to specify the directory the programs will be
-installed into. I recommend F</usr/local/sbin>.
+>    cd /usr/local/src/qmail/daemontools-0.61
 
 Once again, if you modified
 F<conf-cc> and F<conf-ld> during the I<qmail> and I<ucspi-tcp> builds,
@@ -870,10 +869,8 @@ Then do:
     make setup check
 !endblock
 
-At this point, I B<highly> recommend following the testing procedures
-in the F<INSTALL> file. They'll verify that the tools work right, but
-they'll also help you familiarize yourself with the I<daemontools>
-suite.
+Test the build by following the directions in
+{{URL:http://pobox.com/~djb/daemontools/install.html}}.
 
 H2[id="start-qmail"] Start I<qmail>
 
@@ -892,7 +889,7 @@ installation, we'll use the following:
 # Using control/defaultdelivery from qmail-local to deliver messages by default
 
 exec env - PATH="/var/qmail/bin:$PATH" \
-qmail-start "`cat /var/qmail/control/defaultdelivery`" accustamp
+qmail-start "`cat /var/qmail/control/defaultdelivery`"
 !endblock
 
 Use your editor to create the above F</var/qmail/rc>, then execute
@@ -941,44 +938,33 @@ following:
 !block example
 #!/bin/sh
 
-PATH=/var/qmail/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin
+PATH=/var/qmail/bin:/usr/local/bin:/usr/bin:/bin
 export PATH
-
-QMAILDUID=`id -u qmaild`
-NOFILESGID=`id -g qmaild`
 
 case "$1" in
   start)
-    echo -n "Starting qmail: qmail-send"
-    supervise /var/supervise/qmail/send /var/qmail/rc |
-        setuser qmaill cyclog /var/log/qmail &
-
-    echo -n " qmail-smtpd"
-    supervise /var/supervise/qmail/smtpd tcpserver -v -x/etc/tcp.smtp.cdb \
-        -u$QMAILDUID -g$NOFILESGID 0 smtp \
-        /var/qmail/bin/qmail-smtpd-wrapper 2>&1 | setuser qmaill accustamp | \
-        setuser qmaill cyclog /var/log/qmail/smtpd &
-
+    echo -n "Starting qmail: svscan"
+    cd /var/qmail/supervise
+    env - PATH="$PATH" svscan &
+    echo $! > /var/run/svscan.pid
     echo "."
     ;;
   stop)
-    echo -n "Stopping qmail: qmail-smtpd"
-    svc -dx /var/supervise/qmail/smtpd
-    echo -n " qmail-send"
-    svc -dx /var/supervise/qmail/send
+    echo -n "Stopping qmail: svscan"
+    kill `cat /var/run/svscan.pid`
+    echo -n " qmail"
+    svc -dx /var/qmail/supervise/*
+    echo -n " logging"
+    svc -dx /var/qmail/supervise/*/log
     echo "."
     ;;
   stat)
-    echo "Checking qmail-send"
-    svstat /var/supervise/qmail/send
-    echo "Checking qmail-smtpd"
-    svstat /var/supervise/qmail/smtpd
-    echo "Checking queue"
-    qmail-qstat
+    cd /var/qmail/supervise
+    svstat * */log
     ;;
   doqueue|alrm)
     echo "Sending ALRM signal to qmail-send."
-    svc -a /var/supervise/qmail/send
+    svc -a /var/qmail/supervise/qmail-send
     ;;
   queue)
     qmail-qstat
@@ -986,28 +972,28 @@ case "$1" in
     ;;
   reload|hup)
     echo "Sending HUP signal to qmail-send."
-    svc -h /var/supervise/qmail/send
+    svc -h /var/qmail/supervise/qmail-send
     ;;
   pause)
     echo "Pausing qmail-send"
-    svc -p /var/supervise/qmail/send
+    svc -p /var/qmail/supervise/qmail-send
     echo "Pausing qmail-smtpd"
-    svc -p /var/supervise/qmail/smtpd
+    svc -p /var/qmail/supervise/qmail-smtpd
     ;;
   cont)
     echo "Continuing qmail-send"
-    svc -c /var/supervise/qmail/send
+    svc -c /var/qmail/supervise/qmail-send
     echo "Continuing qmail-smtpd"
-    svc -c /var/supervise/qmail/smtpd
+    svc -c /var/qmail/supervise/qmail-smtpd
     ;;
   restart)
     echo "Restarting qmail:"
     echo "* Stopping qmail-smtpd."
-    svc -d /var/supervise/qmail/smtpd
+    svc -d /var/qmail/supervise/qmail-smtpd
     echo "* Sending qmail-send SIGTERM and restarting."
-    svc -t /var/supervise/qmail/send
+    svc -t /var/qmail/supervise/qmail-send
     echo "* Restarting qmail-smtpd."
-    svc -u /var/supervise/qmail/smtpd
+    svc -u /var/qmail/supervise/qmail-smtpd
     ;;
   cdb)
     tcprules /etc/tcp.smtp.cdb /etc/tcp.smtp.tmp < /etc/tcp.smtp
@@ -1040,14 +1026,14 @@ exit 0
 !endblock
 
 This script is also available via
-{{URL:http://Web.InfoAve.net/~dsill/qmail-script.txt}}.
+{{URL:http://Web.InfoAve.net/~dsill/qmail-script-dt61.txt}}.
 
 !block note
 If you find that I<qmail> exits shortly after the system is
-rebooted, you can prefix the F<supervise> commands in the "start"
+rebooted, you can prefix the F<env> command in the "start"
 section of the script with F<nohup>. E.g.:
 
->    nohup supervise /var/supervise/qmail...
+>    nohup env - PATH="$PATH" svscan &
 !endblock
 
 Create the script using your editor or by downloading it with your web
@@ -1078,7 +1064,7 @@ with the location of your system's rc directories:
     ln -s ../init.d/qmail RCDIR/rc2.d/S80qmail
     ln -s ../init.d/qmail RCDIR/rc4.d/S80qmail
     ln -s ../init.d/qmail RCDIR/rc5.d/S80qmail
-    ln -s ../init.d/qmail RCDIR/rc6.d/K80qmail
+    ln -s ../init.d/qmail RCDIR/rc6.d/K30qmail
 !endblock
 
 Note: the numbers in the previous step are highly system dependent,
@@ -1086,35 +1072,65 @@ but somewhat flexible. If I<Sendmail> is currently installed, running
 the command "F<find RCDIR -name "*sendmail" -print>" will give you
 numbers that should work for your system.
 
-To prevent certain denial-of-service attacks against F<qmail-smtpd>,
-you should create a simple wrapper in
-F</var/qmail/bin/qmail-smtpd-wrapper> that looks like:
+Now create the F<supervise> directories for the I<qmail> services:
 
 !block example
-#!/bin/bash
-ulimit -d 1024
-exec /var/qmail/bin/qmail-smtpd ${1+"$@"}
+    mkdir -p /var/qmail/supervise/qmail-send/log
+    mkdir -p /var/qmail/supervise/qmail-smtpd/log
+    chmod +t /var/qmail/supervise/qmail-send
+    chmod +t /var/qmail/supervise/qmail-smtpd
 !endblock
 
-Note: This wrapper uses the ulimit feature of bash, a shell that's not
-included with all systems, and may not be located in F</bin/bash>.  If
-necessary, adjust the path specification or check the man pages for
-the shells installed on your system for a mechanism to limit a process
-to about one megabyte of data space. As a last resort, you can modify
-the F<qmail> script to invoke F<qmail-smtpd> directly.
+Create the F</var/qmail/supervise/qmail-send/run> file:
+
+!block example
+#!/bin/sh
+exec /var/qmail/rc
+!endblock
+
+Create the F</var/qmail/supervise/qmail-send/log/run> file:
+!block example
+#!/bin/sh
+exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t /var/log/qmail
+!endblock
+
+Create the F</var/qmail/supervise/qmail-smtpd/run> file:
+
+!block example
+#!/bin/sh
+QMAILDUID=`id -u qmaild`
+NOFILESGID=`id -g qmaild`
+exec /usr/local/bin/softlimit -m 2000000 \
+    /usr/local/bin/tcpserver -v -p -x /etc/tcp.smtp.cdb \
+        -u $QMAILDUID -g $NOFILESGID 0 smtp /var/qmail/bin/qmail-smtpd 2>&1
+!endblock
+
+Note: the memory limit specified in the F<softlimit> command may need
+to be raised depending upon your operating system and hardware
+platform. If attempts to connect to port 25 fail, or remote systems
+are unable to send you mail, try raising it to 3000000 or 4000000.
+
+Create the F</var/qmail/supervise/qmail-smtpd/log/run> file:
+
+!block example
+#!/bin/sh
+exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t /var/log/qmail/smtpd
+!endblock
+
+Make the run files executable:
+
+!block example
+    chmod 755 /var/qmail/supervise/qmail-send/run 
+    chmod 755 /var/qmail/supervise/qmail-send/log/run 
+    chmod 755 /var/qmail/supervise/qmail-smtpd/run
+    chmod 755 /var/qmail/supervise/qmail-smtpd/log/run
+!endblock
 
 Then set up the log directories:
 
 !block example
     mkdir -p /var/log/qmail/smtpd
     chown qmaill /var/log/qmail /var/log/qmail/smtpd
-!endblock
-
-Set up the supervise directories:
-
-!block example
-    mkdir -p /var/supervise/qmail/send
-    mkdir /var/supervise/qmail/smtpd
 !endblock
 
 Make the startup script executable and link it to a directory in your
@@ -1125,10 +1141,6 @@ path:
     chmod 755 /etc/init.d/qmail
     ln -s /etc/init.d/qmail /usr/local/sbin
 !endblock
-
-Make the F<qmail-smtpd> wrapper executable:
-
->    chmod 755 /var/qmail/bin/qmail-smtpd-wrapper
 
 Allow the local host to inject mail via SMTP:
 
@@ -1207,7 +1219,7 @@ both the system and mail administrator:
 !block example
     echo dave > /var/qmail/alias/.qmail-root
     echo dave > /var/qmail/alias/.qmail-postmaster
-    ln -s .qmail-postmaster > /var/qmail/alias/.qmail-mailer-daemon
+    ln -s .qmail-postmaster /var/qmail/alias/.qmail-mailer-daemon
     chmod 644 /var/qmail/alias/.qmail-root /var/qmail/alias/.qmail-postmaster 
 !endblock
 
@@ -1224,7 +1236,7 @@ H2[id="test"] Test the Installation
 I<qmail> should now be running. Follow the instructions in
 F<TEST.deliver> and F<TEST.receive> to verify that it's working
 correctly. Note that using these instructions, logging will be
-accomplished by F<accustamp> and F<cyclog>, not F<splogger>.
+accomplished by F<multilog>, not F<splogger>.
 
 H1[id="configuration"] Configuration
 
@@ -1590,8 +1602,10 @@ E.g.:
 This causes messages to be saved in F<$HOME/Maildir>, a maildir-format
 mailbox.
 
-Note: maildir mailboxes should be created with the F<maildirmake>
-program that comes with I<qmail>. E.g., "F<maildirmake ~/Maildir>".
+Note: F<qmail-local> can deliver mail to maildir mailboxes, but it
+can't create one. Maildir mailboxes should be created with the
+F<maildirmake> program that comes with I<qmail>. E.g., "F<maildirmake
+~/Maildir>".
 
 H3[id="forward-delivery"] forward delivery
 
@@ -1886,7 +1900,8 @@ directions. Make sure you install it as F</bin/checkpassword>.
 like:
 
 !block example
-pop3   stream  tcp     nowait  root    /var/qmail/bin/qmail-popup qmail-popup I<hostname>.I<domain> /bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir
+pop3   stream  tcp     nowait  root    /var/qmail/bin/qmail-popup qmail-popup \
+    I<hostname>.I<domain> /bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir
 !endblock
 
 Note: Some systems, notably Red Hat Linux, don't call the POP3 port
@@ -1906,7 +1921,7 @@ script (B<not> F<inetd.conf>):
 
 !block example
     tcpserver -v -R 0 I<pop3> /var/qmail/bin/qmail-popup I<FQDN> \
-	/bin/checkpassword /var/qmail/bin/qmail-pop3d maildir 2>&1 | \
+	/bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir 2>&1 | \
 	/var/qmail/bin/splogger pop3d &
 !endblock
 
@@ -2098,8 +2113,9 @@ F<qmail-smtpd> under F<tcpserver>, you should see a parent
 F<tcpserver> process I<plus> an additional F<tcpserver> process for
 each active I<incoming> SMTP connection.
 
-If you use F<splogger> (or F<cyclog>) to handle logging, you'll have a
-F<splogger> (or F<cyclog>) process running as user F<qmaill>.
+If you use F<splogger> (or F<multilog> or F<cyclog>) to handle
+logging, you'll have a F<splogger> (or F<multilog> or F<cyclog>)
+process or two running as user F<qmaill>.
 
 Also, if I<qmail> is busy delivering messages locally or remotely,
 you'll see up to F<concurrencylocal> F<qmail-local> processes and up
@@ -2138,29 +2154,26 @@ A typical I<syslog> log entry looks like:
 
 "delivery 153: success: did_1+0+0/" is the log message itself.
 
-H4[id="cyclog"] F<cyclog>
+H4[id="multilog"] F<multilog>
 
-F<cyclog>, which is part of the
+F<multilog>, which is part of the
 I<{{CMD[jump="#daemontools"]daemontools}}> package, logs messages to a
-series of files in a specified directory. Unlike I<syslog>, F<cyclog>
-doesn't timestamp entries. F<accustamp>, also from the
-I<{{CMD[jump="#daemontools"]daemontools}}> package can be used for
-that.
+series of files in a specified directory.
 
-The log directory is specified on the F<cyclog> command line, so
+The log directory is specified on the F<multilog> command line, so
 you can find it by examining your I<qmail> startup script.
 
 The number of files in the log directory, and the maximum size of each
-file, are determined by F<cyclog> options. The log file names are the
+file, are determined by F<multilog> options. The log file names are the
 TAI (Temps Atomique International) timestamps of the time at which the
-file was started. The F<tailocal> command, also from I<daemontools>,
+file was started. The F<tai64nlocal> command, also from I<daemontools>,
 converts TAI timestamps into local, human-readable timestamps.
 
-A typical F<cyclog> log entry looks like:
+A typical F<multilog> log entry looks like:
 
->928424123.963558 delivery 153: success: did_1+0+0/
+>@4000000038c3eeb104a6ecf4 delivery 153: success: did_1+0+0/
 
-"928424123.963558" is the optional, but recommended, TAI timestamp.
+"@4000000038c3eeb104a6ecf4" is the optional, but recommended, TAI timestamp.
 "delivery 153: success: did_1+0+0/" is the log message itself.
 
 H4[id="log-messages"] Log messages
@@ -2169,18 +2182,18 @@ Here's a typical log sequence for a message sent to a remote system
 from the local system:
 
 !block example
-B<1> 928427555.143178 new msg 94030
-B<2> 928427555.145873 info msg 94030: bytes 189 from <dave@sparge.sill> qp 2594 uid 500
-B<3> 928427555.210992 starting delivery 158: msg 94030 to remote lwq@w3.to
-B<4> 928427555.213816 status: local 0/10 remote 1/20
-B<5> 928427572.640642 delivery 158: success: 209.85.127.177_accepted_message.
-    /Remote_host_said:_250_CAA01516_Message_accepted_for_delivery/
-B<6> 928427572.643845 status: local 0/10 remote 0/20
-B<7> 928427572.644381 end msg 94030
+B<1> @4000000038c3eeb027f41c7c new msg 93869
+B<2> @4000000038c3eeb027f6b0a4 info msg 93869: bytes 2343 from <dave@sill.org> qp 18695 uid 49491
+B<3> @4000000038c3eeb02877ee94 starting delivery 2392: msg 93869 to remote lwq@w3.to
+B<4> @4000000038c3eeb0287b55ac status: local 0/10 remote 1/20
+B<5> @4000000038c3eeb104a13804 delivery 2392: success: 209.85.127.177_accepted_message.
+   /Remote_host_said:_250_CAA01516_Message_accepted_for_delivery/
+B<6> @4000000038c3eeb104a4492c status: local 0/10 remote 0/20
+B<7> @4000000038c3eeb104a6ecf4 end msg 93869
 !endblock
 
 Line 1 indicates that I<qmail> has received a new message, and its
-queue ID is 94030. The queue ID is the i-node number of the
+queue ID is 93869. The queue ID is the i-node number of the
 F</var/qmail/queue/mess/I<NN>/> file--the queue file that contains the
 message. The queue ID is guaranteed to be unique as long as the
 message remains in the queue.
@@ -2189,11 +2202,11 @@ Line 2 says that the message is from F<dave@sparge.sill> and is 189
 bytes.
 
 Line 3 says F<qmail-remote> is starting to deliver the message to
-F<lwq@w3.to>, and it's assigning the ID 158 to the delivery.
+F<lwq@w3.to>, and it's assigning the ID 2392 to the delivery.
 
 Line 4 says 0 local deliveries and 1 remote delivery are pending.
 
-Line 5 says delivery 158 is complete and successful, and it returns the
+Line 5 says delivery 2392 is complete and successful, and it returns the
 remote server's response, which often contains information the remote
 mail administrator would find helpful in tracking a delivery. In this
 case, the "CAA01516" is the remote system's delivery ID.
@@ -2202,7 +2215,7 @@ Line 6 says 0 local deliveries and 0 remote deliveries are pending,
 i.e., the delivery is complete.
 
 Line 7 says that the message has been delivered completely and removed
-from the queue. At this point, the queue ID, 94030, is reusable for
+from the queue. At this point, the queue ID, 93869, is reusable for
 another delivery.
 
 H2[id="big-servers"] Big Servers
@@ -2331,7 +2344,7 @@ widespread use across the Internet.
 A1[id="acknowledgments"] Acknowledgments
 
 First, thanks to Dan Bernstein for designing and writing such a
-powerful and elegant system. After three years of using it, I<qmail>
+powerful and elegant system. After four years of use, I<qmail>
 still impresses me.
 
 I'd also like to thank the members of the I<qmail> mailing
@@ -2438,21 +2451,17 @@ recommended, especially for busy systems. It includes:
 * F<svc>, which talks to F<supervise> and allows one to stop, pause,
 or restart the service.
 
-* F<cyclog>, which maintains a log for a service, automatically
+* F<multilog>, which maintains a log for a service, automatically
 rotating it to keep it under the configured size.
 
-* F<accustamp>, which accurately timestamps logs entries.
-
-* F<usually> and F<errorsto>, which watch logs for unusual messages.
-
-* F<setuser>, which runs programs for the superuser with a normal
+* F<setuidgid>, which runs programs for the superuser with a normal
 user's UID and GID.
 
 The source for I<daemontools> is available from:
-{{URL:ftp://koobera.math.uic.edu/www/daemontools/daemontools-0.53.tar.gz}}.
+{{URL:http://cr.yp.to/daemontools/daemontools-0.61.tar.gz}}.
 
 I<daemontools> was written by Dan Bernstein, who maintains a web page
-for it at {{URL:http://pobox.com/~djb/daemontools.html}}.
+for it at {{URL:http://cr.yp.to/daemontools.html}}.
 
 A2[id="qmailanalog"] I<qmailanalog>
 
@@ -2498,6 +2507,19 @@ System), and DUL (Dial-up User List).
 I<rblsmtpd> is an RBL SMTP Daemon. It sits between F<tcpserver> and
 F<qmail-smtpd> and rejects connections from systems identified on one
 of these lists.
+
+For example, to run F<rblsmtpd> under F<tcpserver>, try something
+like:
+
+!block example
+    #!/bin/sh
+    QMAILDUID=`id -u qmaild`
+    NOFILESGID=`id -g qmaild`
+    exec /usr/local/bin/softlimit -m 2000000 \
+    /usr/local/bin/tcpserver -v -p -x /etc/tcp.smtp.cdb -c 5\
+        -u $QMAILDUID -g $NOFILESGID 0 smtp /var/qmail/bin/rblsmtpd\
+        /var/qmail/bin/qmail-smtpd 2>&1
+!endblock
 
 The source for I<rblsmtpd> is available from
 {{URL:http://pobox.com/~djb/software/rblsmtpd-0.70.tar.gz}}.
@@ -2756,6 +2778,9 @@ services. {{URL:http://www.ietf.org/rfc/rfc2142.txt}}
 
 * RFC 2183, Content Disposition
 header. {{URL:http://www.ietf.org/rfc/rfc2183.txt}} 
+
+A comprehensive list of mail-related RFC's is available from the
+Internet Mail Consortium at {{URL:http://www.imc.org/mail-standards.html}}.
 
 A1[id="architecture-apdx"] Architecture
 
@@ -3059,9 +3084,9 @@ To prevent the possibility of F<qmail-local> running commands as a
 privileged user, I<qmail> ignores all users whose UID is 0. This is
 documented in the F<qmail-getpw> man page.
 
-That doesn't mean I<qmail> won't deliver to F<root@example.com>, it
+That doesn't mean I<qmail> won't deliver to F<root>, it
 just means that such a delivery will have to be handled by a
-non-privileged user. Typically, one creates a alias for root by
+non-privileged user. Typically, one creates an alias for root by
 populating F<~alias/.qmail-root>.
 
 A2[id="home-dir-ownership"] I<qmail> doesn't deliver mail to users who
@@ -3077,12 +3102,6 @@ I<qmail> converts the entire "local part"--everything left of the "@"
 in an address, to lowercase. The man page doesn't come out and say
 that, but the code does. The fact that it ignores users with uppercase
 characters is documented in the qmail-getpw man page.
-
-A2[id="home-dir-mode"] I<qmail> doesn't deliver mail to users whose
-home directory is group writable or world writable.
-
-Another security feature. Documented in the qmail-local man page. Can
-be overridden at compile time via the F<conf-patrn> build config file.
 
 A2[id="dots-in-extensions"] I<qmail> replaces dots (.) in extension
 addresses with colons (:).
@@ -3158,7 +3177,9 @@ A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
-U<[[DOC_TITLE]]> is Copyright 1999 David E. Sill
+U<[[DOC_TITLE]]> is Copyright 1999 and 2000 David E. Sill
+
+{{URL:http://Web.InfoAve.Net/~dsill/dave.html}}
 
 A2[id="lwq-license"]How is U<[[DOC_TITLE]]> licensed?
 
@@ -3181,6 +3202,12 @@ Join the F<lwq> mailing list by sending a message to
 
 A2[id="lwq-translations"]Has U<[[DOC_TITLE]]> been translated to
 I<language>?
+
+Yes, LWQ has been translated to Spanish:
+
+    {{URL:http://www.es.qmail.org/documentacion/usuarios/lwq}}
+
+Other translations are in the works.
 
 If you're interested in translating U<[[DOC_TITLE]]>, let me know so I
 can coordinate and prevent duplication of effort. I can also provide
@@ -3208,6 +3235,27 @@ I<qmail> community.
 
 Actually, this isn't a FAQ. In fact, I hope it's a NAQ (Never Asked
 Question).
+
+A2[id="contributions"]How can I contribute to LWQ?
+
+Please send corrections, suggestions, complaints, etc. to
+{{EMAIL:lwq@sill.org}}.
+
+If you'd like to make a larger contribution, such as a new subsection
+or appendix, that's great! Just check with me first to make sure the
+topic is something I want to cover in LWQ and that nobody else is
+already working on it.
+
+If you'd like to donate cash, that's always welcome, too. :-) Contact
+me to make arrangements, or use the PayPal e-payment system. Using
+PayPal, you can "beam" e-money to the e-mail address
+F<ds-paypal@sill.dyndns.org> in amounts as small as $0.01 at no cost
+to you or me--even using a credit card. And, if you're not already
+registered with PayPal, I'll get a $10 referral bonus and you'll get a
+$10 sign-up bonus. You could give me $20 without spending a penny. In
+order for me to get the referral bonus, you'll need to sign up using
+this link:
+{{URL:https://secure.paypal.com/refer/pal=ds-paypal%40sill.dyndns.org}}.
 
 !block inline
 <a href="http://www.opencontent.org/"> <img
