@@ -299,7 +299,7 @@ F</etc/aliases>, and delivery to F</var/spool/mail>.
 
 Cameron Laird has a web page comparing these and other free and
 commercial MTA's at
-{{URL:http://starbase.neosoft.com/~claird/comp.mail.misc/MTA_comparison.html}}.
+{{URL:http://phaseit.net/claird/comp.mail.misc/MTA_comparison.html}}.
 Another detailed comparison is available at
 {{URL:http://www.geocities.com/mailsoftware42/}}.
 
@@ -715,8 +715,8 @@ already.
     umask 022
     mkdir -p /usr/local/src
     mv qmail-1.03.tar.gz ucspi-tcp-0.88.tar.gz /usr/local/src
-    mv daemontools-0.76.tar.gz /package
     mkdir -p /package
+    mv daemontools-0.76.tar.gz /package
     chmod 1755 /package
 !endblock
 
@@ -753,13 +753,12 @@ If you want some or all of the I<qmail> files to reside elsewhere than
 F</var>, this can be accomplished by creating symbolic links under
 F</var/qmail> pointing to the other locations.
 
-For example, a more distributed layout can be achieved by doing:
+For I<B<example>>, the I<qmail> configuration files can be stored in
+F</etc/qmail> by doing:
 
->    mkdir /var/qmail
->    ln -s /usr/man /var/qmail/man
 >    mkdir /etc/qmail
 >    ln -s /etc/qmail /var/qmail/control
->    ln -s /usr/sbin /var/qmail/bin
+
 !endblock
 
 H3[id="create-users"] Create users and groups
@@ -883,6 +882,12 @@ your computer is dolphin, your config-fast line would look like
 this:
 
 >    ./config-fast dolphin.example.com
+
+Note: On a small local LAN you might want to use a pseudo domain such
+as ".local". E.g., if your hostname is "mash", you could do
+F<./config-fast mash.local>. If you do this, be sure to configure
+I<qmail> to use a valid Internet domain name in return addresses. (See
+section 3, {{CMD[jump="#configuration"]Configuration}}.)
 
 I<qmail> is now installed on your system and is ready to be run!
 The next section will guide you through the steps of starting and
@@ -1121,9 +1126,11 @@ This script is available via
 Create the script using your editor or by downloading it with your web
 browser (recommended).
 
-On Linux and System V systems, you'll also need to link the script into
-the F<init.d> directory and a couple of "rc" directories. The F<init.d>
-is probably one of the following:
+H5[id="rc-links"] F<rc> links
+
+On most Linux and System V systems, you'll also need to link the
+script into the F<init.d> directory and a couple of "rc"
+directories. The F<init.d> is probably one of the following:
 
 * F</etc/init.d>
 * F</sbin/init.d>
@@ -1157,7 +1164,9 @@ the location of your system's rc directories:
 Note: The numbers in the previous step are highly system dependent,
 but somewhat flexible. If I<Sendmail> is currently installed, running
 the command "F<find RCDIR -name "*sendmail" -print>" will give you
-numbers that should work for your system.
+numbers that should work for your system. Also note that the results
+of these F<ln> commands are independent of your current working
+directory.
 
 On all systems, make the F<qmailctl> script executable and link it to
 a directory in your path:
@@ -1208,8 +1217,8 @@ exec /usr/local/bin/softlimit -m 2000000 \
 !endblock
 
 Note: F<concurrencyincoming> isn't a standard qmail control file. It's
-a feature of the above script. Also, that's F<-l> (dash ell), not F<-1>
-(dash one).
+a feature of the above script. Also, that's F<-1> (dash one) on the
+F<LOCAL> line and F<-l> (dash ell) on the F<tcpserver> line.
 
 !block note
 Under Solaris, the normal F<id> program won't work right in this 
@@ -1387,11 +1396,31 @@ All four services should be "up" for more than a second. If they're
 not, you've probably got a typo in the associated run script or you
 skipped one or more steps in creating the necessary files,
 direcotories, or links. Go back through the installation step-by-step
-and doublecheck your work.
+and double check your work.
 
-Next, follow the instructions in F<TEST.deliver> and F<TEST.receive> to
-verify that it's working correctly. Note that using these instructions,
-logging will be accomplished by F<multilog>, not F<splogger>.
+It sometimes help to run a service manually in order to find
+configuration problems. For example, if your F<qmail-smtpd/log>
+service isn't running, do:
+
+!block example
+    cd /service/qmail-smtpd/log
+    svc -d .
+    ./run
+    I<if no errors, enter a line of text and press ENTER>
+    I<if still no errors, enter CTRL-D (end of file)>
+!endblock
+
+At this point, you should be able to identify the problem and fix
+it. Once that's done, return to the service's directory, if necessary,
+and do:
+
+>    svc -u .
+
+Once the services are all up with >1 second uptime, follow the
+instructions in F<TEST.deliver> and F<TEST.receive> to verify that
+they're working correctly. Note that using these instructions, logging
+will be accomplished by F<multilog> to F</var/log/qmail>, not
+F<splogger> to something like F</var/log/maillog>.
 
 H1[id="configuration"] Configuration
 
@@ -2376,6 +2405,28 @@ to F<concurrencyremote> F<qmail-remote> processes.
 
 H3[id="logs"] Logs
 
+H4[id="multilog"] F<multilog>
+
+F<multilog>, which is part of the
+I<{{CMD[jump="#daemontools"]daemontools}}> package, logs messages to a
+series of files in a specified directory.
+
+The log directory is specified on the F<multilog> command line, so
+you can find it by examining your I<qmail> startup scripts.
+
+The number of files in the log directory, and the maximum size of each
+file, are determined by F<multilog> options. The log file names are the
+TAI (Temps Atomique International) timestamps of the time at which the
+file was started. The F<tai64nlocal> command, also from I<daemontools>,
+converts TAI timestamps into local, human-readable timestamps.
+
+A typical F<multilog> log entry looks like:
+
+>@4000000038c3eeb104a6ecf4 delivery 153: success: did_1+0+0/
+
+"@4000000038c3eeb104a6ecf4" is the optional, but recommended, TAI timestamp.
+"delivery 153: success: did_1+0+0/" is the log message itself.
+
 H4[id="splogger"] F<splogger>
 
 F<splogger> uses the I<syslog> logging system to timestamp messages
@@ -2405,28 +2456,6 @@ A typical I<syslog> log entry looks like:
 
 "928424123.963558" is an optional TAI timestamp (see next section).
 
-"delivery 153: success: did_1+0+0/" is the log message itself.
-
-H4[id="multilog"] F<multilog>
-
-F<multilog>, which is part of the
-I<{{CMD[jump="#daemontools"]daemontools}}> package, logs messages to a
-series of files in a specified directory.
-
-The log directory is specified on the F<multilog> command line, so
-you can find it by examining your I<qmail> startup script.
-
-The number of files in the log directory, and the maximum size of each
-file, are determined by F<multilog> options. The log file names are the
-TAI (Temps Atomique International) timestamps of the time at which the
-file was started. The F<tai64nlocal> command, also from I<daemontools>,
-converts TAI timestamps into local, human-readable timestamps.
-
-A typical F<multilog> log entry looks like:
-
->@4000000038c3eeb104a6ecf4 delivery 153: success: did_1+0+0/
-
-"@4000000038c3eeb104a6ecf4" is the optional, but recommended, TAI timestamp.
 "delivery 153: success: did_1+0+0/" is the log message itself.
 
 H4[id="log-messages"] Log messages
@@ -2653,6 +2682,7 @@ including:
 * Matthias Andree
 * Tillman Hodgson
 * Stefan Witzel
+* Scott Gifford
 * too many others to mention...
 
 Special thanks to Henning Brauer for donating the lifewithqmail.org
@@ -2661,7 +2691,7 @@ domain I<and> hosting it!
 U<[[DOC_TITLE]]> was written using Simple Document Format (SDF), a
 very cool Perl-based markup language that generates HTML, plain text,
 PostScript, POD, and other formats. It made the job I<much>
-easier. See {{URL:http://www.mincom.com/mtr/sdf/}} for more
+easier. See {{URL:http://search.cpan.org/author/IANC/sdf-2.001/}} for more
 information.
 
 A1[id="related-packages"] Related Packages
@@ -2786,7 +2816,7 @@ available from {{URL:http://www.qmail.org/tai64nfrac}}.
 A2[id="rblsmtpd"] I<rblsmtpd>
 
 If you've never been spammed, consider yourself I<very> lucky. Most
-e-mail users are all to familiar with Unsolicited Bulk E-mail (UBE),
+e-mail users are all too familiar with Unsolicited Bulk E-mail (UBE),
 aka "spam". Most of it is advertisements for sex sites, chain letters,
 and other scams. Back in the days of old, up until around 1998 or so,
 most MTA's on the Internet were I<open relays>, i.e., they would
@@ -3489,11 +3519,21 @@ return/linefeed (CRLF) line breaks. Unlike I<Sendmail>, I<qmail>
 requires locally-injected messages to use Unix newlines (CR
 only). This is a common problem with PHP scripts.
 
+A2[id="log-block"]F<qmail-send> or F<tcpserver> stop working if logs
+back up
+
+If you're logging to a supervised log service, as described in section
+2, and the log service fails for any reason: disk full, typo in the
+F<run> script, log directory configuration error, etc., the pipeline
+will eventually fill up, causing the service to block, or hang. Fix
+the problem (see {{CMD[jump="#troubleshooting"]Troubleshooting}}) and
+everything will return to normal.
+
 A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-version"]What version is U<[[DOC_TITLE]]>?
 
-This is LWQ version 2002-08-25.
+This is LWQ version 2002-09-03.
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
