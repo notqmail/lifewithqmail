@@ -369,9 +369,9 @@ Handbook>, covers everything in this guide, but goes into much more
 detail and also covers a lot of new ground.
 
 For more information, see
-{{URL:http://www.apress.com/catalog/book/1893115402/}}. To order this book, see
+{{URL:http://www.apress.com/catalog/book/1893115402/}}. To order this
+book from my bookstore, in association with Amazon.com, see
 {{URL:http://www.amazon.com/exec/obidos/ASIN/1893115402/davesill}}.
-
 
 H4[id="oreilly-book"] U<qmail>
 
@@ -791,8 +791,8 @@ for FreeBSD after editing:
 
 !block example
     pw groupadd nofiles
-    pw useradd alias -g nofiles -d /var/qmail/alias -s /nonexistent
     pw useradd qmaild -g nofiles -d /var/qmail -s /nonexistent
+    pw useradd alias -g nofiles -d /var/qmail/alias -s /nonexistent
     pw useradd qmaill -g nofiles -d /var/qmail -s /nonexistent
     pw useradd qmailp -g nofiles -d /var/qmail -s /nonexistent
     pw groupadd qmail
@@ -873,6 +873,14 @@ F<conf-ld> and replace "cc" with "gcc".
 Now type the following:
 
 >    make setup check
+
+!block note
+If the build fails with an error about "errno" being undefined, you're
+probably using a system with glibc 2.3.1 or later (e.g., Red Hat
+9). See the {{CMD[jump="#patches"]Patches}} section for information
+about patches for I<qmail>, I<daemontools>, and I<ucspi-tcp> that fix
+this error.
+!endblock
 
 After the build is complete, you'll need to do your post installation
 configuration. A couple of scripts are provided to make this job a lot
@@ -1421,6 +1429,22 @@ not, you've probably got a typo in the associated run script or you
 skipped one or more steps in creating the necessary files,
 directories, or links. Go back through the installation step-by-step
 and double check your work.
+
+The F<readproctitle> program keeps a log of error messages generated
+by services managed by svscan. To see these messages, use F<ps> or
+some other process listing command. For example, you might see
+something like:
+
+!block example
+    # ps -efl | grep "service errors" | grep -v grep
+    000 S root      1006  1001  0  76   0    -   334 pipe_w Mar31 ?        00:00:00 
+    readproctitle service errors: ...unable to start qmail-smtpd/run: exec format error
+    #
+!endblock
+
+In this case, the problem is that there is an error in the first line
+of the F</service/qmail-smtpd/run> script--most likely caused by the file
+being is DOS format (CR-LF line endings instead of Unix's LF-only).
 
 It sometimes helps to run a service manually in order to find
 configuration problems. For example, if your F<qmail-smtpd/log>
@@ -2260,7 +2284,7 @@ in beta (development) mode. Binc IMAP is designed to use the same
 authentication mechanism (F<checkpassword>) that F<qmail-pop3d> uses,
 so it's a good fit for I<qmail> servers. Like F<qmail-pop3d>, it
 supports only Maildir mailboxes. See:
-{{URL:http://www.bincimap.andreas.hanssen.name/}}.
+{{URL:http://www.bincimap.org/}}.
 
 H3[id="imap-maildir"]I<imap-maildir>
 
@@ -2306,7 +2330,7 @@ you may need to install the Python interpreter before you can use
 I<getmail>
 
 I<getmail> was written by Charles Cazabon, who maintains a web page
-for it at {{URL:http://www.qcc.sk.ca/~charlesc/software/getmail-2.0/getmail.html}}.
+for it at {{URL:http://www.qcc.sk.ca/~charlesc/software/getmail-3.0/}}.
 
 H2[id="multi-rcpt"] Multi-RCPT vs. Single RCPT delivery
 
@@ -2365,7 +2389,7 @@ delivery, that would only drop your SMTP bandwidth to 7.5%.
 
 H2[id="verp"] VERP
 
-When a message is undeliverable, the MTA responsiblle is supposed to
+When a message is undeliverable, the MTA responsible is supposed to
 return a bounce message to the envelope return path (ERP). The bounce
 message should include the address of the recipient, the reason the
 message is undeliverable, and whether the problem is temporary or
@@ -3662,7 +3686,7 @@ A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-version"]What version is U<[[DOC_TITLE]]>?
 
-This is LWQ version 2003-02-23.
+This is LWQ version 2003-04-04.
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
@@ -3732,7 +3756,7 @@ you sign up using this link:
 {{URL:https://secure.paypal.com/refer/pal=paypal%40dave.sill.org}}.
 
 Another way to support LWQ at no cost to yourself is to shop at
-Amazon.com using this link:
+my bookstore, in association with Amazon.com, using this link:
 {{URL:http://www.amazon.com/exec/obidos/redirect-home/davesill}}.
 
 !block inline
