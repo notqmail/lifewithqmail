@@ -680,7 +680,7 @@ installing I<qmail>. The first step is to download the source code for
 I<qmail> and any other add-ons. You'll need I<qmail>, of course, and you
 should probably also get I<ucspi-tcp> and I<daemontools>:
 
-* I<qmail>, {{URL:http://www.qmail.org/netqmail-1.04.tar.gz}}
+* I<qmail>, {{URL:http://www.qmail.org/netqmail-1.05.tar.gz}}
 
 * I<ucspi-tcp>,
 {{URL:ftp://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz}} 
@@ -763,7 +763,7 @@ already.
     su
     umask 022
     mkdir -p /usr/local/src
-    mv netqmail-1.04.tar.gz ucspi-tcp-0.88.tar.gz /usr/local/src
+    mv netqmail-1.05.tar.gz ucspi-tcp-0.88.tar.gz /usr/local/src
     mkdir -p /package
     mv daemontools-0.76.tar.gz /package
     chmod 1755 /package
@@ -773,9 +773,9 @@ Now you can unpack the packages.
 
 !block example
     cd /usr/local/src
-    gunzip netqmail-1.04.tar.gz
-    tar xpf netqmail-1.04.tar
-    cd netqmail-1.04
+    gunzip netqmail-1.05.tar.gz
+    tar xpf netqmail-1.05.tar
+    cd netqmail-1.05
     ./collate.sh  I<# watch for errors here>
     cd ..
     gunzip ucspi-tcp-0.88.tar.gz
@@ -788,7 +788,7 @@ Now you can unpack the packages.
 !endblock
 
 There should now be directories called
-F</usr/local/src/netqmail-1.04>, F</usr/local/src/ucspi-tcp-0.88>, and
+F</usr/local/src/netqmail-1.05>, F</usr/local/src/ucspi-tcp-0.88>, and
 F</package/admin/daemontools-0.76>.
 
 H3[id="create-dirs"] Create directories
@@ -821,7 +821,7 @@ directory you'll find a file called  F<INSTALL.ids>.  It contains
 the command lines for many platforms, so copying the file to
 another name and editing that is quick and easy.
 
->    cd /usr/local/src/netqmail-1.04/netqmail-1.04
+>    cd /usr/local/src/netqmail-1.05/netqmail-1.05
 >    cp INSTALL.ids IDS
 
 Then, using your favorite editor, remove all of the file B<except>
@@ -898,9 +898,10 @@ You're now ready to continue on to the next section.
 H3[id="do-build"] Do the build
 
 Now you can start building I<qmail>. Change to the
-F</usr/local/src/qmail-1.03> directory and let's get started:
+F</usr/local/src/netqmail-1.05/netqmail-1.05> directory and let's get
+started:
 
->    cd /usr/local/src/netqmail-1.04/netqmail-1.04
+>    cd /usr/local/src/netqmail-1.05/netqmail-1.05
 
 In the {{CMD[jump="#verify-compiler"]Verify Build Environment}}
 section, you located your C compiler. If it's not called F<cc> or the
@@ -958,7 +959,7 @@ this directory.
 
 Then do:
 !block example
-    patch < /usr/local/src/netqmail-1.04/errno-patches/ucspi-tcp-0.88.errno.patch
+    patch < /usr/local/src/netqmail-1.05/other-patches/ucspi-tcp-0.88.errno.patch
     make
     make setup check
 !endblock
@@ -978,7 +979,7 @@ you'll need to make the same changes in the F<src> directory.
 Then do:
 !block example
     cd src
-    patch < /usr/local/src/netqmail-1.04/errno-patches/daemontools-0.76.errno.patch
+    patch < /usr/local/src/netqmail-1.05/other-patches/daemontools-0.76.errno.patch
     cd ..
     package/install
 !endblock
@@ -1274,10 +1275,18 @@ script. Instead of F<id>, use F</usr/xpg4/bin/id>, e.g.:
 >    NOFILESGID=`/usr/xpg4/bin/id -g qmaild`
 !endblock
 
-Note: The memory limit specified in the F<softlimit> command may need
+!block note
+The memory limit specified in the F<softlimit> command may need
 to be raised depending upon your operating system and hardware
 platform. If attempts to connect to port 25 fail or remote systems
-are unable to send you mail, try raising it to 3000000 or 4000000.
+are unable to send you mail, or you see a message like:
+
+>  /usr/local/bin/tcpserver: error while loading shared libraries:
+>  libc.so.6: failed to map segment from shared object: Cannot
+>  allocate memory
+
+try raising it to 3000000 or 4000000.
+!endblock
 
 Create the F<concurrencyincoming> control file:
 
@@ -2250,10 +2259,18 @@ exec /usr/local/bin/softlimit -m 2000000 \
 where I<FQDN> is the fully qualified domain name of the
 POP server you're setting up, e.g., F<pop.example.net>.
 
-Note: The memory limit specified in the F<softlimit> command may need
+!block note
+The memory limit specified in the F<softlimit> command may need
 to be raised depending upon your operating system and hardware
 platform. If attempts to connect to port 110 fail or POP3 connections
-fail mysteriously, try raising it to 3000000 or 5000000.
+fail mysteriously, or you see a message like:
+
+>  /usr/local/bin/tcpserver: error while loading shared libraries:
+>  libc.so.6: failed to map segment from shared object: Cannot
+>  allocate memory
+
+try raising it to 3000000 or 5000000.
+!endblock
 
 5. Create a F</var/qmail/supervise/qmail-pop3d/log/run> script
 containing:
@@ -2343,7 +2360,7 @@ supports only Maildir mailboxes. See:
 H3[id="dovecot"]I<Dovecot>
 
 Timo Sirainen has written I<Dovecot>, a IMAP and POP server that
-supports both mbox and maildir mailboxes. It's was designed to be
+supports both mbox and maildir mailboxes. It was designed to be
 secure. It's available from {{URL:http://dovecot.procontrol.fi/}}.
 
 H3[id="imap-maildir"]I<imap-maildir>
@@ -2765,26 +2782,9 @@ H3[id="dns-patches"] DNS
 Historically, DNS responses have been limited to 512 bytes. Some large
 sites have started returning MX responses longer than that. I<qmail>
 and many other programs have a problem with Domain Name Server (DNS)
-queries that return very large results. There are three ways to fix this
-in I<qmail>.
-
-H4[id="dnscache"] Run F<dnscache> from I<djbdns>
-
-F<dnscache> is, as the name implies, a caching DNS server. It knows how
-to handle large DNS responses and generally improves DNS lookup
-performance for all services that use DNS. Because it doesn't require
-patching I<qmail>, this is by far the best solution. See the
-{{CMD[jump="#djbdns"]djbdns}} section under
-{{CMD[jump="#related-packages"]Related Packages}} for more information.
- 
-H4[id="dns-bump"] Bump the packet buffer size up to 65536
- 
-Works with recent BIND resolver libraries, which will automatically do
-a TCP query within the library code if the reply comes back with the
-truncation bit set. This is the simplest fix, though it's also
-I<potentially> the most wasteful of memory, depending on how your
-system handles paging. To do this, just replace F<PACKETSZ> with
-F<65536> in F<dns.c> and rebuild I<qmail>.
+queries that return very large results. There are two ways to fix this
+in I<qmail> and one workaround that might be sufficient for some
+applications.
 
 H4[id="dns-davis"] Christopher K. Davis' patch,
 {{URL:http://www.ckdhr.com/ckd/qmail-103.patch}}
@@ -2801,6 +2801,28 @@ a TCP query, rather than requiring the resolver library to do so
 though if they're on the same machine or local network this is not a
 big worry).
 
+H4[id="dns-bump"] Bump the packet buffer size up to 65536
+
+Works with recent BIND resolver libraries, which will automatically do
+a TCP query within the library code if the reply comes back with the
+truncation bit set. This is the simplest fix, though it's also
+I<potentially> the most wasteful of memory, depending on how your
+system handles paging. To do this, just replace F<PACKETSZ> with
+F<65536> in F<dns.c> and rebuild I<qmail>.
+
+H4[id="dnscache"] Run F<dnscache> from I<djbdns>
+
+F<dnscache> is, as the name implies, a caching DNS server. It knows
+how to handle large DNS responses and removes unnecessary information
+from them, so the response it returns is usually much smaller than the
+direct response. It also generally improves DNS lookup performance for
+all services that use DNS. Because it doesn't require patching
+I<qmail>, this might be an acceptable workaround. Unfortunately, it's
+not a complete fix because responses can still be too large for
+I<qmail>. See the {{CMD[jump="#djbdns"]djbdns}} section under
+{{CMD[jump="#related-packages"]Related Packages}} for more
+information.
+ 
 H3[id="qmail-ldap"] I<qmail-ldap>
 
 This patch, by Andre Oppermann, et al, implements Lightweight
@@ -3136,7 +3158,7 @@ A2[id="syncdir"] I<syncdir>
 I<syncdir> is small library that makes the F<link()> system call
 synchronous. This is necessary when using I<qmail> with the queue on a
 filesystem that doesn't perform F<link()> synchronously, such as
-Linus's ext2fs, Reiserfs, SGI's XFS, and BSD FFS with softupdates.
+Linux's ext2fs, Reiserfs, SGI's XFS, and BSD FFS with softupdates.
 
 I<syncdir> was written br Bruce Guenter and is available from
 {{URL:http://untroubled.org/syncdir/}}. Installation instructions are
@@ -3514,7 +3536,7 @@ If you're getting:
 >deferral: CNAME_lookup_failed_temporarily._(#4.4.3)/
 
 The problem might be that I<qmail> can't handle large name server
-query responses. The fix is to install {{CMD[jump="#djbdns"]djbdns}}. See
+query responses. The fix is to install a patch or workaround. See
 {{CMD[jump="#dns-patches"]Patches}} under Advanced Topics.
 
 There's also a question as to why some people I<don't> have trouble
@@ -3761,7 +3783,7 @@ these environment variables before sending any mail messages.
 A2[id="killing-qmail-send"]F<qmail-send> doesn't always exit immediately when
 killed.
 
-Sending F<qmail-send> a F<KILL> signal doesn't cause it to exit
+Sending F<qmail-send> a F<TERM> signal doesn't cause it to exit
 immediately if there are deliveries in progress. F<qmail-send> will
 wait for all F<qmail-local> and F<qmail-remote> processes to finish
 before it exits so it can record the results of these
@@ -3774,13 +3796,13 @@ A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-version"]What version is U<[[DOC_TITLE]]>?
 
-This is LWQ version 2003-10-30.
+This is LWQ version 2004-03-01.
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
-U<[[DOC_TITLE]]> is Copyright 1999-2003 David E. Sill
+U<[[DOC_TITLE]]> is Copyright 1999-2004 David E. Sill
 
-{{URL:http://Web.InfoAve.Net/~dsill/dave.html}}
+{{URL:http://Web.InfoAve.Net/~dsill/dave/}}
 
 A2[id="lwq-license"]How is U<[[DOC_TITLE]]> licensed?
 
@@ -3839,9 +3861,7 @@ If you'd like to donate cash, that's always welcome, too. :-) Contact
 me to make arrangements, or use the PayPal e-payment system. Using
 PayPal, you can "beam" e-money to the e-mail address
 F<paypal@dave.sill.org> in amounts as small as $0.01 at no cost
-to you or me--even using a credit card. I may get a referral bonus if
-you sign up using this link:
-{{URL:https://secure.paypal.com/refer/pal=paypal%40dave.sill.org}}.
+to you--even using a credit card.
 
 Another way to support LWQ at no cost to yourself is to shop at
 my bookstore, in association with Amazon.com, using this link:
@@ -3850,6 +3870,24 @@ my bookstore, in association with Amazon.com, using this link:
 Thanks for your support!
 
 A2[id="changes"]What's changed in this version of LWQ?
+
+* G.16 said "KILL", should have been "TERM".
+
+* Added softlimit-too-low example error message.
+
+* Fixed E.2, CNAME lookup problem, and 
+
+A3[id="2003-11-10"]What changed in the 2001-01-26 version of LWQ?
+
+* Updated for netqmail 1.05.
+
+* Fixed minor typos.
+
+A3[id="2003-11-10"]What changed in the 2003-11-10 version of LWQ?
+
+* Fixed minor typos.
+
+A3[id="2003-10-30"]What changed in the 2003-10-30 version of LWQ?
 
 * Adjusted installation for I<netqmail> distribution.
 
