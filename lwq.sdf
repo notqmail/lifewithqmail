@@ -375,8 +375,9 @@ book from my bookstore, in association with Amazon.com, see
 
 H4[id="oreilly-book"] U<qmail>
 
-John Levine is reportedly writing a I<qmail> book for O'Reilly & Associates
-({{URL:http://www.oreilly.com/}}).
+John Levine has written a I<qmail> book for O'Reilly & Associates
+({{URL:http://www.oreilly.com/}}). See {{URL:http://qmail.gurus.com/}}
+for more info including the Table of Contents and a sample chapter.
 
 H4[id="sams-book"] U<Running qmail>
 
@@ -3792,11 +3793,14 @@ stop>" might report that F<qmail-send> has been stopped, even though
 it's still running. Always run "F<qmailctl stat>" to verify that the
 stop or restart has actually completed.
 
+Also note that F<qmail-send> makes a pass through the queue before
+exiting, so with very large queues this can cause a noticeable delay.
+
 A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-version"]What version is U<[[DOC_TITLE]]>?
 
-This is LWQ version 2004-03-01.
+This is LWQ version 2004-03-28.
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
@@ -3871,13 +3875,22 @@ Thanks for your support!
 
 A2[id="changes"]What's changed in this version of LWQ?
 
+* Updated info for Levine book.
+
+* Fixed typo in "What changed in the 2004-03-01 version of LWQ?".
+
+* Added comment in G.16 about F<qmail-send> scanning the queue before
+  exiting.
+
+A3[id="2004-03-01"]What changed in the 2004-03-01 version of LWQ?
+
 * G.16 said "KILL", should have been "TERM".
 
 * Added softlimit-too-low example error message.
 
 * Fixed E.2, CNAME lookup problem, and 
 
-A3[id="2003-11-10"]What changed in the 2001-01-26 version of LWQ?
+A3[id="2004-01-26"]What changed in the 2004-01-26 version of LWQ?
 
 * Updated for netqmail 1.05.
 
