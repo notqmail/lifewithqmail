@@ -297,9 +297,8 @@ that would make a switch from I<Sendmail> to the alternative MTA more
 user-transparent, such as the use of F<.forward> files,
 F</etc/aliases>, and delivery to F</var/spool/mail>.
 
-Cameron Laird has a web page comparing these and other free and
-commercial MTA's at
-{{URL:http://phaseit.net/claird/comp.mail.misc/MTA_comparison.html}}.
+Jonathan de Boyne Pollard has reviews of many Unix MTAs at
+{{URL:http://homepages.tesco.net/~J.deBoynePollard/Reviews/UnixMTSes/}}.
 Another detailed comparison is available at
 {{URL:http://www.geocities.com/mailsoftware42/}}.
 
@@ -470,6 +469,20 @@ trying to achieve? Don't assume the reader can guess.
 
 * B<I<What U<did> happen?>> Describe the actual result. Include log
 file clippings and copies of messages, with headers.
+
+!block note
+The I<qmail> list uses a utility called F<qsecretary> to verify that
+messages posted to the list are not spam. Each message posted to the
+list will result in an e-mail confirmation request from
+F<qsecretary>. Read the message and follow the directions to confirm
+your message--usually just replying to the F<qsecretary> message will
+do the trick. Regular list posters often automate this process using
+autoresponders like Charles Cazabon's I<pymsgauth>, available from
+{{URL:http://www.qcc.ca/~charlesc/software/pymsgauth/pymsgauth.html}}.
+I<pymsgauth> verifies that message sent to the I<qmail> list really
+came from you, so it won't automatically confirm forged messages sent
+to the list in your name.
+!endblock
 
 H4[id="qmailannounce-list"] U<qmailannounce>
 
@@ -933,6 +946,31 @@ point to start F<svscan>, the master service control daemon.
 Use "F<ps -ef | grep svscan>" or "F<ps waux | grep svscan>" to verify
 that F<svscan> is running.
 
+!block note
+Under Solaris, you'll have to modify the F</etc/inittab> entry that
+starts F<svscan> from:
+
+>  SV:123456:respawn:/command/svscanboot
+
+to:
+
+>  SV:123456:respawn:/command/svscanboot </dev/null >/var/log/svscan 2>&1
+
+or:
+
+>  SV:123456:respawn:/command/svscanboot </dev/null >/dev/msglog 2>&1
+
+Depending upon whether you want error messages resutling from starting
+F<svscan> to be sent to a log file or the system console. For an
+explanation of why this is necessary, see:
+
+  {{URL:http://marc.theaimsgroup.com/?l=log&m=100327801309834&w=2}}
+!endblock
+
+Note: A Slackware user reports that the F<SV> F</etc/inittab> entry
+has to be moved before the F<x1> entry or F<svscan> won't be started
+at boot-up.
+
 H2[id="start-qmail"] Start I<qmail>
 
 H3[id="rc"] F</var/qmail/rc>
@@ -1024,14 +1062,14 @@ case "$1" in
   start)
     echo "Starting qmail"
     if svok /service/qmail-send ; then
-      svc -u /service/qmail-send
+      svc -u /service/qmail-send /service/qmail-send/log
     else
-      echo qmail-send supervise not running
+      echo "qmail-send supervise not running"
     fi
     if svok /service/qmail-smtpd ; then
-      svc -u /service/qmail-smtpd
+      svc -u /service/qmail-smtpd /service/qmail-smtpd/log
     else
-      echo qmail-smtpd supervise not running
+      echo "qmail-smtpd supervise not running"
     fi
     if [ -d /var/lock/subsys ]; then
       touch /var/lock/subsys/qmail
@@ -1040,9 +1078,9 @@ case "$1" in
   stop)
     echo "Stopping qmail..."
     echo "  qmail-smtpd"
-    svc -d /service/qmail-smtpd
+    svc -d /service/qmail-smtpd /service/qmail-smtpd/log
     echo "  qmail-send"
-    svc -d /service/qmail-send
+    svc -d /service/qmail-send /service/qmail-send/log
     if [ -f /var/lock/subsys/qmail ]; then
       rm /var/lock/subsys/qmail
     fi
@@ -1082,11 +1120,11 @@ case "$1" in
   restart)
     echo "Restarting qmail:"
     echo "* Stopping qmail-smtpd."
-    svc -d /service/qmail-smtpd
+    svc -d /service/qmail-smtpd /service/qmail-smtpd/log
     echo "* Sending qmail-send SIGTERM and restarting."
-    svc -t /service/qmail-send
+    svc -t /service/qmail-send /service/qmail-send/log
     echo "* Restarting qmail-smtpd."
-    svc -u /service/qmail-smtpd
+    svc -u /service/qmail-smtpd /service/qmail-smtpd/log
     ;;
   cdb)
     tcprules /etc/tcp.smtp.cdb /etc/tcp.smtp.tmp < /etc/tcp.smtp
@@ -1126,50 +1164,8 @@ This script is available via
 Create the script using your editor or by downloading it with your web
 browser (recommended).
 
-H5[id="rc-links"] F<rc> links
-
-On most Linux and System V systems, you'll also need to link the
-script into the F<init.d> directory and a couple of "rc"
-directories. The F<init.d> is probably one of the following:
-
-* F</etc/init.d>
-* F</sbin/init.d>
-* F</etc/rc.d/init.d>
-
-The F<rc> directories are named like rcI<N>.d, where I<N> is the
-I<runlevel> they apply to. The intricacies of the startup directory
-tree are beyond the scope of this document, so if these simplified
-instructions don't suffice, consult your system documentation. Your rc
-directories will probably be in one of:
-
-* F</etc>
-* F</sbin>
-* F</etc/rc.d>
-
-To create the links, execute the following commands, replacing INITDIR
-with the location of your system's F<init.d> directory and RCDIR with
-the location of your system's rc directories:
-
-!block example
-    ln -s /var/qmail/bin/qmailctl INITDIR/qmail
-    ln -s ../init.d/qmail RCDIR/rc0.d/K30qmail
-    ln -s ../init.d/qmail RCDIR/rc1.d/K30qmail
-    ln -s ../init.d/qmail RCDIR/rc2.d/S80qmail
-    ln -s ../init.d/qmail RCDIR/rc3.d/S80qmail
-    ln -s ../init.d/qmail RCDIR/rc4.d/S80qmail
-    ln -s ../init.d/qmail RCDIR/rc5.d/S80qmail
-    ln -s ../init.d/qmail RCDIR/rc6.d/K30qmail
-!endblock
-
-Note: The numbers in the previous step are highly system dependent,
-but somewhat flexible. If I<Sendmail> is currently installed, running
-the command "F<find RCDIR -name "*sendmail" -print>" will give you
-numbers that should work for your system. Also note that the results
-of these F<ln> commands are independent of your current working
-directory.
-
-On all systems, make the F<qmailctl> script executable and link it to
-a directory in your path:
+Make the F<qmailctl> script executable and link it to a directory in
+your path:
 
 !block example
     chmod 755 /var/qmail/bin/qmailctl
@@ -1211,6 +1207,11 @@ if [ -z "$QMAILDUID" -o -z "$NOFILESGID" -o -z "$MAXSMTPD" -o -z "$LOCAL" ]; the
     echo /var/qmail/supervise/qmail-smtpd/run
     exit 1
 fi
+if [ ! -f /var/qmail/control/rcpthosts ]; then
+    echo "No /var/qmail/control/rcpthosts!"
+    echo "Refusing to start SMTP listener because it'll create an open relay"
+    exit 1
+fi
 exec /usr/local/bin/softlimit -m 2000000 \
     /usr/local/bin/tcpserver -v -R -l "$LOCAL" -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
         -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /var/qmail/bin/qmail-smtpd 2>&1
@@ -1230,7 +1231,7 @@ script. Instead of F<id>, use F</usr/xpg4/bin/id>, e.g.:
 
 Note: The memory limit specified in the F<softlimit> command may need
 to be raised depending upon your operating system and hardware
-platform. If attempts to connect to port 25 fail, or remote systems
+platform. If attempts to connect to port 25 fail or remote systems
 are unable to send you mail, try raising it to 3000000 or 4000000.
 
 Create the F<concurrencyincoming> control file:
@@ -1268,6 +1269,8 @@ Finally, link the F<supervise> directories into F</service>:
 !block example
     ln -s /var/qmail/supervise/qmail-send /var/qmail/supervise/qmail-smtpd /service
 !endblock
+
+The F</service> directory is created when I<daemontools> is installed.
 
 !block note
 The I<qmail> system will start automatically shortly after these
@@ -1321,11 +1324,32 @@ For Red Hat Linux, removing I<Sendmail> can be accomplished by:
 
 >    rpm -e --nodeps sendmail
 
+!block note 
+If you're using an RPM-based Linux distribution like Red Hat, removing
+the MTA package might cause problems down the road. Utilities that
+update the system might try to reinstall Sendmail, or MUA packages
+might not install because they can't tell an MTA is installed. Mate
+Wierdl provides a stub package called "fake_mta" that can be installed to
+prevent these problems. Simply install the RPM available from
+{{URL:http://www.csi.hu/mw/fake_mta-1-1memphis.noarch.rpm}}.
+!endblock
+
 Verify that nothing is listening to the SMTP port (25). Culprits could
 be the old MTA, F<inetd>, or F<xinetd>. The following command should
 produce no output (unless the qmail-smtpd service is running):
 
 >    netstat -a | grep smtp
+
+If something is running, make sure it's not I<qmail> by doing:
+
+>    qmailctl stop
+
+The repeat the F<netstat> check:
+
+>    netstat -a | grep smtp
+
+If you still get output from that command you'll have to locate the
+culprit and fix it before I<qmail>'s SMTP service will run.
 
 Lastly, replace any existing F</usr/lib/sendmail> with the I<qmail>
 version:
@@ -1395,10 +1419,10 @@ that the services are up and running:
 All four services should be "up" for more than a second. If they're
 not, you've probably got a typo in the associated run script or you
 skipped one or more steps in creating the necessary files,
-direcotories, or links. Go back through the installation step-by-step
+directories, or links. Go back through the installation step-by-step
 and double check your work.
 
-It sometimes help to run a service manually in order to find
+It sometimes helps to run a service manually in order to find
 configuration problems. For example, if your F<qmail-smtpd/log>
 service isn't running, do:
 
@@ -1421,6 +1445,14 @@ instructions in F<TEST.deliver> and F<TEST.receive> to verify that
 they're working correctly. Note that using these instructions, logging
 will be accomplished by F<multilog> to F</var/log/qmail>, not
 F<splogger> to something like F</var/log/maillog>.
+
+!block note
+If you chose maildir mailbox format as the default delivery method,
+you will need to create a F<Maildir> directory in your home directory
+and F<alias>'s home directory before trying these instructions. See the
+{{CMD[jump="#maildir-delivery"]maildir}} section to see how to
+properly create this directory.
+!endblock
 
 H1[id="configuration"] Configuration
 
@@ -1634,6 +1666,11 @@ The F<{{CMD[jump="#dot-qmail-files"].qmail}}> section and
 {{CMD[jump="#extension-addresses"]extension addresses}} subsection
 describe how to create F<.qmail> files that specify which aliases
 exist, and what to do with messages sent to them.
+
+The {{CMD[jump="#gotchas"]Gotchas}} appendix covers a
+couple of tricky cases regarding the usage of alias--aliases
+containing uppercase characters and dots ('.')--and F<man dot-qmail>
+contains complete documentation of the usage of F<.qmail> files.
 
 Note that because of the way aliases are implemented in I<qmail>, an
 alias can B<never> override a valid user's deliveries. E.g., if
@@ -1947,9 +1984,6 @@ F<sendmail> is a symbolic link to F</var/qmail/bin/sendmail>:
 >  $ ls -l /usr/lib/sendmail
 >  lrwxrwxrwx   1 root     root           29 Feb 19 11:04 /usr/lib/sendmail -> /var/qmail/bin/sendmail
 
-The F<sendmail> man page provided with I<qmail> describes how to use
-the program.
-
 H3[id="qmail-inject"] F<qmail-inject>
 
 In addition to emulating the F<sendmail> API, I<qmail> has its own
@@ -2137,6 +2171,11 @@ directions. Make sure you install it as F</bin/checkpassword>.
 where I<FQDN> is the fully qualified domain name of the
 POP server you're setting up, e.g., F<pop.example.net>.
 
+Note: The memory limit specified in the F<softlimit> command may need
+to be raised depending upon your operating system and hardware
+platform. If attempts to connect to port 110 fail or POP3 connections
+fail mysteriously, try raising it to 3000000 or 5000000.
+
 5. Create a F</var/qmail/supervise/qmail-pop3d/log/run> script
 containing:
 
@@ -2162,7 +2201,7 @@ link the service into F</service>:
 
 !block example
     if svok /service/qmail-pop3d ; then
-      svc -u /service/qmail-pop3d
+      svc -u /service/qmail-pop3d /service/qmail-pop3d/log
     else
       echo qmail-pop3d supervise not running
     fi
@@ -2172,7 +2211,7 @@ link the service into F</service>:
 
 !block example
     echo "  qmail-pop3d"
-    svc -d /service/qmail-pop3d
+    svc -d /service/qmail-pop3d /service/qmail-pop3d/log
 !endblock
 
 9. Add the following to F<qmailctl>'s "stat" section:
@@ -2200,7 +2239,7 @@ link the service into F</service>:
 
 !block example
     echo "* Restarting qmail-pop3d."
-    svc -t /service/qmail-pop3d
+    svc -t /service/qmail-pop3d /service/qmail-pop3d/log
 !endblock
 
 H3[id="qpopper"]I<Qpopper>
@@ -2213,6 +2252,15 @@ H3[id="solidpop"]I<SolidPOP>
 
 The I<SolidPOP> POP3 server supports both maildir and mbox
 mailboxes. It's available from {{URL:http://solidpop3d.pld.org.pl/}}.
+
+H3[id="bincimap"]I<Binc IMAP>
+
+Andreas Hanssen has written the Binc IMAP server, which is currently
+in beta (development) mode. Binc IMAP is designed to use the same
+authentication mechanism (F<checkpassword>) that F<qmail-pop3d> uses,
+so it's a good fit for I<qmail> servers. Like F<qmail-pop3d>, it
+supports only Maildir mailboxes. See:
+{{URL:http://www.bincimap.andreas.hanssen.name/}}.
 
 H3[id="imap-maildir"]I<imap-maildir>
 
@@ -2241,7 +2289,7 @@ Here's a sample F<.fetchmailrc> for a user on a I<qmail> system:
 !block example
 poll mail.example.net proto pop3 nodns
     user dsill with password flubgart is dave here
-    fetchall forcecr to * here
+    fetchall forcecr
 !endblock
 
 This instructs I<fetchmail> to connect to mail.example.net via POP3,
@@ -2333,7 +2381,7 @@ the new address starts having delivery problems, it can be impossible
 to tell which subscriber's mail is bouncing if the bounce message only
 includes the new address.
 
-Dan Bernstein came up with a solution to this problems called VERP
+Dan Bernstein came up with a solution to this problem called VERP
 (Variable Envelope Return Path). Using VERPs, each message sent to each
 subscriber to a list has a unique return path. This allows a bounce
 handler to identify the problem subscriber.
@@ -2558,6 +2606,13 @@ the F<patch> command.
     patch -p0 </tmp/patchfile
 !endblock
 
+!block note
+See the F<patch> F<man> page for more information. This is just
+an example. Also, you might need to use a current version of GNU patch
+to successfully apply some patches. See
+{{URL:http://www.gnu.org/software/patch/patch.html}}.
+!endblock
+
 Stop I<qmail> by killing F<qmail-send> or, if you installed the
 F<qmailctl> script in the Installation section, do:
 
@@ -2578,9 +2633,32 @@ Although {{URL:http://www.qmail.org/}} lists many patches for I<qmail>,
 B<none> of the them have been approved by the author of
 qmail. They may introduce security, reliability, efficiency, or
 functionality problems not present in I<qmail>. Most I<qmail>
-installations don't require the use of any patches whatsoever. B<You>
+installations only require the some of the Recommended patches. B<You>
 B<should not install any patches that you don't clearly require.>
 !endblock
+
+H3[id="recommended-patches"] Recommended Patches
+
+qmail.org has a "Recommended Patches" section:
+{{URL:http://qmail.org/top.html#patches}}. These patches address the
+few known bugs in qmail.
+
+H4[id="errno-patch"] F<errno.h> patch
+
+This patch fixes a problem with missing F<errno.h> inclusions. See
+{{URL:http://news.gmane.org/article.php?id=13960&group=gmane.mail.qmail.general}}
+for a detailed explanation and the patch itself.
+
+H4[id="qmail-local-tab-patch"] qmail-local TAB patch
+
+This patch fixes a minor bug in the parsing of F<.qmail> files that
+start with TAB
+characters. {{URL:http://www.ornl.gov/its/archives/mailing-lists/qmail/2000/10/msg00696.html}}
+
+H4[id="0.0.0.0-patch"] IP 0.0.0.0 patch
+
+This patch causes the IP address 0.0.0.0 to be recognized as
+local. {{URL:http://qmail.org/top.html#patches}}
 
 H3[id="dns-patches"] DNS
 
@@ -3509,14 +3587,18 @@ A2[id="smtp-slow"]DNS or IDENT lookups can make SMTP slow
 If F<qmail-smtpd> is slow to respond to connections, the problem is
 probably due to DNS reverse lookups or IDENT lookups. If you're
 starting F<qmail-smtpd> with F<tcpserver>, remove the "-h", "-p", and
-"-r" options and add "-H", "-P", "-R", and "-l 0" (I<ell zero>).
+"-r" options and add "-H", "-P", "-R", and "-l I<hostname>".
+
+See the F<tcpserver> documentation at
+{{URL:http://cr.yp.to/ucspi-tcp/tcpserver.html}} for an explanation of
+these options.
 
 A2[id="cr"]Carriage Return/Linefeed (CRLF) line breaks don't work
 
 F<qmail-inject> and other local injection mechanisms like F<sendmail>
 don't work right when messages are injected with DOS-style carriage
 return/linefeed (CRLF) line breaks. Unlike I<Sendmail>, I<qmail>
-requires locally-injected messages to use Unix newlines (CR
+requires locally-injected messages to use Unix newlines (LF
 only). This is a common problem with PHP scripts.
 
 A2[id="log-block"]F<qmail-send> or F<tcpserver> stop working if logs
@@ -3529,15 +3611,62 @@ will eventually fill up, causing the service to block, or hang. Fix
 the problem (see {{CMD[jump="#troubleshooting"]Troubleshooting}}) and
 everything will return to normal.
 
+A2[id="smtp-rejection"]F<qmail-smtpd> doesn't validate the local part
+of an address.
+
+If F<example.com> is listed in F<control/rcpthosts>, mail to
+F<I<anything>@example.com> will be accepted during the SMTP
+session. If F<I<anything>> isn't a valid user or alias, I<qmail> will
+send a bounce message to the envelope sender address.
+
+Some simpleminded relaying tests assume that if a message is accepted,
+it will be delivered. That's wrong. If someone claims that your system
+is an open relay, demand to see a copy of message relayed through
+it--including the complete header, especially the Received
+fields--then compare them with your logs.
+
+A2[id="firewalls"]Firewalls can block remote access to your
+SMTP/POP3/IMAP server.
+
+If you've installed an SMTP, POP3, or IMAP server, and you can connect
+to it from the local host or a host on the local network, but not from
+a remote host, a firewall might be the problem.
+
+The first place to look is on the server itself. Red Hat Linux, for
+example, blocks SMTP in the default configuration using
+F<iptables>. Other packet filtering mechanisms such as F<ipchains> may
+also be responsible.
+
+It's also possible that your Internet Service Provider (ISP) blocks
+certain ports to prevent spamming or enforce their Terms of Service
+(TOS). Contact your ISP's tech support I<after> ensuring that packet
+filtering isn't responsible and that running a server doesn't violate
+your TOS.
+
+A2[id="anonymous"]F<qmail-inject> sets F<From> to F<anonymous> if
+F<USER> and F<LOGNAME> aren't set.
+
+If a message sent via F<qmail-inject> doesn't contain a F<From> field,
+F<qmail-inject> looks for environment variables to tell it what user
+is sending the message. The variables it looks for, in order, are:
+F<QMAILUSER>, F<MAILUSER>, F<USER>,  and  F<LOGNAME>,
+
+Normal user login sessions usually set one or both of F<USER> and
+F<LOGNAME>, but some batch jobs, such as those started by F<cron>
+might not have either of these set.
+
+To cause your F<cron> jobs to have a valid F<From> field, set one
+these environment variables before sending any mail messages.
+
 A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-version"]What version is U<[[DOC_TITLE]]>?
 
-This is LWQ version 2002-09-03.
+This is LWQ version 2003-02-23.
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
-U<[[DOC_TITLE]]> is Copyright 1999-2002 David E. Sill
+U<[[DOC_TITLE]]> is Copyright 1999-2003 David E. Sill
 
 {{URL:http://Web.InfoAve.Net/~dsill/dave.html}}
 
@@ -3563,37 +3692,9 @@ Join the F<lwq> mailing list by sending a message to
 A2[id="lwq-translations"]Has U<[[DOC_TITLE]]> been translated to
 I<language>?
 
-Maybe. LWQ has been translated to Spanish:
-
-* {{URL:http://www.es.qmail.org/documentacion/usuarios/lwq}}
-
-To Korean:
-
-* {{URL:http://kldp.org/Translations/html/Life_With_Qmail-KLDP/Life_With_Qmail-KLDP.html}}
-
-To Polish:
-
-* {{URL:http://globi.graff.com.pl/lwq/}}
-
-To Italian:
-
-* {{URL:http://medialab.freaknet.org/~elibus/lwq.html}}
-
-And to Russian:
-
-* {{URL:http://reanand.terrashare.com/qmail/lwq.htm}}
-
-Other translations are in the works.
-
-If you're interested in translating U<[[DOC_TITLE]]>, let me know so I
-can coordinate and prevent duplication of effort. I can also provide
-translators a copy of the SDF source document so translations can also
-be done in SDF. I<(See the next question for one reason why that's>
-I<important.)>
-
-I also recommend that people translating LWQ join the F<lwq> mailing
-list (see the previous question) so they can discuss translation
-issues and make announcements.
+Maybe. LWQ has been translated into a few languages. See
+{{URL:http://lifewithqmail.org/trans.html}} for more information about LWQ
+translations.
 
 A2[id="lwq-formats"]Is U<[[DOC_TITLE]]> available in PostScript, PDF,
 plain text, or any other format beside HTML?
@@ -3602,7 +3703,7 @@ Yes, alternative formats can be found at
 {{URL:http://lifewithqmail.org/}}.
 
 A2[id="lwq-warranty"]I used U<[[DOC_TITLE]]> and it crashed my
-system/erased my hard disk/turned my hair gray/killed my dog/etc.
+system/erased my hard disk/ruined my love life/killed my dog/etc.
 
 I'm sorry. Really sorry. But U<[[DOC_TITLE]]> comes with no
 warranty. See the OpenContent License mentioned above. I didn't get
