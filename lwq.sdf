@@ -225,7 +225,7 @@ H3[id="feature-pop3"] POP3 service
 * TOP support 
 * APOP hook 
 * modular password checking (via
-{{CMD[jump="http://www.qmail.org/top.html#checkpasswd"]checkpassword}}) 
+{{CMD[jump="http://www.qmail.org/top.html#checkpassword"]checkpassword}}) 
 
 H2[id="related-packages"] Related packages
 
@@ -341,7 +341,7 @@ installed under F</var/qmail/doc>. They include:
 * F<FAQ>: Frequently Asked Questions, with answers
 * F<INSTALL*>: Installation documentation
 * F<PIC.*>: Descriptions of how I<qmail> performs key tasks. See
-the {{CMD[jump="#Pictures"]Architecture}} appendix for more
+the {{CMD[jump="#pictures"]Architecture}} appendix for more
 information.
 * Various other installation-related documentation
 
@@ -1091,7 +1091,7 @@ you should create a simple wrapper in
 F</var/qmail/bin/qmail-smtpd-wrapper> that looks like:
 
 !block example
-#/bin/bash
+#!/bin/bash
 ulimit -d 1024
 exec /var/qmail/bin/qmail-smtpd ${1+"$@"}
 !endblock
@@ -1925,7 +1925,7 @@ available from {{URL:http://www.eudora.com/freeware/qpop.html}}.
 H3[id="cyrus"]I<Cyrus>
 
 Jason van Zyl has written a I<qmail>/I<Cyrus> HOWTO. See
-{{URL:http://www.compusense.com/qmail-cyrus}}.
+{{URL:http://www.compusense.com/qmail-cyrus/}}.
 
 There's information on incorporating LDAP into Cyrus at
 {{URL:http://www.linc-dev.com/auth.html}}.
@@ -2143,7 +2143,7 @@ H4[id="cyclog"] F<cyclog>
 F<cyclog>, which is part of the
 I<{{CMD[jump="#daemontools"]daemontools}}> package, logs messages to a
 series of files in a specified directory. Unlike I<syslog>, F<cyclog>
-doesn't timestamp entries. F<accustamp>, from the
+doesn't timestamp entries. F<accustamp>, also from the
 I<{{CMD[jump="#daemontools"]daemontools}}> package can be used for
 that.
 
@@ -2241,7 +2241,7 @@ address: it appends the command to the name of the list. E.g., to
 subscribe to the "foo@list.example.net" list, one sends a message to
 "foo-subscribe@list.example.net".
 
-For more information about I<ezmlm>, see {{URL:http:/www.ezmlm.org}},
+For more information about I<ezmlm>, see {{URL:http://www.ezmlm.org}},
 the unofficial I<ezmlm> web site, and the official home of
 I<ezmlm-idx>, a very nice add-on that includes many useful features.
 
@@ -2278,7 +2278,7 @@ Historically, DNS responses have been limited to 512 bytes. Some large
 sites, notably America Online, have started returning MX responses
 longer than that. I<qmail>, and many other programs, have a problem
 with Domain Name Server (DNS) queries that return very large
-results. There are three ways to fix this in I<qmail>: 
+results. There are two ways to fix this in I<qmail>: 
  
 H4[id="dns-bump"] Bump the packet buffer size up to 65536. 
  
@@ -2289,20 +2289,10 @@ I<potentially> the most wasteful of memory, depending on how your
 system handles paging. To do this, just replace F<PACKETSZ> with
 F<65536> in F<dns.c> and rebuild I<qmail>.
 
-H4[id="dns-foster"] Chuck Foster's patch
-{{URL:http://www.qmail.org/big-dns-patch}}.
- 
-This patch dynamically reallocates the buffer based on the size
-returned by the resolver library (repeating as necessary to make it
-big enough). This also requires resolver libraries that do the TCP
-retry, and might have problems if the resolver code returns the number
-of bytes placed in the buffer instead of the number of bytes in the
-full response.
- 
 H4[id="dns-davis"] Christopher K. Davis' patch
 {{URL:http://www.ckdhr.com/ckd/qmail-103.patch}}.
 
-This is an adaptation of Chuck Foster's patch which should work with
+This is an adaptation of a patch by Chuck Foster's which should work with
 any resolver library, no matter how old, and uses a guard byte to
 avoid the "number of bytes placed in the buffer" library bug. It
 reallocates only once, to 65536, rather than just to the size needed,
@@ -2737,6 +2727,9 @@ Notifications. {{URL:http://www.ietf.org/rfc/rfc1894.txt}}
 
 * RFC 1939, Post Office Protocol - Version
 3. {{URL:http://www.ietf.org/rfc/rfc1939.txt}}
+
+* RFC 1985, SMTP Service Extension for Remote Message Queue Starting
+(ETRN). {{URL:http://www.ietf.org/rfc/rfc1985.txt}}
 
 * RFC 1991, PGP Message Exchange
 Formats. {{URL:http://www.ietf.org/rfc/rfc1991.txt}}
