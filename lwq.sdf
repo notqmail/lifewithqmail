@@ -2658,7 +2658,7 @@ characters. {{URL:http://www.ornl.gov/its/archives/mailing-lists/qmail/2000/10/m
 H4[id="0.0.0.0-patch"] IP 0.0.0.0 patch
 
 This patch causes the IP address 0.0.0.0 to be recognized as
-local. {{URL:http://qmail.org/top.html#patches}}
+local. {{URL:http://www.suspectclass.com/~sgifford/qmail/qmail-0.0.0.0.patch}}
 
 H3[id="dns-patches"] DNS
 
@@ -3502,7 +3502,7 @@ A2[id="home-dir-ownership"] I<qmail> doesn't deliver mail to users who
 don't own their home directory.
 
 Another security feature, and just good general practice. This is
-documented in the qmail-getpw man page.
+documented in the F<qmail-getpw> man page.
 
 A2[id="uppercase-usernames"] I<qmail> doesn't deliver mail to users
 whose usernames contain uppercase letters.
@@ -3510,7 +3510,7 @@ whose usernames contain uppercase letters.
 I<qmail> converts the entire "local part"--everything left of the "@"
 in an address, to lowercase. The man page doesn't come out and say
 that, but the code does. The fact that it ignores users with uppercase
-characters is documented in the qmail-getpw man page.
+characters is documented in the F<qmail-getpw> man page.
 
 A2[id="dots-in-extensions"] I<qmail> replaces dots (.) in extension
 addresses with colons (:).
@@ -3518,13 +3518,13 @@ addresses with colons (:).
 Another security feature. The purpose is prevent extension addresses
 from backing up the file tree using "..". By replacing them with
 colons, I<qmail> ensures that all F<.qmail> files for a user are under
-their home directory. Documented in the qmail-local man page.
+their home directory. Documented in the F<dot-qmail> man page.
 
 A2[id="uppercase-in-extensions"] I<qmail> converts uppercase
 characters in extension addresses to lowercase.
 
 This is another result of the fact that I<qmail> lowercases the entire
-local part of addresses. Documented in the qmail-local man page.
+local part of addresses. Documented in the F<dot-qmail> man page.
 
 A2[id="etc-hosts"] I<qmail> doesn't use F</etc/hosts>.
 
@@ -3643,11 +3643,11 @@ certain ports to prevent spamming or enforce their Terms of Service
 filtering isn't responsible and that running a server doesn't violate
 your TOS.
 
-A2[id="anonymous"]F<qmail-inject> sets F<From> to F<anonymous> if
+A2[id="anonymous"]F<qmail-inject> sets F<From> field to F<anonymous> if
 F<USER> and F<LOGNAME> aren't set.
 
 If a message sent via F<qmail-inject> doesn't contain a F<From> field,
-F<qmail-inject> looks for environment variables to tell it what user
+F<qmail-inject> looks for environment variables to tell it which user
 is sending the message. The variables it looks for, in order, are:
 F<QMAILUSER>, F<MAILUSER>, F<USER>,  and  F<LOGNAME>,
 
