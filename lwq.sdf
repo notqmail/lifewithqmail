@@ -167,7 +167,7 @@ H3[id="feature-queueman"] Queue management
 * Automatic safe queueing--no loss of mail if system crashes 
 * Automatic per-recipient checkpointing 
 * Automatic queue cleanups
-* Queue viewing (See ~~qmail-qread)
+* Queue viewing (See F<qmail-qread>)
 * Detailed delivery statistics (via {{CMD[jump="#qmailanalog"]qmailanalog}}) 
 
 H3[id="feature-bounces"] Bounces
@@ -214,9 +214,9 @@ mbox delivery
 * Reliable NFS delivery (See {{CMD[jump="#maildir-delivery"]maildir}}) 
 * User-controlled program delivery: procmail etc. (See
 {{CMD[jump="#program-delivery"]qmail-command}})
-* Optional new-mail notification (See ~~qbiff)
-* Optional NRUDT return receipts (see ~~qreceipt)
-* Conditional filtering (See ~~condredirect and ~~bouncesaying) 
+* Optional new-mail notification (See qbiff)
+* Optional NRUDT return receipts (see qreceipt)
+* Conditional filtering (See condredirect and bouncesaying) 
 
 H3[id="feature-pop3"] POP3 service
 
@@ -475,7 +475,14 @@ H1[id="installation"] Installation
 
 This section covers installing I<qmail>. If you're an experienced
 system administrator, you can install I<qmail> following the
-directions in F<INSTALL> in the source distribution.
+directions in F<INSTALL> in the source distribution. The F<INSTALL>
+directions are the B<official> installation directions. They're more
+complex than the U<[[DOC_TITLE]]> directions, and they assume that the
+reader is an experienced system and mail administrator.
+
+Note: If you choose to install using the following directions, you
+should read through the entire section to familiarize yourself with
+the overall process.
 
 H2[id="installation-issues"] Installation Issues
 
@@ -540,12 +547,11 @@ interrupting mail service to your users.
 * If you don't have a spare, and your system is already handling mail
 using I<sendmail>, I<smail>, or some other MTA, you can install and
 test most pieces of I<qmail> without interfering with the existing
-service. See ~~ for more information about this.
+service.
 
 * When migrating a system from some other MTA to I<qmail>--even if
 you've got some I<qmail> experience under your belt--it's a good idea
-to formulate a plan. ~~ section covers migration strategies in more
-detail.
+to formulate a plan.
 
 H2[id="system-requirements"] System requirements
 
@@ -588,15 +594,20 @@ installing I<qmail>. The first step is to download the source code for
 I<qmail> and any other add-ons. You'll need I<qmail>, of course, and you
 should probably also get I<ucspi-tcp> and I<daemontools>:
 
-* I<qmail>, {{URL:ftp://koobera.math.uic.edu/pub/software/qmail-1.03.tar.gz}}
+* I<qmail>, {{URL:ftp://koobera.math.uic.edu/www/software/qmail-1.03.tar.gz}}
 
 * I<ucspi-tcp>,
-{{URL:ftp://koobera.math.uic.edu/pub/software/ucspi-tcp-0.84.tar.gz}} 
+{{URL:ftp://koobera.math.uic.edu/www/software/ucspi-tcp-0.84.tar.gz}} 
 
 * I<daemontools>,
-{{URL:ftp://koobera.math.uic.edu/pub/software/daemontools-0.53.tar.gz}}
+{{URL:ftp://koobera.math.uic.edu/www/daemontools/daemontools-0.53.tar.gz}}
 
 Retrieve these files using your web browser or FTP client.
+
+Note: Although the latest version of daemontools is 0.61, 0.53 is
+still available and adequate for our purposes. The user interface
+changed substantially in 0.60, and these instructions will only work
+right with 0.53.
 
 H2[id="build"] Build the source
 
@@ -633,7 +644,7 @@ could also mean that you I<don't> have one. Try these:
 platform specific. At the prompt try one of these, depending on which
 OS you're using:
 
-** Red Hat Linux: F<rpm -qa | grep gcc>
+** Red Hat Linux: F<rpm -qa | grep gcc> or F<rpm -qa | grep egcs>
 ** FreeBSD: includes GCC by default
 
 * If you can't find a compiler installed, you'll have to locate one
@@ -1126,24 +1137,6 @@ Allow the local host to inject mail via SMTP:
     /usr/local/sbin/qmail cdb
 !endblock
 
-And create aliases for "root", "postmaster", and "mailer-daemon" that
-will be delivered to F</var/qmail/alias/Mailbox> (or whatever you put
-in F<defaultdelivery>):
-
-!block example
-    touch /var/qmail/alias/.qmail-root
-    chmod 644 /var/qmail/alias/.qmail-root
-    touch /var/qmail/alias/.qmail-postmaster
-    chmod 644 /var/qmail/alias/.qmail-postmaster
-    touch /var/qmail/alias/.qmail-mailer-daemon
-    chmod 644 /var/qmail/alias/.qmail-mailer-daemon
-!endblock
-
-See F<INSTALL.alias> for more details.
-
-We're I<this> close to being able to start I<qmail>. The last step is
-to disable any MTA that's currently running.
-
 H3[id="stop-sendmail"]Stop and disable the installed MTA
 
 Although it's possible to run both I<qmail> and your existing MTA,
@@ -1184,11 +1177,41 @@ Lastly, replace any existing F</usr/lib/sendmail> with the I<qmail>
 version:
 
 !block example
-    mv /usr/lib/sendmail /usr/lib/sendmail.old		I<# ignore errors>
-    chmod 0 /usr/lib/sendmail.old			I<# ignore errors>
+    mv /usr/lib/sendmail /usr/lib/sendmail.old			I<# ignore errors>
+    mv /usr/sbin/sendmail /usr/sbin/sendmail.old		I<# ignore errors>
+    chmod 0 /usr/lib/sendmail.old /usr/sbin/sendmail.old	I<# ignore errors>
     ln -s /var/qmail/bin/sendmail /usr/lib
     ln -s /var/qmail/bin/sendmail /usr/sbin
 !endblock
+
+We're I<this> close to being able to start I<qmail>. The last step is
+to create a couple system aliases.
+
+H3[id="system-aliases"]Create System Aliases
+
+There are three system aliases that should be created on all I<qmail>
+installations:
+
+!block table
+Alias			Purpose
+F<postmaster>		RFC 821 required, points to the mail adminstrator (you)
+F<mailer-daemon>	de facto standard recipient for some bounces
+F<root>			redirects mail from privileged account to the system administrator
+!endblock
+
+To create these aliases, decide where you want each of them to go (a
+local user or a remote address) and create and populate the
+appropriate F<.qmail> files. For example, say local user F<dave> is
+both the system and mail administrator:
+
+!block example
+    echo dave > /var/qmail/alias/.qmail-root
+    echo dave > /var/qmail/alias/.qmail-postmaster
+    ln -s .qmail-postmaster > /var/qmail/alias/.qmail-mailer-daemon
+    chmod 644 /var/qmail/alias/.qmail-root /var/qmail/alias/.qmail-postmaster 
+!endblock
+
+See F<INSTALL.alias> for more details.
 
 H3[id="start-it"]Start I<qmail>
 
@@ -1698,7 +1721,7 @@ nearly universal.
 
 For example, to send a blank message to F<joe@example.com>:
 
-> echo To: joe@example.com | /var/qmail/bin/qmail=inject
+> echo To: joe@example.com | /var/qmail/bin/qmail-inject
 
 H2[id="environment-variables"]Environment Variables
 
@@ -1785,10 +1808,6 @@ temporary. A small shell script wrapper can be used to translate the
 exit codes for F<qmail-command>. Such a wrapper was posted to the
 I<qmail> list and is available from the archives at
 {{URL:http://www.ornl.gov/its/archives/mailing-lists/qmail/1998/04/msg00487.html}}.
-
-Note: if you don't use a wrapper around F<procmail> to convert the
-exit codes, mail can be B<lost> if a delivery fails with an exit
-status that F<qmail-command> considers successful.
 
 Also, I<procmail> doesn't deliver directly to maildir-format
 mailboxes. There's a patch available that implements maildir delivery
@@ -1910,6 +1929,12 @@ Jason van Zyl has written a I<qmail>/I<Cyrus> HOWTO. See
 
 There's information on incorporating LDAP into Cyrus at
 {{URL:http://www.linc-dev.com/auth.html}}.
+
+H3[id="imap-maildir"]I<imap-maildir>
+
+David R. Harris has cleaned up the patch that adds maildir support to
+the University of Washington IMAP server and documented the
+installation process. See {{URL:http://www.davideous.com/imap-maildir/}}.
 
 H2[id="pop-imap-clients"] POP and IMAP clients
 
@@ -2335,6 +2360,9 @@ including:
 * Russell P. Sutherland
 * Alex Miller
 * Tim Hunter
+* Frank D. Cringle
+* Mahlon Smith
+* Rogerio Brito
 
 U<[[DOC_TITLE]]> was written using Simple Document Format (SDF), a
 very cool Perl-based markup language that generates HTML, plain text,
@@ -2357,7 +2385,7 @@ the transition to I<qmail> less visible to their users.
 
 I<dot-forward> is a small package: easy to install and configure. The
 source is available from
-{{URL:ftp://koobera.math.uic.edu/pub/software/dot-forward-0.71.tar.gz}}.
+{{URL:ftp://koobera.math.uic.edu/www/software/dot-forward-0.71.tar.gz}}.
 
 I<dot-forward> was written by Dan Bernstein, who maintains a web page
 for it at {{URL:http://pobox.com/~djb/dot-forward.html}}.
@@ -2373,7 +2401,7 @@ convert, I<fastforward> gives I<qmail> the ability to use the aliases
 file as-is.
 
 The source is available from
-{{URL:ftp://koobera.math.uic.edu/pub/software/fastforward-0.51.tar.gz}}.
+{{URL:ftp://koobera.math.uic.edu/www/software/fastforward-0.51.tar.gz}}.
 
 I<fastforward> was written by Dan Bernstein, who maintains a web page
 for it at {{URL:http://pobox.com/~djb/fastforward.html}}.
@@ -2404,7 +2432,7 @@ them differently.
 * F<tcpserver> is the only server supported by the author of I<qmail>.
 
 The source is available from
-{{URL:ftp://koobera.math.uic.edu/pub/software/ucspi-tcp-0.84.tar.gz}}.
+{{URL:ftp://koobera.math.uic.edu/www/software/ucspi-tcp-0.84.tar.gz}}.
 
 I<ucspi-tcp> was written by Dan Bernstein, who maintains a web page
 for it at {{URL:http://pobox.com/~djb/ucspi-tcp.html}}.
@@ -2431,7 +2459,7 @@ rotating it to keep it under the configured size.
 user's UID and GID.
 
 The source for I<daemontools> is available from:
-{{URL:ftp://koobera.math.uic.edu/pub/software/daemontools-0.53.tar.gz}}.
+{{URL:ftp://koobera.math.uic.edu/www/daemontools/daemontools-0.53.tar.gz}}.
 
 I<daemontools> was written by Dan Bernstein, who maintains a web page
 for it at {{URL:http://pobox.com/~djb/daemontools.html}}.
@@ -2645,13 +2673,13 @@ For information about how Internet mail works, see one or more of the
 following:
 
 * Internet mail, by the author of
-I<qmail>. {{URL:http://pobox.com/~djb/proto/im.html}}
+I<qmail>. {{URL:http://pobox.com/~djb/im.html}}
 
 * SMTP, by the author of
-I<qmail>. {{URL:http://pobox.com/~djb/proto/smtp.html}}
+I<qmail>. {{URL:http://pobox.com/~djb/smtp.html}}
 
 * Internet mail message header format, by the author of
-I<qmail>. {{URL:http://pobox.com/~djb/proto/immhf.html}}
+I<qmail>. {{URL:http://pobox.com/~djb/immhf.html}}
 
 A3[id="rfcs"] Internet RFC's
 
@@ -2877,7 +2905,9 @@ messages?
 Each message has its own retry schedule. The longer a message remains
 undeliverable, the less frequently I<qmail> tries to send it. The
 retry schedule is not configurable. The following table shows the
-retry schedule for a message that's undeliverable until it bounces.
+retry schedule for a message that's undeliverable to a remote
+recipient until it bounces. Local messages use a similar, but more
+frequent, schedule.
 
 !block table; colaligns="CRR"
 Delivery_Attempt	Seconds	D-HH:MM:SS
@@ -2967,7 +2997,7 @@ F<QUEUE_EXTRA> string in F<QUEUE_EXTRALEN> (the "\0" counts as one
 character). For example:
 
 !block example
-    #define QUEUE_EXTRA "\Tlog\0"
+    #define QUEUE_EXTRA "Tlog\0"
     #define QUEUE_EXTRALEN 5
 !endblock
 
