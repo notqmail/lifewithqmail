@@ -84,13 +84,13 @@ advantages of I<qmail> more extensively.
 H2[id="history"] History
 
 I<qmail> was written by Dan Bernstein (DJB),
-{{URL:http://cr.yp.to/djb.html}}, a math professor now
-at the University of Illinois in Chicago. Dr. Bernstein is also well
-known for his work in the field of cryptography and for his lawsuit
-against the U.S. government regarding the publishing of encryption
-source code. See
-{{URL:http://www.news.com/News/Item/0,4,36217,00.html?owv}} for
-information regarding the lawsuit.
+{{URL:http://cr.yp.to/djb.html}}, a math professor now at the
+University of Illinois in Chicago. Dr. Bernstein is also well known
+for his work in the field of cryptography and for his lawsuit against
+the U.S. government regarding the publishing of encryption source
+code. See {{URL:http://www.news.com/News/Item/0,4,36217,00.html?owv}}
+or {{URL:http://cr.yp.to/export.html}} for information regarding the
+lawsuit.
 
 The first public release of
 I<qmail>, beta version 0.70, occurred on January, 24, 1996. The first
@@ -300,6 +300,8 @@ F</etc/aliases>, and delivery to F</var/spool/mail>.
 Cameron Laird has a web page comparing these and other free and
 commercial MTA's at
 {{URL:http://starbase.neosoft.com/~claird/comp.mail.misc/MTA_comparison.html}}.
+Another detailed comparison is available at
+{{URL:http://www.geocities.com/mailsoftware42/}}.
 
 H2[id="documentation"] Documentation
 
@@ -369,14 +371,13 @@ detail and also covers a lot of new ground.
 
 For more information, see
 {{URL:http://www.apress.com/catalog/book/1893115402/}}. To order this book, see
-{{URL:http://www.amazon.com/exec/obidos/ASIN/1893115402/davesill}} or
-{{URL:http://www1.fatbrain.com/asp/BookInfo/BookInfo.asp?theisbn=1893115402&from=WVE177}}.
+{{URL:http://www.amazon.com/exec/obidos/ASIN/1893115402/davesill}}.
+
 
 H4[id="oreilly-book"] U<qmail>
 
-John Levine is writing a I<qmail> book for O'Reilly & Associates
-({{URL:http://www.oreilly.com/}}) which should be available later this
-year.
+John Levine is reportedly writing a I<qmail> book for O'Reilly & Associates
+({{URL:http://www.oreilly.com/}}).
 
 H4[id="sams-book"] U<Running qmail>
 
@@ -450,7 +451,7 @@ F<joe@example.com>, send the message to:
 
 H4[id="qmail-list"] U<qmail>
 
-The main I<qmail> mailing list. Discussion and questions/answers on
+The main I<qmail> mailing list. For discussion and questions/answers on
 most things related to I<qmail>, except those with their own
 lists. Read Charles Cazabon's "12 Steps to qmail List Bliss" at
 {{URL:http://www.qcc.sk.ca/~charlesc/writings/12-steps-to-qmail-list-bliss.html}}
@@ -461,7 +462,8 @@ details to make it possible for people to respond:
 
 * B<I<What did you do?>> What's your configuration? Include
 F<qmail-showctl> output if you're not sure what's important. What
-action did you take?
+action did you take? If this is a new installation, tell how you
+installed I<qmail>.
 
 * B<I<What did you expect to happen?>> What was the outcome you were
 trying to achieve? Don't assume the reader can guess.
@@ -527,6 +529,13 @@ self-baked pizza will be fresher, you can adjust the toppings to
 your preferences, and you'll know a lot more about your pizza and how
 it "works".
 
+Safely running an Internet-accesible network service is not easy. An
+improperly configured service can put the host system at risk of
+attack or can be used to attack other sites--potentially exposing the
+administrator to legal liability. The more you know about how your
+network services work, the more likely they are to be properly
+configured and secure.
+
 H3[id="tar-vs-package"] Tarball vs. OS-specific package
 
 Some operating systems provide a mechanism for automating source code
@@ -556,7 +565,7 @@ opportunities to reconfigure it or try to figure out why mail isn't
 flowing the way you think it should.
 
 For this reason, I suggest installing I<qmail> from scratch using the
-source code tarball, not a Red Hat "RPM" or other "self-installing"
+source code tarball, not a Red Hat RPM or other self-installing
 bundle.
 
 H2[id="preparation"] Preparation
@@ -593,6 +602,16 @@ how to tell if you've got the necessary parts.
 * A few megabytes for the binaries, documentation, and configuration
 files.
 
+* A safe filesystem for the queue. I<qmail>'s reliability guarantee
+requires that the queue reside on a filesystem with traditional BSD
+FFS semantics. Most modern local filesystems meet these requirements
+with one important exception: the F<link()> system call is often
+I<asynchronous>--meaning that the results of the F<link()> operation
+might not have been written to disk when the F<link()> call
+returns. Bruce Guenter's I<syncdir> library can be used to work around
+this problem. See {{CMD[jump="#syncdir"]syncdir}} in the Related
+Packages appendix for more information.
+
 * Sufficient disk space for the queue. Small single-user systems only
 need a couple megabytes. Large servers may need a couple gigabytes.
 
@@ -626,7 +645,8 @@ should probably also get I<ucspi-tcp> and I<daemontools>:
 * I<daemontools>,
 {{URL:ftp://cr.yp.to/daemontools/daemontools-0.76.tar.gz}}
 
-Retrieve these files using your web browser or FTP client.
+Retrieve these files using your web browser, web client (e.g.,
+F<wget>), or FTP client.
 
 Note: If any of the links fail, it's probably because the package has
 been updated. In that case, you should go to
@@ -695,6 +715,7 @@ already.
     umask 022
     mkdir -p /usr/local/src
     mv qmail-1.03.tar.gz ucspi-tcp-0.88.tar.gz /usr/local/src
+    mv daemontools-0.76.tar.gz /package
     mkdir -p /package
     chmod 1755 /package
 !endblock
@@ -750,7 +771,7 @@ the command lines for many platforms, so copying the file to
 another name and editing that is quick and easy.
 
 >    cd /usr/local/src/qmail-1.03
->    cp INSTALL.ids  IDS
+>    cp INSTALL.ids IDS
 
 Then, using your favorite editor, remove all of the file B<except>
 the lines you want.  For example, here's what F<IDS> would look like
@@ -1175,13 +1196,14 @@ Create the F</var/qmail/supervise/qmail-smtpd/run> file:
 QMAILDUID=`id -u qmaild`
 NOFILESGID=`id -g qmaild`
 MAXSMTPD=`cat /var/qmail/control/concurrencyincoming`
-if [ -z "$QMAILDUID" -o -z "$NOFILESGID" -o -z "$MAXSMTPD" ]; then
-    echo QMAILDUID, NOFILESGID, or MAXSMTPD is unset in
+LOCAL=`head -1 /var/qmail/control/me`
+if [ -z "$QMAILDUID" -o -z "$NOFILESGID" -o -z "$MAXSMTPD" -o -z "$LOCAL" ]; then
+    echo QMAILDUID, NOFILESGID, MAXSMTPD, or LOCAL is unset in
     echo /var/qmail/supervise/qmail-smtpd/run
     exit 1
 fi
 exec /usr/local/bin/softlimit -m 2000000 \
-    /usr/local/bin/tcpserver -v -R -l 0 -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
+    /usr/local/bin/tcpserver -v -R -l "$LOCAL" -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
         -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /var/qmail/bin/qmail-smtpd 2>&1
 !endblock
 
@@ -1292,7 +1314,7 @@ For Red Hat Linux, removing I<Sendmail> can be accomplished by:
 
 Verify that nothing is listening to the SMTP port (25). Culprits could
 be the old MTA, F<inetd>, or F<xinetd>. The following command should
-produce no output:
+produce no output (unless the qmail-smtpd service is running):
 
 >    netstat -a | grep smtp
 
@@ -1361,7 +1383,11 @@ that the services are up and running:
     messages in queue but not yet preprocessed: 0
 !endblock
 
-All four services should be "up" for more than a second.
+All four services should be "up" for more than a second. If they're
+not, you've probably got a typo in the associated run script or you
+skipped one or more steps in creating the necessary files,
+direcotories, or links. Go back through the installation step-by-step
+and doublecheck your work.
 
 Next, follow the instructions in F<TEST.deliver> and F<TEST.receive> to
 verify that it's working correctly. Note that using these instructions,
@@ -1381,35 +1407,37 @@ the F<.qmail> files in F<~alias>, reside in F</var/qmail/control>. The
 F<qmail-control> man page contains a table like the following:
 
 !block table
-Control             			        Default            Used_by		Purpose
-{{N[id="badmailfrom"]badmailfrom}}              I<none>            qmail-smtpd		blacklisted From addresses
-{{N[id="bouncefrom"]bouncefrom}}                MAILER-DAEMON      qmail-send		username of bounce sender
-{{N[id="bouncehost"]bouncehost}}                me                 qmail-send		hostname of bounce sender
-{{N[id="concurrencylocal"]concurrencylocal}}    10                 qmail-send		max simultaneous local deliveries
-{{N[id="concurrencyremote"]concurrencyremote}}  20                 qmail-send		max simultaneous remote deliveries
-{{N[id="defaultdomain"]defaultdomain}}          me                 qmail-inject		default domain name
-{{N[id="defaulthost"]defaulthost}}              me                 qmail-inject		default host name
-{{N[id="databytes"]databytes}}                  0                  qmail-smtpd		max number of bytes in message (0=no limit)
-{{N[id="doublebouncehost"]doublebouncehost}}    me                 qmail-send		host name of double bounce sender
-{{N[id="doublebounceto"]doublebounceto}}        postmaster         qmail-send		user to receive double bounces
-{{N[id="envnoathost"]envnoathost}}              me                 qmail-send		default domain for addresses without "@"
-{{N[id="helohost"]helohost}}                    me                 qmail-remote		host name used in SMTP HELO command
-{{N[id="idhost"]idhost}}                        me                 qmail-inject		host name for Message-ID's
-{{N[id="localiphost"]localiphost}}              me                 qmail-smtpd		name substituted for local IP address
-{{N[id="locals"]locals}}                        me                 qmail-send		domains that we deliver locally
-{{N[id="me"]me}}                                FQDN of system     various		default for many control files
-{{N[id="morercpthosts"]morercpthosts}}          I<none>            qmail-smtpd		secondary rcpthosts database
-{{N[id="percenthack"]percenthack}}              I<none>            qmail-send		domains that can use "%"-style relaying
-{{N[id="plusdomain"]plusdomain}}                me                 qmail-inject		domain substituted for trailing "+"
-{{N[id="qmqpservers"]qmqpservers}}              I<none>            qmail-qmqpc		IP addresses of QMQP servers
-{{N[id="queuelifetime"]queuelifetime}}          604800             qmail-send		seconds a message can remain in queue
-{{N[id="rcpthosts"]rcpthosts}}                  I<none>            qmail-smtpd		domains that we accept mail for
-{{N[id="smtpgreeting"]smtpgreeting}}            me                 qmail-smtpd		SMTP greeting message
-{{N[id="smtproutes"]smtproutes}}                I<none>            qmail-remote		artificial SMTP routes
-{{N[id="timeoutconnect"]timeoutconnect}}        60                 qmail-remote		how long, in seconds, to wait for SMTP connection
-{{N[id="timeoutremote"]timeoutremote}}          1200               qmail-remote		how long, in seconds, to wait for remote server
-{{N[id="timeoutsmtpd"]timeoutsmtpd}}            1200               qmail-smtpd		how long, in seconds, to wait for SMTP client
-{{N[id="virtualdomains"]virtualdomains}}        I<none>            qmail-send		virtual domains and users
+Control             			        	Default		   Used_by                   Purpose
+{{N[id="badmailfrom"]badmailfrom}}              	I<none>            qmail-smtpd		     blacklisted From addresses
+{{N[id="bouncefrom"]bouncefrom}}                	MAILER-DAEMON      qmail-send		     username of bounce sender
+{{N[id="bouncehost"]bouncehost}}                	me                 qmail-send		     hostname of bounce sender
+{{N[id="concurrencyincoming"]concurrencyincoming}}    	I<none>		   /service/qmail-smtpd/run  max simultaneous incoming SMTP connections
+{{N[id="concurrencylocal"]concurrencylocal}}    	10                 qmail-send		     max simultaneous local deliveries
+{{N[id="concurrencyremote"]concurrencyremote}}  	20                 qmail-send		     max simultaneous remote deliveries
+{{N[id="defaultdelivery"]defaultdelivery}}      	I<none>		   /var/qmail/rc	     default .qmail file
+{{N[id="defaultdomain"]defaultdomain}}          	me                 qmail-inject		     default domain name
+{{N[id="defaulthost"]defaulthost}}              	me                 qmail-inject		     default host name
+{{N[id="databytes"]databytes}}                  	0                  qmail-smtpd		     max number of bytes in message (0=no limit)
+{{N[id="doublebouncehost"]doublebouncehost}}    	me                 qmail-send		     host name of double bounce sender
+{{N[id="doublebounceto"]doublebounceto}}       		postmaster         qmail-send		     user to receive double bounces
+{{N[id="envnoathost"]envnoathost}}              	me                 qmail-send		     default domain for addresses without "@"
+{{N[id="helohost"]helohost}}                    	me                 qmail-remote		     host name used in SMTP HELO command
+{{N[id="idhost"]idhost}}                        	me                 qmail-inject		     host name for Message-ID's
+{{N[id="localiphost"]localiphost}}              	me                 qmail-smtpd		     name substituted for local IP address
+{{N[id="locals"]locals}}                        	me                 qmail-send		     domains that we deliver locally
+{{N[id="me"]me}}                                	I<FQDN of system>  various		     default for many control files
+{{N[id="morercpthosts"]morercpthosts}}          	I<none>            qmail-smtpd		     secondary rcpthosts database
+{{N[id="percenthack"]percenthack}}              	I<none>            qmail-send		     domains that can use "%"-style relaying
+{{N[id="plusdomain"]plusdomain}}                	me                 qmail-inject		     domain substituted for trailing "+"
+{{N[id="qmqpservers"]qmqpservers}}              	I<none>            qmail-qmqpc		     IP addresses of QMQP servers
+{{N[id="queuelifetime"]queuelifetime}}          	604800             qmail-send		     seconds a message can remain in queue
+{{N[id="rcpthosts"]rcpthosts}}                  	I<none>            qmail-smtpd		     domains that we accept mail for
+{{N[id="smtpgreeting"]smtpgreeting}}            	me                 qmail-smtpd		     SMTP greeting message
+{{N[id="smtproutes"]smtproutes}}                	I<none>            qmail-remote		     artificial SMTP routes
+{{N[id="timeoutconnect"]timeoutconnect}}        	60                 qmail-remote		     how long, in seconds, to wait for SMTP connection
+{{N[id="timeoutremote"]timeoutremote}}          	1200               qmail-remote		     how long, in seconds, to wait for remote server
+{{N[id="timeoutsmtpd"]timeoutsmtpd}}            	1200               qmail-smtpd		     how long, in seconds, to wait for SMTP client
+{{N[id="virtualdomains"]virtualdomains}}        	I<none>            qmail-send		     virtual domains and users
 !endblock
 
 For more information about a particular control file, see the man page
@@ -1495,13 +1523,18 @@ these hosts, and
 * F<locals>, which tells F<qmail-send> that addresses on these hosts
 are to be delivered locally.
 
+Send F<qmail-send> a F<HUP> (hangup) signal to tell it to reread
+F<locals>. If you have F<qmailctl>, you can do:
+
+>    qmailctl reload
+
 H2[id="virtual-domains"] Virtual domains
 
 Virtual domains are similar to the multiple host names discussed in
 the previous section, but there are some important differences. First,
 if F<example.net> hosts the virtual domain F<virtual.example.com>,
 it's generally B<not> true that messages sent to F<joe@example.net>
-will end up in the same mailbox as messages sent to
+should end up in the same mailbox as messages sent to
 F<joe@virtual.example.com>. The namespace for each virtual domain is
 distinct.
 
@@ -1538,6 +1571,14 @@ F<rcpthosts> so F<qmail-smtpd> will know to accept messages addressed
 to them. However, unlike multiple host names, virtual domains B<must>
 B<not> be added to F<locals>.
 
+After modifying F<virtualdomains>, send F<qmail-send> a F<HUP> (hangup)
+signal to tell it to reread the file. If you have F<qmailctl>, you can
+do:
+
+>    qmailctl reload
+
+Don't forget to add virtual domains to F<rcpthosts>, too.
+
 Note: Domain name server (DNS) mail exchanger (MX) records must be set
 up to direct messages for virtual domains to the appropriate mail
 server. This is a job for the name server administrator and is beyond
@@ -1550,14 +1591,14 @@ I<qmail>'s local delivery mechanism. F<qmail-local> attempts to
 deliver a message addressed to F<I<localpart>@host> to a local user
 named F<I<localpart>>. If no matching user is found, the message is
 delivered to the F<alias> user, a pseudo-user on all I<qmail> systems
-whose home directory is F</var/qmail/alias>.
+whose home directory is usually F</var/qmail/alias>.
 
 For example, say you want to create an F<info@example.com> alias that
 forwards messages to user F<tom>. On F<example.com>, do, as user
 F<root>:
 
 !block example
-    echo tom > /var/qmail/alias/.qmail-info
+    echo \&tom > /var/qmail/alias/.qmail-info
 !endblock
 
 The F<{{CMD[jump="#dot-qmail-files"].qmail}}> section and
@@ -1595,9 +1636,9 @@ A simple assignment looks like:
 =I<address>:I<user>:I<uid>:I<gid>:I<directory>:I<dash>:I<extension>:
 !endblock
 
-What this means is that messages received for I<address> will run as
-user I<user>, with the specified I<uid> and I<gid>, and the file
-F<I<directory>/.qmailI<dash>I<extension>> will specify how the
+What this means is that messages received for I<address> will be
+delivered as user I<user>, with the specified I<uid> and I<gid>, and the
+file F<I<directory>/.qmailI<dash>I<extension>> will specify how the
 messages are to be delivered.
 
 H3[id="wildcard-assignment"] Wildcard assignment
@@ -1609,8 +1650,8 @@ A wildcard assignment looks like:
 !endblock
 
 What this means is that messages received for addresses of the form
-I<prefix>I<rest> will run as user I<user>, with the specified I<uid>
-and I<gid>, and the file
+I<prefix>I<rest> will be delivered as user I<user>, with the specified
+I<uid> and I<gid>, and the file
 F<I<directory>/.qmailI<dash>I<prepend>I<rest>> will specify how the
 messages are to be delivered.
 
@@ -1619,7 +1660,7 @@ H3[id="qmail-user-programs"] qmail-user programs
 qmail-user has two helper programs: F<qmail-newu> and F<qmail-pw2u>.
 
 F<qmail-newu> processes the F<assign> file and generates a constant
-database (CDB) file called F<cdb> in F</var/qmail/users>. CDB is
+database (CDB) file called F<cdb> in F</var/qmail/users>. CDB is a
 binary format that can be accessed quickly by F<qmail-lspawn>, even
 when there are thousands of assignments.
 
@@ -1649,6 +1690,17 @@ H2[id="spam"] Spam Control
 Chris Hardie has written an excellent I<qmail> Anti-Spam HOWTO. It's
 available from
 {{URL:http://www.summersault.com/chris/techno/qmail/qmail-antispam.html}}.
+
+H2[id="viruses"] Virus Scanning
+
+Jason Haar has written Qmail-Scanner, a content scanning harness for
+I<qmail>. See {{URL:http://qmail-scanner.sourceforge.net/}} for more
+information.
+
+Qmail-Scanner includes a simple built-in scanner, but serious scanning
+requires a separate virus scanner--either one of the supported
+commercial scanners or Tomasz Kojm's free Clam Antivirus scanner,
+available from {{URL:http://clamav.elektrapro.com/}}.
 
 H1[id="usage"] Usage
 
@@ -1699,11 +1751,11 @@ input.
 
 H3[id="mbox-delivery"] mbox delivery
 
-"Mbox" is I<qmail>-speak for the standard UNIX mailbox format, in
-which multiple messages are stored in a single file and messages are
-headed with a "F<From >" line. This line looks like a header field,
-but it isn't one: it's just something the delivery agent adds so mail
-readers can tell where each message begins.
+Mbox is the standard UNIX mailbox format in which multiple messages are
+stored in a single file and messages are headed with a "F<From >"
+line. This line looks like a header field, but it isn't one: it's just
+something the delivery agent adds so mail readers can tell where each
+message begins.
 
 E.g.:
 
@@ -1725,7 +1777,7 @@ The first line was added at delivery by I<qmail>.
 
 H3[id="maildir-delivery"] maildir delivery
 
-"Maildir" is a mailbox format created by Dan Bernstein to address the
+Maildir is a mailbox format created by Dan Bernstein to address the
 shortcomings of the mbox format. A maildir mailbox is a directory
 containing three subdirectories, F<new>, F<cur>, and F<tmp>. Each
 message in a maildir mailbox is in a separate file in one of the
@@ -1816,7 +1868,7 @@ message bounces back to the sender.
 
 H2[id="sending-messages"] Sending messages
 
-Mail users don't usually use the MTA directly to send
+Mail users usually don't use the MTA directly to send
 messages. Typically, messages are composed and sent using a Mail User
 Agent (MUA) such as I<pine> or I<mutt>, which then calls the MTA to
 deliver the message. The process of handing a message to the MTA is
@@ -1844,7 +1896,7 @@ for more information about relay configuration.
 
 H3[id="/var/qmail/bin/sendmail"] F</var/qmail/bin/sendmail>
 
-For many years, I<Sendmail> was I<the>UNIX MTA. It was so ubiquitous,
+For many years, I<Sendmail> was I<the> UNIX MTA. It was so ubiquitous,
 that many programmers just assumed that it was the MTA. As a result,
 I<Sendmail>'s local injection mechanism became the standard
 Application Programmer's Interface (API) for local mail
@@ -1991,7 +2043,7 @@ to F<$HOME> by default, and has provided the exit code wrapper linked
 above, called F</usr/local/bin/qmail-procmail>. His F<.qmail> file
 should look like:
 
->    |/usr/local/bin/qmail-procmail dave
+>    |/usr/local/bin/qmail-procmail
 
 H2[id="pop-imap-servers"] POP and IMAP servers
 
@@ -2198,7 +2250,7 @@ message addressed to I<all three users>, then close the connection.
 
 The first method is clearly inferior to the third. Even if the message
 is tiny, it'll take at least as long. And if the message is large,
-it'll take a lot longer *and* use more network bandwidth.
+it'll take a lot longer I<and> use more network bandwidth.
 
 So scratch that one.
 
@@ -2220,7 +2272,7 @@ patches to implement the third method (multiple RCPT)--it would
 require B<major> work.
 
 Although there are pathological cases where it can be slower than
-multiple RCPT, the simplicity and VERP advantages outweigh that.
+multiple RCPT, the simplicity and VERP advantages outweigh that overall.
 
 Single RCPT delivery I<does> use more bandwidth than multiple RCPT
 delivery, but the difference is often exaggerated. Most messages have,
@@ -2236,13 +2288,13 @@ delivery, that would only drop your SMTP bandwidth to 7.5%.
 
 H2[id="verp"] VERP
 
-When a message is undeliverable, the MTA that determines that is
-supposed to return a bounce message to the envelope return path
-(ERP). The bounce message should include the address of the recipient,
-the reason the message is undeliverable, and whether the problem is
-temporary or permanent. Some MTA's don't do the right thing,
-though. They might send the bounce the address in the From header
-field, or the bounce might not identify the recipient.
+When a message is undeliverable, the MTA responsiblle is supposed to
+return a bounce message to the envelope return path (ERP). The bounce
+message should include the address of the recipient, the reason the
+message is undeliverable, and whether the problem is temporary or
+permanent. Some MTA's don't do the right thing, though. They might send
+the bounce to the address in the From header field, or the bounce might
+not identify the recipient.
 
 For most user-to-user messages, these problems aren't too bad. One can
 usually figure things out based on the timing of the bounce or the
@@ -2252,10 +2304,10 @@ the new address starts having delivery problems, it can be impossible
 to tell which subscriber's mail is bouncing if the bounce message only
 includes the new address.
 
-Dan Bernstein came up with something called VERP (Variable Envelope
-Return Path). Using VERPs, each message sent to each subscriber to a
-list has a unique return path. This allows a bounce handler to
-identify the problem subscriber.
+Dan Bernstein came up with a solution to this problems called VERP
+(Variable Envelope Return Path). Using VERPs, each message sent to each
+subscriber to a list has a unique return path. This allows a bounce
+handler to identify the problem subscriber.
 
 For example, a typical non-VERP'ed mailing list has a return address
 of the form F<I<listname>-owner@I<domain>>. For a VERP'ed list, the
@@ -2399,7 +2451,7 @@ F</var/qmail/queue/mess/I<NN>/> file--the queue file that contains the
 message. The queue ID is guaranteed to be unique as long as the
 message remains in the queue.
 
-Line 2 says that the message is from F<dave@sill.org> and is 189
+Line 2 says that the message is from F<dave@sill.org> and is 2343
 bytes.
 
 Line 3 says F<qmail-remote> is starting to deliver the message to
@@ -2461,7 +2513,7 @@ I<ezmlm-idx>, a very nice add-on that includes many useful features.
 
 H3[id="mlm-majordomo"] I<Majordomo>
 
-I<Majordomo> is the most popular UNIX MLM. It works fine with I<qmail>
+I<Majordomo> is one of the most popular UNIX MLMs. It works fine with I<qmail>
 provided a few simple changes are made. Russ Allbery has written a FAQ
 about I<qmail>/I<Majordomo> available from
 {{URL:http://www.eyrie.org/~eagle/faqs/mjqmail.html}}.
@@ -2700,7 +2752,7 @@ rotating it to keep it under the configured size.
 user's UID and GID.
 
 The source for I<daemontools> is available from:
-{{URL:http://cr.yp.to/daemontools/daemontools-0.70.tar.gz}}.
+{{URL:http://cr.yp.to/daemontools/daemontools-0.76.tar.gz}}.
 
 Gerrit Pape distributes the documentation for I<daemontools>
 as F<man> pages from {{URL:http://smarden.org/pape/djb/}}.
@@ -2763,7 +2815,7 @@ like:
     MAXSMTPD=`cat /var/qmail/control/concurrencyincoming`
     exec /usr/local/bin/softlimit -m 2000000 \
     /usr/local/bin/tcpserver -v -R -H -l 0 -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
-        -u $QMAILDUID -g $NOFILESGID 0 smtp /var/qmail/bin/rblsmtpd\
+        -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /usr/local/bin/rblsmtpd\
         -r relays.ordb.org /var/qmail/bin/qmail-smtpd 2>&1
 !endblock
 
@@ -2870,6 +2922,18 @@ I<maildrop> is a mail filter similar to I<procmail>.
 
 I<maildrop> was written by Sam Varshavchik, who maintains a web page
 for it at {{URL:http://www.flounder.net/~mrsam/maildrop}}.
+
+A2[id="syncdir"] I<syncdir>
+
+I<syncdir> is small library that makes the F<link()> system call
+synchronous. This is necessary when using I<qmail> with the queue on a
+filesystem that doesn't perform F<link()> synchronously, such as
+Linus's ext2fs, Reiserfs, SGI's XFS, and BSD FFS with softupdates.
+
+I<syncdir> was written br Bruce Guenter and is available from
+{{URL:http://untroubled.org/syncdir/}}. Installation instructions are
+available from
+{{URL:http://www.ornl.gov/its/archives/mailing-lists/qmail/2001/12/msg00949.html}}.
 
 A1[id="how-mail-works"] How Internet Mail Works
 
@@ -3125,7 +3189,7 @@ local*		local envelope recipient addresses
 lock		lock files
 mess*		message files
 pid		used by F<qmail-queue> to acquire an i-node number
-remote*		remote envelope sender addresses
+remote*		remote envelope recipient addresses
 todo		complete envelopes
 !endblock
 
@@ -3310,35 +3374,9 @@ codes in parentheses.
 
 I<This appendix is incomplete.>
 
-qmail-local
-*"Unable to fork: I<reason>. (#4.3.0)"
-*"Unable to read message: I<reason>. (#4.3.0)"
-*"Unable to open I<filename>: I<reason>. (#4.3.0)"
-*"Temporary error on maildir delivery. (#4.3.0)"
-*"Unable to open I<filename>: I<reason>. (#4.2.1)"
-*"Unable to write I<filename>: I<reason>. (#4.3.0)"
-*"Unable to run /bin/sh: I<reason>. (#4.3.0)"
-*"Unable to stat home directory: I<reason>. (#4.3.0)"
-*"Unable to switch to I<directory>: I<reason>. (#4.3.0)"
-
-qmail-smtpd
-*"555 syntax error (#5.5.4)"
-
-qmail.c
-*"Zqq write error or disk full (#4.3.0)"
-*"Zqq read error (#4.3.0)"
-
-spawn.c
-*"Internal error: delnum negative. (#4.3.5)"
-*"Internal error: delnum too big. (#4.3.5)"
-*"Internal error: delnum in use. (#4.3.5)"
-*"Internal error: messid has nonnumerics. (#5.3.5)"
-*"Internal error: messid too long. (#5.3.5)"
-*"Internal error: messid too short. (#5.3.5)"
-
 A1[id="gotchas"] Gotchas
 
-These frequently cause problem for I<qmail> newbies.
+These "gotchas" frequently cause problems for I<qmail> newbies.
 
 A2[id="root-delivery"] I<qmail> doesn't deliver mail to
 superusers.
@@ -3443,15 +3481,23 @@ probably due to DNS reverse lookups or IDENT lookups. If you're
 starting F<qmail-smtpd> with F<tcpserver>, remove the "-h", "-p", and
 "-r" options and add "-H", "-P", "-R", and "-l 0" (I<ell zero>).
 
+A2[id="cr"]Carriage Return/Linefeed (CRLF) line breaks don't work
+
+F<qmail-inject> and other local injection mechanisms like F<sendmail>
+don't work right when messages are injected with DOS-style carriage
+return/linefeed (CRLF) line breaks. Unlike I<Sendmail>, I<qmail>
+requires locally-injected messages to use Unix newlines (CR
+only). This is a common problem with PHP scripts.
+
 A1[id="lwq-faq"]Frequently Asked Questions about U<[[DOC_TITLE]]>
 
 A2[id="lwq-version"]What version is U<[[DOC_TITLE]]>?
 
-This is LWQ version 2001-12-29.
+This is LWQ version 2002-08-25.
 
 A2[id="lwq-copyright"]Who owns U<[[DOC_TITLE]]>?
 
-U<[[DOC_TITLE]]> is Copyright 1999-2001 David E. Sill
+U<[[DOC_TITLE]]> is Copyright 1999-2002 David E. Sill
 
 {{URL:http://Web.InfoAve.Net/~dsill/dave.html}}
 
@@ -3489,6 +3535,10 @@ To Polish:
 
 * {{URL:http://globi.graff.com.pl/lwq/}}
 
+To Italian:
+
+* {{URL:http://medialab.freaknet.org/~elibus/lwq.html}}
+
 And to Russian:
 
 * {{URL:http://reanand.terrashare.com/qmail/lwq.htm}}
@@ -3509,7 +3559,7 @@ A2[id="lwq-formats"]Is U<[[DOC_TITLE]]> available in PostScript, PDF,
 plain text, or any other format beside HTML?
 
 Yes, alternative formats can be found at
-{{URL:http://www.lifewithqmail.org/}}.
+{{URL:http://lifewithqmail.org/}}.
 
 A2[id="lwq-warranty"]I used U<[[DOC_TITLE]]> and it crashed my
 system/erased my hard disk/turned my hair gray/killed my dog/etc.
