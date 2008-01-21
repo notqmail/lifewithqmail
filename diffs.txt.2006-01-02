@@ -1,0 +1,422 @@
+55,56c55,57
+< author, Eric Allman, has done a good job of tightening up the program,
+< but nothing short of a redesign can achieve true security.
+---
+> author, Eric Allman, and the current maintainer, Claus Assman, have
+> done a good job of tightening up the program, but nothing short of a
+> redesign can achieve true security.
+82,87c83,89
+< qmail was written by Dan Bernstein (DJB), http://cr.yp.to/djb.html, a
+< math professor now at the University of Illinois in Chicago. Dr.
+< Bernstein is also well known for his work in the field of cryptography
+< and for his lawsuit against the U.S. government regarding the
+< publishing of encryption source code. See
+< http://www.news.com/News/Item/0,4,36217,00.html?owv or
+---
+> qmail was written by Dan Bernstein (DJB),
+> http://en.wikipedia.org/wiki/Daniel_J._Bernstein, a math professor now
+> at the University of Illinois in Chicago. Dr. Bernstein is also well
+> known for his work in the field of cryptography and for his lawsuit
+> against the U.S. government regarding the publishing of encryption
+> source code. See
+> http://en.wikipedia.org/wiki/Bernstein_v._United_States or
+335c337,338
+< described there and in http://cr.yp.to/qmail/var-qmail.html.
+---
+> described there and in http://cr.yp.to/qmail/var-qmail.html. See also
+> http://en.wikipedia.org/wiki/License-free_software.
+354c357
+< Postfix   medium    high      medium    high      yes       yes
+---
+> Postfix   medium    high      high      high      yes       yes
+454a458,460
+> To order this book from my bookstore, in association with Amazon.com,
+> see http://www.amazon.com/exec/obidos/ASIN/1565926285/davesill.
+> 
+463a470,475
+> 1.10.4.4. qmail: Yuksek Performansli E-Posta Sunucu
+> ---------------------------------------------------
+> 
+> Ismail Yenigul, et al, have written a Turkish-language qmail book. See
+> http://www.acikakademi.com/catalog/qmail/.
+> 
+471c483
+< o    http://www.ornl.gov/its/archives/mailing-lists/qmail/.
+---
+> o    http://www.ornl.gov/lists/mailing-lists/qmail/.
+534c546
+< http://www.qcc.sk.ca/~charlesc/writings/12-steps-to-qmail-list-bliss.html
+---
+> http://pyropus.ca/personal/writings/12-steps-to-qmail-list-bliss.html
+557,560c569,571
+< http://www.qcc.ca/~charlesc/software/pymsgauth/pymsgauth.html.
+< pymsgauth verifies that message sent to the qmail list really came
+< from you, so it won't automatically confirm forged messages sent to
+< the list in your name.
+---
+> http://pyropus.ca/software/pymsgauth/. pymsgauth verifies that message
+> sent to the qmail list really came from you, so it won't automatically
+> confirm forged messages sent to the list in your name.
+736c747
+< Note: the qmail bin directory must reside on a filesystem that allows
+---
+> Note: The qmail bin directory must reside on a filesystem that allows
+742c753,759
+< symbolic links to accomplish the latter.
+---
+> symbolic links to accomplish the latter. If /var is mounted nosuid,
+> you'll probably see the following error message in the qmail-send
+> logs:
+> 
+> delivery : deferral: Sorry,_message_has_wrong_owner._(#4.3.5)
+> 
+> 
+761c778
+< o    ucspi-tcp, ftp://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz
+---
+> o    ucspi-tcp, http://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz
+763c780
+< o    daemontools, ftp://cr.yp.to/daemontools/daemontools-0.76.tar.gz
+---
+> o    daemontools, http://cr.yp.to/daemontools/daemontools-0.76.tar.gz
+1267c1284
+< http://www.lifewithqmail.org/qmailctl-script-dt70.
+---
+> http://lifewithqmail.org/qmailctl-script-dt70.
+1477a1495,1496
+> abuse                              de facto standard recipient for
+>                                    abuse complaints
+1486a1506
+>     ln -s .qmail-postmaster /var/qmail/alias/.qmail-abuse
+1734a1755,1772
+> 3.2.4. Relaying to a smart host
+> -------------------------------
+> 
+> For anyone setting up a mail server on a typical home broadband
+> service, there is a good chance that your IP address will get
+> blacklisted by organizations like SORBS
+> (http://www.dnsbl.sorbs.net/lookup.shtml) in an effort to block spam.
+> Most ISPs provide an SMTP server that will relay all mail from their
+> customers, and such servers are usually not blacklisted. For example,
+> the Road Runner service in Cincinnati, Ohio, has
+> smtp-server.cinci.rr.com available to their customers. You can tell
+> qmail to route all outgoing SMTP traffic through that server by doing:
+> 
+>   echo ":smtp-server.cinci.rr.com" > /var/qmail/control/smtproutes
+> 
+> The smtproutes file can perform more routing functions than this; see
+> the qmail-remote man page for more details.
+> 
+1923,1926c1961,1964
+< Qmail-Scanner includes a simple built-in scanner, but serious scanning
+< requires a separate virus scanner--either one of the supported
+< commercial scanners or Tomasz Kojm's free Clam Antivirus scanner,
+< available from http://www.ClamAV.net.
+---
+> Qmail-Scanner includes a simple "policy-blocking" component (e.g.
+> block *.scr, or block "Subject: Yellow!") as well as directly
+> supporting many different antivirus "plugins" including the ClamAV
+> Antivirus scanner available from http://www.ClamAV.net.
+2331c2369
+< http://www.ornl.gov/its/archives/mailing-lists/qmail/1998/04/msg00487.html.
+---
+> http://www.ornl.gov/lists/mailing-lists/qmail/1998/04/msg00487.html.
+2410c2448,2457
+< 4. Create a /var/qmail/supervise/qmail-pop3d/run script containing:
+---
+> Note: If you install the standard checkpassword, don't forget to apply
+> the errno patch after unpacking the source:
+> 
+> patch < /usr/local/src/netqmail-1.05/other-patches/checkpassword-0.90.errno.patch
+> 
+> 
+> 
+> 4. mkdir /var/qmail/supervise/qmail-pop3d
+> 
+> 5. Create a /var/qmail/supervise/qmail-pop3d/run script containing:
+2433c2480,2482
+< 5. Create a /var/qmail/supervise/qmail-pop3d/log/run script
+---
+> 6. mkdir /var/qmail/supervise/qmail-pop3d/log
+> 
+> 7. Create a /var/qmail/supervise/qmail-pop3d/log/run script
+2440c2489
+< 6. Set up the log directory and permissions on the run scripts, and
+---
+> 8. Set up the log directory and permissions on the run scripts, and
+2450c2499
+< 7. Add the following to qmailctl's "start" section:
+---
+> 9. Add the following to qmailctl's "start" section:
+2458c2507
+< 8. Add the following to qmailctl's "stop" section:
+---
+> 10. Add the following to qmailctl's "stop" section:
+2463c2512
+< 9. Add the following to qmailctl's "stat" section:
+---
+> 11. Add the following to qmailctl's "stat" section:
+2468c2517
+< 10. Add the following to qmailctl's "pause" section:
+---
+> 12. Add the following to qmailctl's "pause" section:
+2473c2522
+< 11. Add the following to qmailctl's "cont" section:
+---
+> 13. Add the following to qmailctl's "cont" section:
+2478c2527
+< 12. Add the following to qmailctl's "restart" section:
+---
+> 14. Add the following to qmailctl's "restart" section:
+2488,2494c2537
+< http://www.eudora.com/qpopper_general/.
+< 
+< 5.2.3. SolidPOP
+< ---------------
+< 
+< The SolidPOP POP3 server supports both maildir and mbox mailboxes.
+< It's available from http://solidpop3d.pld.org.pl/.
+---
+> http://www.eudora.com/products/unsupported/qpopper/.
+2496c2539
+< 5.2.4. Binc IMAP
+---
+> 5.2.3. Binc IMAP
+2505c2548
+< 5.2.5. Dovecot
+---
+> 5.2.4. Dovecot
+2512c2555
+< 5.2.6. imap-maildir
+---
+> 5.2.5. imap-maildir
+2519c2562
+< 5.2.7. Courier-IMAP
+---
+> 5.2.6. Courier-IMAP
+2523,2524c2566
+< mailboxes only. It's available from
+< http://www.inter7.com/courierimap/.
+---
+> mailboxes only. It's available from http://www.courier-mta.org/imap/.
+2526c2568
+< 5.2.8. Cyrus
+---
+> 5.2.7. Cyrus
+2567c2609
+< it at http://www.qcc.sk.ca/~charlesc/software/getmail-3.0/.
+---
+> it at http://pyropus.ca/software/getmail/.
+2865c2907
+< http://www.eyrie.org/~eagle/faqs/mjqmail.html.
+---
+> http://web.archive.org/web/20050308091420/http://www.eyrie.org/~eagle/faqs/mjqmail.html.
+2922,2923c2964,2965
+< http://news.gmane.org/article.php?id=13960&group=gmane.mail.qmail.general
+< for a detailed explanation and the patch itself.
+---
+> http://article.gmane.org/gmane.mail.qmail.general/13960 for a detailed
+> explanation and the patch itself.
+2927c2969
+< available from ftp://moni.csi.hu/pub/glibc-2.3.1/.
+---
+> available from http://www.thedjbway.org/patches/djb_errno_patches.tgz.
+2934c2976
+< http://www.ornl.gov/its/archives/mailing-lists/qmail/2000/10/msg00696.html
+---
+> http://www.ornl.gov/lists/mailing-lists/qmail/2000/10/msg00696.html
+3051c3093,3104
+< maintaining a database of valid or invalid recipients or patterns.
+---
+> maintaining a database of valid or invalid recipients or patterns. One
+> that doesn't is Paul Jarc's qmail-realrcptto, available from
+> http://code.dogmap.org./qmail/.
+> 
+> 5.13. TLS and STARTTLS
+> ----------------------
+> 
+> Scott Gifford has written a very thorough and detailed step-by-step
+> guide to using transport layer security (TLS) with qmail. The guide
+> covers STARTTLS for SMTP and STLS for POP3D specifically for netqmail.
+> It's available at
+> http://www.suspectclass.com/~sgifford/ucspi-tls/ucspi-tls-qmail-howto.html.
+3057,3058c3110,3111
+< powerful and elegant system. After five years of use, qmail still
+< impresses me.
+---
+> powerful and elegant system. After nearly ten years of use, qmail
+> still impresses me.
+3060,3063c3113,3123
+< I'd also like to thank the members of the qmail mailing list. Russell
+< Nelson deserves special mention as one of the most helpful, patient,
+< knowledgeable, and funny contributors. His contributions to the qmail
+< community are second only to DJB's.
+---
+> I'd also like to thank the members of the qmail mailing list. Two
+> members deserve special mention. The first is Russ Nelson, one of the
+> most helpful, patient, knowledgeable, and funny contributors. His
+> contributions to the qmail community are second only to DJB's. The
+> second is Charles Cazabon, who's close on Russ' heels. Charles is
+> currently the major contributor to the mailing list, answering more
+> questions correctly than anyone else. Charles has also written a
+> couple of very useful utilities, getmail and pymsgauth, and was
+> technical editor for The qmail Handbook where his contributions were
+> critical to the success of the book, and for which he has received too
+> little reward and recognition.
+3130c3190
+< ftp://cr.yp.to/software/dot-forward-0.71.tar.gz.
+---
+> http://cr.yp.to/software/dot-forward-0.71.tar.gz.
+3146c3206
+< ftp://cr.yp.to/software/fastforward-0.51.tar.gz.
+---
+> http://cr.yp.to/software/fastforward-0.51.tar.gz.
+3178c3238
+< ftp://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz.
+---
+> http://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz.
+3276a3337,3340
+> Charles Cazabon has a patch that removes the default RBL hardcoded
+> into rblsmtpd since it's no longer free. The patch is available from
+> http://pyropus.ca/software/misc/rblsmtpd-nodefaultrbl.patch.
+> 
+3342c3406,3407
+< recommended. It's available from http://www.ezmlm.org/.
+---
+> recommended. It's now being maintained by Bruce Guenter available from
+> http://www.ezmlm.org/.
+3355c3420
+< http://www.pobox.com/~lbudney/linux/software/safecat.html.
+---
+> http://jeenyus.net/~budney/linux/software/safecat.html.
+3371c3436
+< it at http://www.flounder.net/~mrsam/maildrop.
+---
+> it at http://www.courier-mta.org/maildrop/.
+3384c3449
+< http://www.ornl.gov/its/archives/mailing-lists/qmail/2001/12/msg00949.html.
+---
+> http://www.ornl.gov/lists/mailing-lists/qmail/2001/12/msg00949.html.
+4033a4099,4139
+> G.17. Delivering to /dev/null doesn't throw messages away.
+> ----------------------------------------------------------
+> 
+> A delivery instruction like:
+> 
+>   /dev/null
+> 
+> Causes qmail to think that /dev/null is an mbox mailbox, but since
+> /dev/null is a special file, qmail can't deliver to it successfully.
+> 
+> The best was to throw messages away is to create a .qmail file that
+> contains no valid delivery instructions but isn't empty. (Empty .qmail
+> files are treated as if they contain the default delivery instructions
+> specified in defaultdelivery or on the qmail-start command line.) This
+> is accomplished by populating the file with nothing but comments.
+> 
+> For example, a .qmail file containing only:
+> 
+>   #
+> 
+> or:
+> 
+>   # throw messages away undelivered
+> 
+> will efficiently throw messages away without delivering them.
+> 
+> G.18. Modifying the queue while qmail-send is running is dangerous.
+> -------------------------------------------------------------------
+> 
+> Modifying any of the files or directories under /var/qmail/queue while
+> qmail-send is running without knowing exactly what you're doing is
+> likely to result in a corrupt queue--e.g., messages in an undefined
+> state, bizarre error messages in the logs, duplicate deliveries, bogus
+> bounces, etc. Once this happens, you'll have to find and run a queue
+> checking utility (there are a couple listed on qmail.org) or create a
+> new, empty queue.
+> 
+> If you want to modify the queue, stop qmail first, play with the queue
+> carefully, then restart qmail. Note that corruption is still possible
+> with qmail-send stopped, so you still have to know what you're doing.
+> 
+4040c4146
+< This is LWQ version 2004-06-30.
+---
+> This is LWQ version 2006-01-02.
+4045c4151
+< Life with qmail is Copyright 1999-2004 David E. Sill
+---
+> Life with qmail is Copyright 1999-2006 David E. Sill
+4100,4108c4206,4208
+< or appendix, that's great! Just check with me first to make sure the
+< topic is something I want to cover in LWQ and that nobody else is
+< already working on it.
+< 
+< If you'd like to donate cash, that's always welcome, too. :-) Contact
+< me to make arrangements, or use the PayPal e-payment system. Using
+< PayPal, you can "beam" e-money to the e-mail address
+< paypal@dave.sill.org in amounts as small as $0.01 at no cost to
+< you--even using a credit card.
+---
+> or appendix, that's great! You might want to check with me first to
+> make sure the topic is something I want to cover in LWQ and that
+> nobody else is already working on it.
+4110,4111c4210,4211
+< Another way to support LWQ at no cost to yourself is to shop at my
+< bookstore, in association with Amazon.com, using this link:
+---
+> Another way to support LWQ is to shop at my bookstore, in association
+> with Amazon.com, using this link:
+4118a4219,4246
+> o    Lots of minor tweaks, fixed dead links, etc.
+> 
+> o    /dev/null gotcha added. Thanks to Payal Rathod.
+> 
+> o    Expanded nosuid warning. Thanks to Tony Hansmann.
+> 
+> o    Added link to Cazabon's nodefaultrbl patch. Thanks to Jeremy
+>      Kister.
+> 
+> o    Added mkdirs to qmail-pop3d instructions. Thanks to Larry Weldon.
+> 
+> o    Added note about errno patch for checkpasswd. Thanks to tlad.
+> 
+> o    Added smarthost relay subsection. Thanks to the Silver Dirk.
+> 
+> o    Improved Qmail-Scanner wording. Thanks to Jason Haar.
+> 
+> o    Added a section for Yenigul's book. Thanks to Ismail Yenigul.
+> 
+> o    Added abuse@ alias. Thanks to Charles Cazabon.
+> 
+> o    Added ucspi-tls section. Thanks to Scott Gifford.
+> 
+> o    Added queue modification gotcha.
+> 
+> H.10.1. What changed in the 2004-06-30 version of LWQ?
+> ------------------------------------------------------
+> 
+4131c4259
+< H.10.1. What changed in the 2004-03-28 version of LWQ?
+---
+> H.10.2. What changed in the 2004-03-28 version of LWQ?
+4141c4269
+< H.10.2. What changed in the 2004-03-01 version of LWQ?
+---
+> H.10.3. What changed in the 2004-03-01 version of LWQ?
+4150c4278
+< H.10.3. What changed in the 2004-01-26 version of LWQ?
+---
+> H.10.4. What changed in the 2004-01-26 version of LWQ?
+4157c4285
+< H.10.4. What changed in the 2003-11-10 version of LWQ?
+---
+> H.10.5. What changed in the 2003-11-10 version of LWQ?
+4162c4290
+< H.10.5. What changed in the 2003-10-30 version of LWQ?
+---
+> H.10.6. What changed in the 2003-10-30 version of LWQ?
+4169c4297
+< H.10.6. What changed in the 2003-08-16 version of LWQ?
+---
+> H.10.7. What changed in the 2003-08-16 version of LWQ?

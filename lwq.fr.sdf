@@ -1,0 +1,2546 @@
+!init OPT_STYLE="manual"
+#
+!define DOC_LOGO	"logo-small.gif"
+#
+!define DOC_NAME	"Life with qmail"
+!define DOC_AUTHOR	"Dave Sill"
+!define DOC_LOT
+!build_title
+#
+!define HTML_BG_COLOR		COLOR_WHITE
+!define HTML_LINK_COLOR		COLOR_RED
+!define HTML_VLINK_COLOR	COLOR_BLUE
+#
+#!define DOC_HTML_LOGO	"logo-small.gif"
+
+#{{IMPORT:logo-small.gif}}
+
+H1[id="introduction"]Introduction
+
+H2[id="audience"]Public visé
+
+U<[[DOC_TITLE]]> est destiné à toute personne désirant faire tourner I<qmail>, depuis l'amateur  (I<newbie>) qui vient juste d'installer Linux sur une machine qui traînait jusqu'à l'administrateur système expérimenté ou l'administrateur de mail. Si vous trouvez des lacunes à ce document ou s'il n'est pas clair, prévenez-moi. Envoyez vos commentaires à {{EMAIL:lwq@sill.org}}.
+
+Il y a une masse d'informations disponibles sur I<qmail>, de plusieurs sources. Certaines sont destinées aux débutants, d'autres supposent que le lecteur est plus expérimenté. U<[[DOC_TITLE]]> est une tentative de fédérer ces informations en un seul document, lissant les différences de niveau et supposant seulement que le lecteur a des compétences basiques telles que :
+
+* Manipuler des fichiers et des répertoires sous UNIX
+* Utiliser un navigateur web ou un client FTP
+* Suivre des indications
+
+H2[id="whatitis"]Qu'est-ce que I<qmail> ?
+
+I<qmail> est un agent de transfert de courrier Internet (Mail Transfert Agent, MTA, NdT) pour les systèmes d'exploitation de type UNIX. C'est un palliatif complet pour le système Sendmail fourni avec les systèmes d'exploitation UNIX. I<qmail> utilise le protocole simple de transfert de courrier (Simple Mail Transfer Protocol, SMTP, NdT) pour échanger des messages avec les MTA d'autres systèmes.
+
+Note : le nom est "qmail", pas "Qmail".
+
+H2[id="whyuseit"]Pourquoi utiliser I<qmail> ?
+
+Votre système d'exploitation inclut un MTA, probablement I<Sendmail>, donc si vous lisez ce document, vous cherchez certainement quelque chose de mieux. Voici certains des avantages de I<qmail> par rapport aux autres MTA :
+
+H3[id="security"]Sécurité
+
+I<qmail>  été conçus pour être très sécurisé. I<Sendmail> a une histoire remplie de sérieux problèmes de sécurité. Quand I<Sendmail> a été écrit, le Net était un endroit bien plus accueillant. Tout le monde connaissait tout le monde, et il y avait peu de besoin de conception ou de codage pour une grande sécurité. L'Internet d'aujourd'hui est un environnement bien plus hostile pour les serveurs du réseau. L'auteur de I<Sendmail>, Eric Allman, a fait un bon travail pour assurer la sécurité de son programme, mais il n'y a qu'une nouvelle conception pour permettre d'arriver à une I<vraie> sécurité.
+
+H3[id="performance"]Performance
+
+I<qmail> parallélise la livraison du courrier, faisant jusqu'à 20 livraisons simultanément, par défaut.
+
+H3[id="reliability"]Fiabilité
+
+Une fois que I<qmail> a accepté un message, il garantit qu'il ne sera pas perdu. I<qmail> supporte aussi un nouveau format de boite aux lettres qui est fiable I<même sur des systèmes de fichiers réseaux (NFS)> sans blocage (lock, NdT).
+
+H3[id="simplicity"]Simplicité
+
+I<qmail> est plus petit que n'importe quel MTA avec les mêmes fonctionnalités.
+
+Note : La page web officielle de I<qmail>, 
+{{URL:http://cr.yp.to/qmail.html}} couvre plus en détail les avantages de I<qmail>.
+
+H2[id="history"]Historique
+
+I<qmail> a été écrit par Dan Bernstein (DJB),
+{{URL:http://cr.yp.to/djb.html}}, un professeur de mathématiques actuellement à l'université de l'Illinois à Chicago. Dr Bernstein est aussi bien connu pour son travail dans le domaine de la cryptographie et pour son procès contre le gouvernement américain concernant la publication du code source d'encryption. Allez voir {{URL:http://www.news.com/News/Item/0,4,36217,00.html?owv}}
+ou {{URL:http://cr.yp.to/export.html}} pour plus d'informations concernant le procès.
+
+La première mouture beta publique de I<qmail>, version 0.70, est sortie le 24 janvier 1996. La première mouture gamma, version 0.90, date du 1er août 1996.
+
+La version 1.0, la première mouture officielle, a été annoncée le 20 février 1997. La version actuelle, 1.03, est sortie le 15 juin 1998.
+
+La prochaine mouture est supposée être une version d'évaluation de la version 2.0. Certaines des choses qui apparaîtront dans la version 2 sont décrites à cette adresse :: {{URL:http://cr.yp.to/qmail/future.html}}.
+
+H2[id="features"]Fonctionnalités
+
+La page web de I<qmail>, {{URL:http://cr.yp.to/qmail.html}},
+contient une liste exhaustive des fonctionnalités de I<qmail>. Cette section est fortement basée sur cette liste.
+
+H3[id="feature-setup"]Installation
+
+* Adaptation automatique à votre variante d'Unix -- pas de portage nécessaire
+* Configuration par hôte automatique
+* Installation rapide -- pas de grande liste de choix à faire
+
+H3[id="feature-security"]Sécurité
+
+* Séparation claire entre les adresses, les fichiers et les programmes
+* Minimisation du code setuid
+* Minimisation du code en mode super-utilisateur (root, NdT)
+* Relation de confiance à 5 -- sécurité en profondeur
+* Journalisation possible des messages en table de hachage unidirectionnelle (one-way message hashes, NdT), contenu complet du message, etc. (cf. {{CMD[jump="#queue_extra"]Qu'est-ce que QUEUE_EXTRA ?}} appendice E.)
+
+H3[id="feature-messcon"]Construction des messages
+
+* Conforme aux {{CMD[jump="#rfcs"]RFC 822}} et {{CMD[jump="#rfcs"]RFC 1123}}
+* Support complet pour les groupes d'adresses
+* Conversion automatique des listes d'adresses ancien format pour le format RFC 822
+* Commande F<sendmail> pour la compatibilité avec les agents utilisateurs (user agent, NdT) actuels
+* Longueur de la ligne "Header" limitée uniquement par la mémoire 
+* Masquage d'hôte (voir {{CMD[jump="#defaulthost"]defaulthost)}} 
+* Masquage d'utilisateur (voir {{CMD[jump="#MAILUSER"]MAILUSER}} et {{CMD[jump="#MAILHOST"]MAILHOST}})
+* Création automatique de Mail-Followup-To (voir {{CMD[jump="#QMAILMFTFILE"]QMAILMFTFILE}})
+
+H3[id="feature-smtpserv"]Service SMTP
+* Conforme aux {{CMD[jump="#rfcs"]RFC 821, RFC 1123, RFC 1651, RFC 1652, et RFC
+1854}} 
+* Propre en 8 bits
+* {{CMD[jump="#rfcs"]RFC 931/1413}}/ident/rappel TAP -- peut aider à tracer les spammers/forgerons (forgers, NdT)
+* Contrôle de relayage -- stoppe le relayage non autorisé par les utilisateurs externes
+* Pas d'interférence entre le contrôle de relayage et les alias
+* Reconnaissance automatique des adresses IP locales
+* Temps limites par tampon (per-buffer timeouts, NdT)
+* Compteur de sauts (hop, NdT)
+* Limitation de parallélisme (via {{CMD[jump="#ucspi-tcp"]ucspi-tcp}}) 
+* Refus de connexion de la part des spammers reconnus (via {{CMD[jump="#ucspi-tcp"]ucspi-tcp}}) 
+* Relayage et ré-écriture de messages pour les clients autorisés
+* Support optionnel de RBL/ORBS (via {{CMD[jump="#rblsmtpd"]rblsmtpd}}) 
+
+H3[id="feature-queueman"]Gestion de la file d'attente
+
+* Gestion instantanée des messages ajoutés dans la file d'attente
+* Limitation du parallélisme
+* Découpage du répertoire de file d'attente -- pas de ralentissement quand elle grossit
+* Planification de nouvelle tentative de livraison quadratique -- moins de tentatives pour les messages les plus anciens (voir {{CMD[jump="#retry-schedule"]Appendice E}})
+* Planification de nouvelle tentative de livraison de message indépendante
+* Mise en file d'attente automatique sans risque -- pas de perte de mail si le système plante
+* Vérification automatique par destinataire
+* Nettoyage de la file d'attente automatique
+* Visualisation de la file d'attente (voir F<qmail-qread>)
+* Statistiques de livraison détaillées (via {{CMD[jump="#qmailanalog"]qmailanalog}}) 
+
+H3[id="feature-bounces"]Rebonds (Bounces, NdT)
+
+* Message de rebond QSBMF -- lisible par une machine et par l'Homme
+* Support HCMSSC -- code d'erreur {{CMD[jump="#rfcs"]RFC 1893}} indépendant de la langue  
+* Double rebond envoyé au postmaster
+
+H3[id="feature-routing"]Routage par domaine
+
+* Autant de noms pour l'hôte local que souhaité (voir {{CMD[jump="#locals"]locals}})
+* Autant de domaines virtuels que souhaité (voir {{CMD[jump="#virtualdomains"]virtualdomains}})
+* Domaines génériques (wildcards, NdT) (voir {{CMD[jump="#virtualdomains"]virtualdomains}})
+* Support "percent hack" configurable (voir {{CMD[jump="#percenthack"]percenthack}})
+* Crochet UUCP (UUCP hook, NdT) 
+
+H3[id="feature-smtpdeliv"]Livraison SMTP
+
+* Conforme aux {{CMD[jump="#rfcs"]RFC 821, RFC 974, and RFC 1123}}
+* Propre en 8 bits 
+* Retrais automatique des hôtes morts (Automatic downed host backoffs, NdT)
+* Routage artificiel -- hôte intelligent, réseau local, table de courrier (voir {{CMD[jump="#smtproutes"]smtproutes}})
+* Limite de temps par tampon (buffer, NdT)
+* File d'attente SMTP passive -- parfait pour SLIP/PPP (via {{CMD[jump="#serialmail"]serialmail}})
+* Support autoTURN (via {{CMD[jump="#serialmail"]serialmail}})
+
+H3[id="feature-forwardlists"]Ré-expédition et liste de diffusion
+
+* Compatibilité avec le F<.forward> de I<Sendmail> (via {{CMD[jump="#dot-forward"]dot-forward}})
+* Base de données de ré-expédition indexée (hashed table, NdT) (via {{CMD[jump="#fastforward"]fastforward)}} 
+* Compatibilité avec F</etc/aliases> de I<Sendmail> (via {{CMD[jump="#fastforward"]fastforward}})
+* Adresse générique (wildcards, NdT) (voir {{CMD[jump="#extension-addresses"].qmail-default}})
+* Propriétaires de liste de diffusion -- détourne automatiquement les rebonds (bounce, NdT) et messages de vacances (vacation, NdT)
+* VERPs -- Identification automatique du destinataire pour les rebonds (bounce, NdT) de liste de diffusion
+* Delivered-To -- prévention automatique de boucle, même entre différents hôtes
+
+H3[id="feature-localdeliv"]Livraison locale
+
+* Hiérarchie d'adresses contrôlée par l'utilisateur -- fred contrôle la livraison dans la boite fred-n'importe-quoi
+* Livraison NFS fiable (voir {{CMD[jump="#maildir-delivery"]maildir}}) 
+* Livraison par programme contrôlé par l'utilisateur : procmail, etc. (voir {{CMD[jump="#program-delivery"]qmail-command}})
+* Notification de nouveau message optionnelle (voir qbiff)
+* Accusés de réception NRUDT optionnels (voir qreceipt)
+* Filtrage conditionnel (voir condredirect et bouncesaying)
+
+H3[id="feature-pop3"]Service POP3
+
+* Conforme au {{CMD[jump="#rfcs"]RFC 1939}}
+* Support UIDL
+* Support TOP
+* Crochet APOP (APOP hook, NdT)
+* Vérification du mot de passe modulaire (via {{CMD[jump="http://www.qmail.org/top.html#checkpassword"]checkpassword}}) 
+
+H2[id="related-packages"]Paquets associées
+
+I<qmail> suit la philosophie classique de UNIX qui veut que chaque outil fasse une seule fonction bien définie, et que les fonctions complexes doivent être réalisées par une série d'outils simples, connectés comme des morceaux de tuyau assemblés. L'alternative est de construire des outils de plus en plus complexes qui ré-inventent la plupart des fonctionnalités des outils plus simples.
+
+Il n'est donc pas surprenant que I<qmail> lui-même ne fait pas tout ce que tout le monde voudrait qu'il fasse. Voici donc les  additifs les plus populaires écrits pour I<qmail>. Bien sûr, beaucoup d'utilitaires standards d'UNIX peuvent être connectés à I<qmail>.
+
+* {{CMD[jump="#dot-forward"]dot-forward}} -- un additif de compatibilité des fichier F<.forward> de I<Sendmail>
+* {{CMD[jump="#fastforward"]fastforward}} -- un additif de compatibilité de la base d'alias de I<Sendmail>
+* {{CMD[jump="#ucspi-tcp"]ucspi-tcp}} -- un remplacement d'I<inetd>
+* {{CMD[jump="#daemontools"]daemontools}} -- un ensemble d'outils de gestion des démons et de leurs journaux (logs, NdT)
+* {{CMD[jump="#qmailanalog"]qmailanalog}} -- un ensemble d'outils d'analyse de journaux (logs, NdT) de I<qmail>
+* {{CMD[jump="#serialmail"]serialmail}} -- outils pour envoyer du courrier au travers de réseaux lents
+* {{CMD[jump="#mess822"]mess822}} -- outils pour une analyse lexicale des messages
+* {{CMD[jump="#ezmlm"]ezmlm}} -- un gestionnaire de liste de diffusion pour I<qmail>
+
+H2[id="architecture"]Architecture
+
+L'{{CMD[jump="#architecture-apdx"]Appendice D}} couvre la structure fonctionnelle et physique de I<qmail>. En un mot, I<qmail> est une série de programmes (modules) qui font chacun des taches différentes.
+
+H2[id="license"]Licence
+
+Les droits de I<qmail> sont protégés par l'auteur, Dan Bernstein, et n'est pas distribué avec un rapport des droits des utilisateurs. Sur {{URL:http://cr.yp.to/softwarelaw.html}}, il explique ce qu'il pense être vos droits sous la loi des droits d'auteurs américaine. Sur 
+{{URL:http://cr.yp.to/qmail/dist.html}}, il vous donne le droit de distribuer le code source de I<qmail>. La distribution de binaires est autorisé dans les termes décris sur cette dernière adresse et sur {{URL:http://cr.yp.to/qmail/var-qmail.html}}.
+
+Ce qu'il faut en comprendre est que vous B<pouvez> utiliser I<qmail> dans n'importe quel but, vous pouvez redistribuer les distributions sources I<non modifiées> de I<qmail> et les distributions binaires qualifiées I<var-qmail>, et vous pouvez distribuer des correctifs pour I<qmail>. Vous B<ne pouvez pas> distribuer des distributions source de I<qmail> modifiées ou des distributions binaires I<var-qmail> modifiées.
+
+H2[id="comparison"]Comparaison avec les autres MTA
+
+Un livre pourrait être écrit sur ce sujet, mais il serait pénible à lire. Voici une rapide comparaison entre I<qmail> est les MTA les plus communs sur UNIX.
+
+!block table
+MTA		Maturité	Sécurité	Fonctionnalité	Performances	Sendmailish	Modulaire
+I<qmail>		moyen		bon		bon		bon		additif		oui
+I<Sendmail>	bon		mauvais		bon		mauvais		x		non
+I<Postfix>		moyen		bon		moyen		bon		oui		oui
+I<exim>		moyen		mauvais		bon		moyen		oui		non
+I<Courier>		mauvais		moyen		bon		moyen		optionnel	oui
+!endblock
+
+I<Sendmailish> veut dire que le MTA agit comme I<Sendmail> dans certains cas, ce qui permet de passer de I<Sendmail> à un autre MTA de façon plus transparente pour l'utilisateur, comme l'usage des fichiers F<.forward>, F</etc/aliases>, et la livraison dans F</var/spool/mail>.
+
+Jonathan de Boyne Pollard a des essais de beaucoup de MTA Unix à 
+{{URL:http://homepages.tesco.net/~J.deBoynePollard/Reviews/UnixMTSes/}}.
+Une autre comparaison détaillée est disponible ici : {{URL:http://www.geocities.com/mailsoftware42/}}.
+
+H2[id="documentation"]Documentation
+
+H3[id="man-pages"]Pages man
+
+I<qmail> comprend un ensemble complet de pages F<man>. Après l'installation, elles sont dans F</var/qmail/man>. Vous devrez probablement ajouter ce répertoire dans la variable d'environnement F<MANPATH>.
+
+!block table
+Shell			Commande
+Bourne (/bin/sh)	F<MANPATH=$MANPATH:/var/qmail/man; export MANPATH>
+bash, Korn		F<export MANPATH=$MANPATH:/var/qmail/man>
+C Shell			F<setenv MANPATH $MANPATH:/var/qmail/man>
+!endblock
+
+A partir de maintenant, les commandes type "F<man I<nom_de_la_page_man_de_qmail>>" doivent afficher la page man appropriée.
+
+Les pages F<man> sont aussi disponibles en ligne en format HTML ici :
+
+* {{URL:http://www.qmail.org/man/index.html}}
+
+Note : Les pages man de I<qmail> sont pleines d'information, mais elles requièrent une lecture attentive parce qu'elles sont écrites dans un style très dense et très technique. Vous voudrez certainement en imprimer un exemplaire et les lire une fois pour vous familiariser avec le contenu et l'organisation de l'information. Il y a très peu de répétition dans ces pages, donc si vous ne savez pas où un sujet est traité, il peut être difficile à trouver.
+
+H3[id="docs"]Docs
+
+I<qmail> comprend une série de documents installés dans F</var/qmail/doc>.
+Ils contiennent :
+
+* F<FAQ> : Foire aux questions, avec les réponses
+* F<INSTALL*> : Documentation d'installation
+* F<PIC.*> : Descriptions de la façon dont I<qmail> fait certaines taches clefs. Voir l'appendice sur l'{{CMD[jump="#pictures"]Architecture}} pour plus d'information.
+* Plusieurs autres documentations concernant l'installation
+
+Ces documents sont aussi disponibles en ligne ici :
+
+* {{URL:http://www.qmail.org/man/index.html}}
+
+H3[id="faqs"]FAQ
+
+Il y a deux FAQ officielles :
+
+* F</var/qmail/doc/FAQ>, la version texte, et
+* {{URL:http://cr.yp.to/qmail/faq.html}}, la version HTML.
+
+La version web de la FAQ est plus complète.
+
+H3[id="book"]Livre
+
+H4[id="qmail-handbook"]U<The qmail Handbook>
+
+David Sill, l'auteur de U<[[DOC_TITLE]]>, a écrit un livre sur I<qmail> pour Apress ({{URL:http://www.apress.com/}}). Ce livre, U<The qmail Handbook>, couvre tous les sujets de ce guide, mais va aussi plus en détails et couvre beaucoup d'autres points.
+
+Pour plus d'informations, voir 
+{{URL:http://www.apress.com/catalog/book/1893115402/}}. Pour commander ce livre, voir {{URL:http://www.amazon.com/exec/obidos/ASIN/1893115402/davesill}}.
+
+
+H4[id="oreilly-book"]U<qmail>
+
+John Levine est supposé écrire un livre sur I<qmail> pour O'Reilly & Associates ({{URL:http://www.oreilly.com/}}).
+
+H4[id="sams-book"]U<Running qmail>
+
+Richard Blum a écrit U<Running qmail>, publié par Sams. Ce livre a reçu un avis mitigé sur la liste de diffusion I<qmail>.
+
+Pour plus d'informations ou pour commander ce livre, voir {{URL:http://www.amazon.com/exec/obidos/ASIN/0672319454/davesill}}.
+
+H3[id="list-archives"]Archives de la liste
+
+La liste de distribution I<qmail>, maintenue par Dan Bernstein, est une source d'information intéressante. Une archive web des messages de la liste est gardée à cette adresse :
+
+* {{URL:http://www.ornl.gov/its/archives/mailing-lists/qmail/}}.
+
+Il existe un moteur de recherche pour cette archive :
+
+* {{URL:http://www-archive.ornl.gov:8000/}}.
+
+D'autres archives web sont disponibles à ces adresses :
+
+* {{URL:http://www.egroups.com/list/djb-qmail/?refstop=1}} et
+* {{URL:http://msgs.securepoint.com/qmail/}}.
+
+La plupart des réponses à vos questions concernant I<qmail> se trouvent dans les archives.
+
+H3[id="other-web-sites"]D'autres sites web
+
+* {{URL:http://cr.yp.to/qmail.html}} : la page officielle de I<qmail>.
+
+* {{URL:http://www.qmail.org}} : la page non officielle de I<qmail>. Cette page contient beaucoup d'informations concernant les additifs, les correctifs (patchs, NdT) et des liens vers beaucoup de pages web sur I<qmail> intéressantes ou vers d'autres sites.
+
+* {{URL:http://www.flounder.net/qmail/qmail-howto.html}} : comment-faire (HOWTO, NdT) d'Adam McKenna.
+
+H2[id="support"]Support
+
+H3[id="mailing-lists"]Liste de diffusion
+
+Les listes suivantes se trouvent sur list.cr.yp.to. Pour éviter la récupération des adresses mail par les spammers, j'évite d'utiliser d'adresses complètes et valides ainsi que les liens "mailto" sur cette page.
+
+Les listes sont gérées par I<ezmlm>, qui utilise différentes adresses pour faire différentes actions :
+
+* F<I<nom_de_la_liste>@list.cr.yp.to> : l'adresse d'envoi. Les messages envoyés à cette adresse sont envoyés à tous les membres de la liste. B<Ne pas> envoyer de messages d'abonnement / désabonnement : ils ne marcheront pas et vont ennuyer les inscrits.
+
+* F<I<nom_de_la_liste>-help@list.cr.yp.to> : l'adresse d'aide. Retourne une liste des adresses de commandes et des informations générales d'utilisation.
+
+* F<I<nom_de_la_liste>-subscribe> : envoyez un message vide à cette adresse pour vous abonner.
+
+* F<I<nom_de_la_liste>-unsubscribe> : envoyez un message vide à cette adresse pour vous désabonner.
+
+Pour spécifier une adresse d'abonnement / de désabonnement, disons F<joe@exemple.com>, envoyez un message à :
+
+* F<I<nom_de_la_liste>-subscribe-joe=exemple.com@list.cr.yp.to>.
+
+H4[id="qmail-list"]U<qmail>
+
+La principale liste de diffusion de I<qmail>. Pour toutes les questions / réponses sur la plupart des sujets concernant I<qmail>, excepté ceux qui ont leur propre liste de diffusion. Lisez le document de Charles Cazabon, "12 Steps to qmail List Bliss" ("12 points pour le bonheur sur la liste qmail", NdT), à cet adresse {{URL:http://www.qcc.sk.ca/~charlesc/writings/12-steps-to-qmail-list-bliss.html}} avant de poster une question. Lisez aussi les FAQ et cherchez dans les 
+{{CMD[jump="#list-archives"]archives des listes de diffusions}} avant de poser une question. Quand vous posez une question, essayez de donner suffisamment de détails pour permettre aux gens de répondre :
+
+* B<I<Qu'avez vous fait ?>> Quelle est votre configuration ? Joignez la sortie de F<qmail-showctl> si vous n'êtes pas sûr des informations importantes. Qu'avez vous fait ? S'il s'agit d'une nouvelle installation, dites-nous comment vous avez installé I<qmail>.
+
+* B<I<Qu'est-ce que vous attendez ?>> Quel but souhaitiez vous atteindre ? Ne supposez pas que le lecteur pourra deviner.
+
+* B<I<Que s'U<est-il> passé ?>> Décrivez le résultat actuel. Incluez des extraits des fichiers de log et des copies des messages, avec les headers.
+
+!block note
+Les listes I<I<qmail>> utilisent un utilitaire appelé F<qsecretary> pour vérifier que le message posté n'est pas un spam. Chaque message posté sur la liste renverra une demande de confirmation par mail de la part de F<qsecretary>. Lisez le message et suivez les instructions pour confirmer votre message -- d'habitude il suffit de répondre au message de F<qsecretary>. Les intervenants réguliers de la liste automatisent souvent ce travail avec des répondeurs automatiques comme I<pymsgauth> de Charles Cazabon, disponible depuis {{URL:http://www.qcc.ca/~charlesc/software/pymsgauth/pymsgauth.html}}.
+I<pymsgauth> vérifie que le message envoyé àla liste I<qmail> vient réellement de vous, et ne confirmera donc pas un message forgé à la liste envoyé en votre nom.
+!endblock
+
+H4[id="qmailannounce-list"]U<qmailannounce>
+
+La liste d'annonce de I<qmail>. Les nouvelles versions sont annoncées ici. Il n'y a pas d'adresse d'envoi : c'est une liste en lecture seule.
+
+H4[id="serialmail-list"]U<serialmail>
+
+Pour les discussions concernant le paquet I<serialmail>.
+
+H4[id="ezmlm-list"]U<ezmlm>
+
+Pour les discussions sur le gestionnaire de liste de diffusion I<ezmlm>. 
+
+H3[id="consultants"]Consultants
+
+Voir {{URL:http://www.qmail.org/top.html#paidsup}} pour une liste de prestataires commerciaux.
+
+H3[id="faqts"]Base de connaissances FAQTS
+
+Une base de données de questions / réponses relatives à I<qmail> est disponible à cette adresse :
+{{URL:http://qmail.faqts.com/}}. Si vous avez une question à laquelle la FAQ ne répond pas, essayez de chercher dans cette base de données. C'est particulièrement intéressant dans le cas de questions "comment faire" ("how to", NdT).
+
+H1[id="installation"]Installation
+
+Cette section couvre l'installation de I<qmail>. Si vous êtes administrateur systèmes expérimenté, vous pouvez installer I<qmail> en suivant les indications du fichier F<INSTALL> fourni dans la distribution source. Les indications du fichier F<INSTALL> sont les indications officielles. Elles sont plus complexes que les indications de U<[[DOC_TITLE]]>, et elles supposent que le lecteur est un administrateur systèmes et mail expérimenté. Elles sont aussi obsolètes et ne réfléchissent plus les recommandations actuelles de Bernstein.
+
+Note : Si vous choisissez d'installer en suivant ces indications, vous devriez lire entièrement cette section pour vous familiariser avec le processus complet.
+
+H2[id="installation-issues"]Problèmes d'installation
+
+H3[id="binary-vs-source"]Binaires contre code source
+
+A cause du système de licence restrictif de I<qmail> concernant la distribution de paquets recompilés, I<qmail> est habituellement installé depuis le code source.
+
+Si vous n'êtes pas familier avec la distinction entre code source et binaire, imaginez commander une pizza, livrée chez vous. La version "binaire" de la pizza arrive prête à être mangée. La version "code source" de la pizza est un kit contenant la farine, la levure, le fromage, la sauce, la garniture et les indications pour cuisiner votre pizza vous-même. Les installations source code vous donnent un petit peu plus de travail, mais si vous suivez les indications avec attention, le résultat sera le même - voire mieux. La pizza que vous avez préparée sera plus fraîche, vous pourrez mettre la garniture à votre goût, et vous connaîtrez beaucoup plus de choses concernant votre pizza et la façon dont ça "marche".
+
+Faire tourner un service réseau accessible depuis Internet n'est pas facile. Un service mal configuré peut exposer le système hôte au risque d'attaque ou peut être utilisé pour attaquer d'autres sites - potentiellement engager la responsabilité légale de l'administrateur système. Plus vous connaissez le mode de fonctionnement des services réseau, plus vous aurez de chances de les configurer proprement et de les sécuriser.
+
+H3[id="tar-vs-package"]Archives (tarball, NdT) contre paquets spécifiques au système d'exploitation
+
+Certains systèmes d'exploitation proposent un système pour automatiser l'installation de programme à partir du code source. Pour revenir à l'analogie de la pizza, ils permettent de rassembler en un paquet les ingrédients et les indications de telle façon que vous pouvez appuyer sur un bouton et votre pizza se cuit toute seule.
+
+Ca semble génial, non ?
+
+En pratique, ça n'est pas une si bonne idée. Assembler ces paquets est relativement difficile, et ils pourraient ne pas faire les choses de la façon dont ils sont supposés les faire. Ils sont des logiciels, et comme tous les logiciels peuvent comporter des bugs. Mais même s'ils sont sans bug, la facilité qu'ils fournissent a un coût. Vous pourriez perdre tous les avantages de la pizza cuite par vos soins : la possibilité d'ajuster la garniture à vos goûts, et la connaissance de la façon dont une pizza est faite et la façon dont elle marche.
+
+Si I<qmail> était une pizza, l'approche "auto-préparation" serait peut-être la meilleure. Mais I<qmail> n'est pas une pizza : c'est un système relativement compliqué que l'installateur / responsable a besoin de bien comprendre pour pouvoir le faire fonctionner tranquillement. I<qmail> "auto-installé" est plus facile à installer que la version installée par l'utilisateur, mais la version installée par l'utilisateur est plus facile à configurer et à dépanner. Vous installez I<qmail> une fois sur un système, mais vous aurez probablement plusieurs opportunités de le reconfigurer ou d'essayer de comprendre pourquoi il ne marche pas de la façon dont vous pensez qu'il devrait.
+
+Pour cette raison, je vous suggère d'installer I<qmail> à partir de zéro en utilisant l'archive (tarball, NdT) du code source, et non un RPM de Red Hat ou quelque qu'autre paquet.
+
+H2[id="preparation"]Préparation
+
+Avant d'installer I<qmail> sur un système, particulièrement s'il s'agit de votre première installation de I<qmail>, il y a quelques points que vous devez considérer.
+
+* Si possible, installez I<qmail> sur un système "d'entraînement". Ca vous laissera faire des erreurs sans perdre des mails importants et sans interrompre le service mail pour vos utilisateurs.
+
+* Si vous n'avez pas de machine de test, et que votre système gère déjà des mails en utilisant I<sendmail>, I<smail> ou un autre MTA, vous pouvez installer et tester la plupart des composants de I<qmail> sans interférer avec le service existant.
+
+* Quand vous migrez depuis un système avec un autre MTA vers I<qmail> - même si vous avez de l'expérience avec I<qmail> sous le coude - formuler un plan est une bonne idée.
+
+H2[id="system-requirements"]Requis système
+
+I<qmail> s'installera et tournera sur la plupart des systèmes UNIX et de type UNIX, mais il y a quelques requis :
+
+* Environ 10 mega-octets d'espace libre dans l'aire de construction pendant la construction. Après la construction, vous pourrez libérer tout l'espace sauf 4 mega-octets en supprimant les fichiers objets.
+
+* Un système de developpement C complet et fonctionnel incluant un compilateur, les fichiers en-tête système, et les bibliothèques. Les indications de construction vous montreront comment savoir si vous avez les éléments nécessaires.
+
+* Quelques mega-octets pour les binaires, la documentation et les fichiers de configuration.
+
+* Un système de fichiers fiable pour la file d'attente. La garantie de qualité de I<qmail> nécessite que la file d'attente repose sur un système de fichiers avec la sémantique traditionnelle de BSD FFS. La plupart des systèmes de fichiers moderne remplissent ces conditions avec une exception importante : l'appel système F<link()> est souvent I<asynchrone> -- ce qui veut dire que les résultats de l'opération F<link()> peuvent ne pas avoir été écrits sur le disque au retour de l'appel de F<link()>. La bibliothèque I<syncdir> de Bruce Guenter peut être utilisée pour pallier ce problème. Voir {{CMD[jump="#syncdir"]syncdir}} dans l'appendice Paquets Associés pour plus d'informations.
+
+* Suffisamment d'espace disque pour la file d'attente. Des petits systèmes pour utilisateur unique ne nécessitent que quelques mega-octets. Les gros serveurs peuvent nécessiter quelques giga-octets.
+
+* Un système d'exploitation compatible. La plupart des saveurs d'UNIX sont acceptables. Voir le fichier F<README> dans l'arborescence des sources pour la liste des versions compatibles connues.
+
+* L'accès à un serveur de noms de domaine (DNS) est hautement recommandé. Sans cet accès, I<qmail> peut uniquement envoyer à des systèmes configurés dans son fichier de configuration F<smtproutes>.
+
+* Une connectivité au réseau adéquate. I<qmail> est conçu pour des systèmes correctement connectés, donc vous ne voulez probablement pas essayer de l'utiliser pour un serveur de listes de diffusion avec un modem 28.8. Le paquet I<serialmail> a été conçu pour rendre I<qmail> plus compatible avec les systèmes pauvrement connectés. Voir la section {{CMD[jump="#serialmail"]serialmail}} dans l'appendice Paquets associés pour plus d'informations.
+
+H2[id="download"]Télécharger les sources
+
+OK, donc vous avez un système qui remplit les conditions prêt pour installer I<qmail>. La première étape est de télécharger le code source pour I<qmail> et d'autres additifs. Vous aurez besoin de I<qmail>, bien sûr, et vous devriez sûrement prendre I<ucspi-tcp> et I<daemontools> aussi :
+
+* I<qmail>, {{URL:ftp://cr.yp.to/software/qmail-1.03.tar.gz}}
+
+* I<ucspi-tcp>,
+{{URL:ftp://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz}} 
+
+* I<daemontools>,
+{{URL:ftp://cr.yp.to/daemontools/daemontools-0.76.tar.gz}}
+
+Récupérez ces fichiers en utilisant votre navigateur Internet, client web (par exemple F<wget>) ou client FTP.
+
+Note : Si n'importe quel lien ne fonctionne pas, c'est probablement parce que le paquet a été mis à jour. Dans ce cas, vous devriez aller sur 
+{{URL:http://cr.yp.to/software.html}} et suivre les liens pour télécharger la version actuelle. Il est possible que les versions mises à jour ne soient pas compatibles avec les instructions suivantes, donc prenez soin de lire les notes de sortie dans les sections "Mise à jour d'anciennes versions...".
+
+H2[id="build"]Construire la source
+
+H3[id="verify-compiler"]Vérifier l'environnement de construction
+
+La première chose que vous avez besoin de faire est d'être sûr que vous avez les outils nécessaires pour compiler un programme. Comment le déterminer dépends de la saveur d'UNIX que vous utilisez. La meilleure façon de le savoir, même si le résultat n'est pas garanti, est de l'I<essayer>.
+
+Note : si l'un de ces tests passe, vous pouvez arrêter et passer à la section suivante.
+
+* A l'invite de la ligne de commande, tapez F<cc> et appuyez sur Entrée :
+
+!block example
+    $ cc
+    cc: Pas de fichier d'entrée spécifié
+    $
+!endblock
+
+* Si vous avez une réponse similaire, vous avez un compilateur C dans votre chemin d'exécution. Sinon, ça ne veut pas nécessairement dire que vous n'en avez pas d'installé. Vous l'avez peut-être, mais il n'est pas dans votre chemin d'exécution. Bien sûr, ça peut aussi vouloir dire que vous I<n'en avez pas>. Essayez ça :
+
+**F</usr/bin/cc>
+**F</usr/bin/gcc>
+**F</usr/local/bin/cc>
+**F</usr/local/bin/gcc>
+**F</usr/ccs/bin/cc>
+
+* Si aucune des commandes ne marche, vous allez devoir essayer quelque chose d'un peu plus spécifique à la plate-forme. A l'invite, essayez l'une de celles-ci, selon le système d'exploitation que vous utilisez :
+
+** Red Hat Linux: F<rpm -qa | grep gcc> or F<rpm -qa | grep egcs>
+** FreeBSD: includes GCC by default
+
+* Si vous ne trouvez pas de compilateur installé, vous allez devoir en trouver un, et l'installer. Contactez le vendeur de votre système d'exploitation ou autres moyens de support de votre système d'exploitation.
+
+Dans cette section, nous allons passer les étapes pour compiler I<qmail>. Nous allons avoir à disposition un système de copier-coller, mais il n'est pas vraiment nécessaire.
+ 
+H3[id="unpack"]Décompresser la distribution
+
+Si vous avez réussi jusqu'ici, vous avez un compilateur C qui marche, et une copie des archives (tarballs, NdT). Maintenant, copiez ou déplacez les archives (tarballs, NdT) dans le dossier où vous souhaitez travailler. F</usr/local/src> est un bon choix pour I<qmail> et I<ucspi-tcp>. I<daemontools> devrait être construit dans F</package>.
+
+A cet instant, vous voulez certainement devenir root, si vous ne l'êtes pas déjà.
+
+!block example
+    su
+    umask 022
+    mkdir -p /usr/local/src
+    mv qmail-1.03.tar.gz ucspi-tcp-0.88.tar.gz /usr/local/src
+    mkdir -p /package
+    mv daemontools-0.76.tar.gz /package
+    chmod 1755 /package
+!endblock
+
+Maintenant vous pouvez décompresser les paquets.
+
+!block example
+    cd /usr/local/src
+    gunzip qmail-1.03.tar.gz
+    tar xpf qmail-1.03.tar
+    gunzip ucspi-tcp-0.88.tar.gz
+    tar xpf ucspi-tcp-0.88.tar
+    rm *.tar	I<# optionnel, sauf si vous avez vraiment peu d'espace>
+    cd /package
+    gunzip daemontools-0.76.tar.gz
+    tar xpf daemontools-0.76.tar
+    rm *.tar	I<# optionnel, idem>
+!endblock
+
+Il doit maintenant y avoir des dossiers appelés F</usr/local/src/qmail-1.03>, F</usr/local/src/ucspi-tcp-0.88>, et F</package/admin/daemontools-0.76>.
+
+H3[id="create-dirs"]Créer les dossiers
+
+Comme le programme d'installation de I<qmail> crée les sous dossiers quand c'est nécessaire, vous devez uniquement créer le dossier de base de I<qmail> :
+
+>    mkdir /var/qmail
+
+Et allons à la section suivante.
+
+!block note
+Note : si vous voulez que quelques-uns ou tous les fichiers I<qmail> soient ailleurs que dans F</var>, vous pouvez créer des liens symboliques dans F</var/qmail> pointant vers d'autres emplacements.
+
+Par I<B<exemple>>, les fichiers de configuration peuvent être stockés dans F</etc/qmail> en faisant :
+
+>    mkdir /etc/qmail
+>    ln -s /etc/qmail /var/qmail/control
+!endblock
+
+H3[id="create-users"]Créer les utilisateurs et les groupes
+
+Le moyen le plus simple pour créer les utilisateurs et groupes nécessaires est de créer un petit script qui le fait pour vous. Dans le dossier des sources, vous trouverez un fichier appelé F<INSTALL.ids>. Il contient des lignes de commande pour beaucoup de plate-formes, il est donc facile et rapide de copier ce fichier avec un autre nom, et l'éditer.
+
+>    cd /usr/local/src/qmail-1.03
+>    cp INSTALL.ids IDS
+
+Et, avec votre éditeur favori, supprimer toutes les lignes du fichier B<sauf> celles que vous voulez. Par exemple, voici à quoi ressemble le fichier F<IDS> pour FreeBSD après édition :
+
+!block example
+    pw groupadd nofiles
+    pw useradd alias -g nofiles -d /var/qmail/alias -s /nonexistent
+    pw useradd qmaild -g nofiles -d /var/qmail -s /nonexistent
+    pw useradd qmaill -g nofiles -d /var/qmail -s /nonexistent
+    pw useradd qmailp -g nofiles -d /var/qmail -s /nonexistent
+    pw groupadd qmail
+    pw useradd qmailq -g qmail -d /var/qmail -s /nonexistent
+    pw useradd qmailr -g qmail -d /var/qmail -s /nonexistent
+    pw useradd qmails -g qmail -d /var/qmail -s /nonexistent
+!endblock
+
+Et pour le lancer, utilisez F<chmod> pour le rendre exécutable ou lancer le avec F<sh> :
+
+Première méthode :
+
+!block example
+    chmod 700 IDS
+    ./IDS
+!endblock
+
+Seconde méthode :
+
+!block example
+    /bin/sh IDS
+!endblock
+
+Quand le script est fini, tous les utilisateurs et les groupes seront créés et vous pouvez passer à la section suivante.
+
+Mais que faire si votre système n'est pas listé dans F<INSTALL.ids> ? Vous allez devoir les créer manuellement. Commencez par utiliser votre éditeur favori et éditez F</etc/group>. Vous devez ajouter les 2 lignes suivantes à la fin du fichier :
+
+!block example
+    qmail:*:2107:
+    nofiles:*:2108:
+!endblock
+
+Note : assurez-vous que 2107 et 2108 ne sont pas déjà utilisés. S'ils le sont, choisissez deux nombres qui ne sont pas déjà utilisés.
+
+Ensuite, en utilisant F<vipw> (la plupart des systèmes l'ont, sinon, vous allez devoir à nouveau utiliser votre éditeur, mais cette fois sur F</etc/passwd>) ajoutez ces lignes à la fin du fichier :
+
+!block example
+    alias:*:7790:2108::/var/qmail/alias:/bin/true
+    qmaild:*:7791:2108::/var/qmail:/bin/true
+    qmaill:*:7792:2108::/var/qmail:/bin/true
+    qmailp:*:7793:2108::/var/qmail:/bin/true
+    qmailq:*:7794:2107::/var/qmail:/bin/true
+    qmailr:*:7795:2107::/var/qmail:/bin/true
+    qmails:*:7796:2107::/var/qmail:/bin/true
+!endblock
+
+Note : assurez-vous que les nombres de 7790 à 7796 ne sont pas déjà utilisés, et que 2107 et 2108 sont les mêmes identifiants de groupe utilisés au-dessus. Si n'importe quel des UID est déjà utilisé, utilisez des nombres qui ne sont pas déjà utilisés.
+
+Vous n'avez pas besoin spécifiquement d'ajouter quelconque de ces lignes à la I<fin> du fichier, c'est juste un moyen plus simple pour l'expliquer ici.
+
+Vous êtes maintenant prêt pour continuer vers la section suivante.
+
+H3[id="do-build"]Faire la construction
+
+Maintenant, vous pouvez commencer à construire I<qmail>. Allez dans le dossier F</usr/local/src/qmail-1.03> et commençons :
+
+>    cd /usr/local/src/qmail-1.03
+
+Dans la section {{CMD[jump="#verify-compiler"]Vérifier l'environnement de construction}}, nous avons situé votre compilateur C. S'il ne s'appelle pas F<cc> ou que le dossier ne se trouve pas dans la variable d'environnement F<PATH>, vous allez devoir éditer F<conf-cc> et F<conf-ld>. Disons que votre compilateur est F<gcc> et qu'il est dans votre F<PATH>. Editez simplement F<conf-cc> et F<conf-ld> et remplassez "cc" par "gcc".
+
+Maintenant, tapez ce qui suit :
+
+>    make setup check
+
+Une fois la construction terminée, vous allez devoir faire votre configuration post-installation. Quelques scripts sont fournis pour rendre ce travail bien plus facile.
+
+Si votre DNS est configuré correctement, ce script doit remplir tous vos besoins à ce point :
+
+>    ./config
+
+Si, pour quelque raison que ce soit, F<config> ne peut pas trouver votre nom d'hôte dans le DNS, vous allez devoir lancer le script F<config-fast> :
+
+!block example
+    ./config-fast I<le.nom.d.hôte.complet>
+!endblock
+
+Par exemple, si votre domaine est exemple.com et que le nom d'hôte de votre ordinateur est dauphin, votre ligne de config-fast devrait ressembler à ça :
+
+>    ./config-fast dauphin.exemple.com
+
+Note : sur un petit LAN local, vous voudrez peut-être utiliser un pseudo domaine tel que ".local". C'est à dire que si votre nom d'hôte est "puree", vous pouvez faire F<./config-fast puree.local>. Si vous faites ça, soyez sûr de configurer I<qmail> pour utiliser un nom de domaine Internet valide dans les adresses de retour. (voir section 3, {{CMD[jump="#configuration"]Configuration}}.)
+
+I<qmail> est maintenant installé sur votre système, et prêt à être lancé ! La section suivante vous guidera au travers des étapes pour démarrer et tester I<qmail>.
+
+H2[id="install-ucspi"]Installer ucspi-tcp
+
+Précédemment, vous avez décompressé les archives (tarballs, NdT) de I<qmail>, I<ucspi-tcp> et I<daemontools>. Maintenant, allez dans le dossier I<ucspi-tcp> :
+
+>    cd /usr/local/src/ucspi-tcp-0.88
+
+Dans la section {{CMD[jump="#do-build"]Faire la construction}}, si vous avez modifié F<conf-cc> et F<conf-ld>, vous allez devoir faire les mêmes modifications dans ce dossier.
+
+Ensuite, faites :
+!block example
+    make
+    make setup check
+!endblock
+
+C'est fait. I<ucspi-tcp> est installé.
+
+H2[id="install-daemontools"]Installer daemontools
+
+Allez dans le dossier de construction de I<daemontools> :
+
+>    cd /package/admin/daemontools-0.76
+
+Encore une fois, si vous avez modifié F<conf-cc> et F<conf-ld> pendant les constructions de I<qmail> et de I<ucspi-tcp>, vous allez devoir faire les mêmes modifications dans le dossier F<src>.
+
+Ensuite faites :
+!block example
+    package/install
+!endblock
+
+Sur les systèmes BSD (pas de fichier F</etc/inittab>), vous allez devoir redémarrer maintenant pour lancer F<svscan>, le démon principal de contrôle des services.
+
+Utilisez "F<ps -ef | grep svscan>" ou "F<ps waux | grep svscan>" pour vérifier que F<svscan tourne>.
+
+H2[id="start-qmail"]Démarrer I<qmail>
+
+H3[id="rc"]F</var/qmail/rc>
+
+Le dossier F</var/qmail/boot> contient des exemples de scripts de démarrage pour différentes configurations : F</var/spool/mail> ou F<$HOME/Mailbox>, en utilisant I<procmail> ou I<dot-forward>, et plusieurs combinaisons de ces dernières. N'hésitez pas à les examiner, mais pour notre installation, nous allons utiliser le script suivant :
+
+!block example
+#!/bin/sh
+
+# Utilise stdout pour le journal
+# Utilise control/defaultdelivery de qmail-local pour délivrer par défaut les messages
+
+exec env - PATH="/var/qmail/bin:$PATH" \
+qmail-start "`cat /var/qmail/control/defaultdelivery`"
+!endblock
+
+Note : Ce script utilise des apostrophes inversées (F<`>), et non des apostrophes (F<'>). Pour de meilleurs résultats, copiez-collez les scripts de ce guide plutôt que les retaper.
+
+Utilisez votre éditeur pour créer le F</var/qmail/rc> ci-dessus, et exécutez ces commandes ensuite :
+
+!block example
+    chmod 755 /var/qmail/rc
+    mkdir /var/log/qmail
+!endblock
+
+A ce point, vous devez décider le mode de livraison par défaut pour les messages qui ne sont pas délivrés par un fichier F<.qmail>. Le tableau suivant propose quelques choix courants.
+
+!block table
+Format de BAL	Nom		Emplacement		defaultdelivery		Commentaires
+mbox		F<Mailbox>	F<$HOME>		F<./Mailbox>		très courant, fonctionne avec la plupart des MUA
+maildir		F<Maildir>	F<$HOME>		F<./Maildir/>		plus fiable, moins supporté par les MUA
+mbox		F<I<username>>	F</var/spool/mail>	Voir F<INSTALL.vsm>	BAL UNIX traditionnelle
+!endblock
+
+Voir F<INSTALL.mbox>, F<INSTALL.maildir>, et F<INSTALL.vsm> pour plus d'informations.
+
+Pour sélectionner votre type de BAL par défaut, entrez la valeur de I<defaultdelivrery> du tableau dans F</var/qmail/control/defaultdelivery>. C'est à dire, pour sélectionner la livraison standard de I<qmail>, F<Mailbox>, tapez :
+
+!block example
+    echo ./Mailbox >/var/qmail/control/defaultdelivery
+!endblock
+
+Note : F<defaultdelivrery> n'est pas un fichier de contrôle standard. C'est une fonctionnalité du fichier F</var/qmail/rc> ci-dessus. L'argument pour F<qmail-start> de I<defaultdelivrery> est le I<contenu> du fichier F<.qmail> qui spécifie les instructions de livraison à suivre, quand aucun fichier F<.qmail> n'est trouvé. Mettre ces instructions dans un fichier de contrôle distinct élimine le besoin de méta-caractères d'apostrophe de shell dans les instructions de livraison et évite les mauvais arguments de commandes sur plusieurs lignes.
+
+H3[id="system-startup"]Fichier de démarrage système
+
+H4[id="qmailctl-script"]Le script F<qmailctl>
+
+Si vous étiez sur le point d'exécuter manuellement le script F</var/qmail/rc>, I<qmail> serait I<partiellement> lancé. Mais nous voulons que I<qmail> soit lancé automatiquement chaque fois que le système est démarré, et nous voulons qu'il soit coupé proprement quand le système est arrêté.
+
+Ceci est fait en créant des scripts de démarrage/extinction comme suit dans F</var/qmail/bin/qmailctl> :
+
+!block example
+#!/bin/sh
+
+# For Red Hat chkconfig
+# chkconfig: - 80 30
+# description : le MTA qmail
+
+PATH=/var/qmail/bin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin
+export PATH
+
+QMAILDUID=`id -u qmaild`
+NOFILESGID=`id -g qmaild`
+
+case "$1" in
+  start)
+    echo "Lancement de qmail"
+    if svok /service/qmail-send ; then
+      svc -u /service/qmail-send
+    else
+      echo le superviseur de qmail-send ne tourne pas
+    fi
+    if svok /service/qmail-smtpd ; then
+      svc -u /service/qmail-smtpd
+    else
+      echo le superviseur de qmail-smtpd ne tourne pas
+    fi
+    if [ -d /var/lock/subsys ]; then
+      touch /var/lock/subsys/qmail
+    fi
+    ;;
+  stop)
+    echo "Extinction de qmail..."
+    echo "  qmail-smtpd"
+    svc -d /service/qmail-smtpd
+    echo "  qmail-send"
+    svc -d /service/qmail-send
+    if [ -f /var/lock/subsys/qmail ]; then
+      rm /var/lock/subsys/qmail
+    fi
+    ;;
+  stat)
+    svstat /service/qmail-send
+    svstat /service/qmail-send/log
+    svstat /service/qmail-smtpd
+    svstat /service/qmail-smtpd/log
+    qmail-qstat
+    ;;
+  doqueue|alrm|flush)
+    echo "Purge le tableau de limite de temps et envoie un signal ALRM à qmail-send."
+    /var/qmail/bin/qmail-tcpok
+    svc -a /service/qmail-send
+    ;;
+  queue)
+    qmail-qstat
+    qmail-qread
+    ;;
+  reload|hup)
+    echo "Envoie un signal HUP à qmail-send."
+    svc -h /service/qmail-send
+    ;;
+  pause)
+    echo "Pause qmail-send"
+    svc -p /service/qmail-send
+    echo "Pause qmail-smtpd"
+    svc -p /service/qmail-smtpd
+    ;;
+  cont)
+    echo "Relance qmail-send sur pause"
+    svc -c /service/qmail-send
+    echo "Relance qmail-smtpd sur pause"
+    svc -c /service/qmail-smtpd
+    ;;
+  restart)
+    echo "Relance qmail :"
+    echo "* Coupe qmail-smtpd."
+    svc -d /service/qmail-smtpd
+    echo "* Envoie SIGTERM à qmail-send et relance."
+    svc -t /service/qmail-send
+    echo "* Relance qmail-smtpd."
+    svc -u /service/qmail-smtpd
+    ;;
+  cdb)
+    tcprules /etc/tcp.smtp.cdb /etc/tcp.smtp.tmp < /etc/tcp.smtp
+    chmod 644 /etc/tcp.smtp.cdb
+    echo "Recharge /etc/tcp.smtp."
+    ;;
+  help)
+    cat <<HELP
+   stop -- coupe le service mail (connections smtp refusées, rien ne sort)
+  start -- lance le service mail (connections smtp acceptées, les mails peuvent sortir)
+  pause -- coupe temporairement le service mail (connections acceptées, rien ne part)
+   cont -- relance le service mail en pause
+   stat -- affiche le statut du service mail
+    cdb -- reconstruit le fichier cdb de tcpserver pour smtp
+restart -- coupe et redémarre smtp, envoie à qmail-send SIGTERM et le redémarre
+doqueue -- planifie les messages en attente pour une livraison immédiate
+ reload -- envoie HUP à qmail-send, relisant locals et virtualdomains
+  queue -- affiche le statut de la file d'attente
+   alrm -- identique à doqueue
+  flush -- identique à doqueue
+    hup -- identique à reload
+HELP
+    ;;
+  *)
+    echo "Usage : $0 {start|stop|restart|doqueue|flush|reload|stat|pause|cont|cdb|queue|help}"
+    exit 1
+    ;;
+esac
+
+exit 0
+
+!endblock
+
+Ce script est disponible via {{URL:http://www.lifewithqmail.org/qmailctl-script-dt70}}.
+
+Créez ce script en utilisant votre éditeur ou en le téléchargeant avec votre navigateur web (recommandé).
+
+H5[id="rc-links"]Les liens F<rc>
+
+Sur la plupart des Linux et des systèmes System V, vous aurez aussi besoin de lier le script dans le dossier F<init.d> et dans quelques dossiers "rc". L'F<init.d> est probablement l'un des suivants :
+
+* F</etc/init.d>
+* F</sbin/init.d>
+* F</etc/rc.d/init.d>
+
+Les dossiers F<rc> s'appellent quelque chose comme rcI<N>.d, où I<N> est le I<niveau de lancement> (runlevel, NdT) auquel ils s'appliquent. Les complexités de l'arborescence  des dossiers de démarrage sont hors du champ  de ce document, donc si ces explications simplifiées ne suffisent pas, consultez la documentation de votre système. Vos dossiers rc sont probablement dans un de ceux-ci :
+
+* F</etc>
+* F</sbin>
+* F</etc/rc.d>
+
+Pour créer les liens, exécutez les commandes suivantes, en remplaçant INITDIR par l'emplacement du dossier F<init.d> de votre système et RCDIR par l'emplacement des dossiers F<rc> de votre système :
+
+!block example
+    ln -s /var/qmail/bin/qmailctl INITDIR/qmail
+    ln -s ../init.d/qmail RCDIR/rc0.d/K30qmail
+    ln -s ../init.d/qmail RCDIR/rc1.d/K30qmail
+    ln -s ../init.d/qmail RCDIR/rc2.d/S80qmail
+    ln -s ../init.d/qmail RCDIR/rc3.d/S80qmail
+    ln -s ../init.d/qmail RCDIR/rc4.d/S80qmail
+    ln -s ../init.d/qmail RCDIR/rc5.d/S80qmail
+    ln -s ../init.d/qmail RCDIR/rc6.d/K30qmail
+!endblock
+
+Note : Les numéros de l'étape précédente sont très dépendants du système, mais quelque peu flexibles. Si I<Sendmail> est actuellement installé, lancer la commande "F<find RCDIR -name "*sendmail" -print>" vous donnera les numéros qui doivent fonctionner pour votre système. Notez aussi que les résultats de ces commandes F<ln> sont indépendants de votre dossier de travail actuel.
+
+Sur tous les systèmes, rendez le script F<qmailctl> exécutable et liez le à un dossier dans votre chemin d'exécution :
+
+!block example
+    chmod 755 /var/qmail/bin/qmailctl
+    ln -s /var/qmail/bin/qmailctl /usr/bin
+!endblock
+
+H4[id="supervise-tree"]Les scripts F<supervise>
+
+Maintenant créez les dossiers de F<supervise> pour les services I<qmail> :
+
+!block example
+    mkdir -p /var/qmail/supervise/qmail-send/log
+    mkdir -p /var/qmail/supervise/qmail-smtpd/log
+!endblock
+
+Créez le fichier F</var/qmail/supervise/qmail-send/run> :
+
+!block example
+#!/bin/sh
+exec /var/qmail/rc
+!endblock
+
+Créez le fichier F</var/qmail/supervise/qmail-send/log/run> :
+
+!block example
+#!/bin/sh
+exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t /var/log/qmail
+!endblock
+
+Créez le fichier F</var/qmail/supervise/qmail-smtpd/run> :
+
+!block example
+#!/bin/sh
+QMAILDUID=`id -u qmaild`
+NOFILESGID=`id -g qmaild`
+MAXSMTPD=`cat /var/qmail/control/concurrencyincoming`
+LOCAL=`head -1 /var/qmail/control/me`
+if [ -z "$QMAILDUID" -o -z "$NOFILESGID" -o -z "$MAXSMTPD" -o -z "$LOCAL" ]; then
+    echo QMAILDUID, NOFILESGID, MAXSMTPD, or LOCAL is unset in
+    echo /var/qmail/supervise/qmail-smtpd/run
+    exit 1
+fi
+exec /usr/local/bin/softlimit -m 2000000 \
+    /usr/local/bin/tcpserver -v -R -l "$LOCAL" -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
+        -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /var/qmail/bin/qmail-smtpd 2>&1
+!endblock
+
+Note : F<concurrencyincoming> n'est pas un fichier de contrôle standard I<qmail>. C'est une fonctionnalité du script ci-dessus. Par ailleurs, c'est F<-1> (moins un) dans la ligne F<LOCAL> et F<-l> (moins elle) dans la ligne des F<tcpserver>.
+
+!block note
+Note : Sur Solaris, le programme F<id> normal ne va pas marcher dans ce script. A la place d'F<id>, utilisez F</usr/xpg4/bin/id>, c'est à dire :
+
+>    QMAILDUID=`/usr/xpg4/bin/id -u qmaild`
+>    NOFILESGID=`/usr/xpg4/bin/id -g qmaild`
+!endblock
+
+Note : la limite de mémoire spécifiée dans la commande F<softlimit> peut être augmentée selon votre système d'exploitation et la plate-forme matérielle. Si les tentatives de connections au port 25 échouent ou que les systèmes distants sont incapables de vous envoyer un mail, essayez de l'augmenter à 3000000 ou à 4000000.
+
+Créez le fichier de contrôle F<concurrencyincoming> :
+
+!block example
+    echo 20 > /var/qmail/control/concurrencyincoming
+    chmod 644 /var/qmail/control/concurrencyincoming
+!endblock
+
+Créez le fichier F</var/qmail/supervise/qmail-smtpd/log/run> :
+
+!block example
+#!/bin/sh
+exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t /var/log/qmail/smtpd
+!endblock
+
+Rendez les fichiers run exécutables :
+
+!block example
+    chmod 755 /var/qmail/supervise/qmail-send/run 
+    chmod 755 /var/qmail/supervise/qmail-send/log/run 
+    chmod 755 /var/qmail/supervise/qmail-smtpd/run
+    chmod 755 /var/qmail/supervise/qmail-smtpd/log/run
+!endblock
+
+Ensuite, mettez en place les dossiers des journaux (log, NdT) :
+
+!block example
+    mkdir -p /var/log/qmail/smtpd
+    chown qmaill /var/log/qmail /var/log/qmail/smtpd
+!endblock
+
+Finalement, liez les dossiers F<supervise> dans F</service> :
+
+!block example
+    ln -s /var/qmail/supervise/qmail-send /var/qmail/supervise/qmail-smtpd /service
+!endblock
+
+Le répertoire F</service> est créé quand I<daemontools> est installé.
+
+!block note
+Note : le système I<qmail> démarrera automatiquement peu de temps après que ces liens soient créés. Si vous ne voulez pas qu'il tourne déjà, faites :
+
+>    qmailctl stop
+!endblock
+
+H4[id="smtp-access-control"]Contrôle d'accès SMTP
+
+Autorisez l'hôte local à injecter des mails via SMTP :
+
+!block example
+    echo '127.:allow,RELAYCLIENT=""' >>/etc/tcp.smtp
+    qmailctl cdb
+!endblock
+
+H3[id="stop-sendmail"]Stopper et désactiver le MTA installé
+
+Même s'il est possible de faire tourner simultanément I<qmail> et votre MTA existant, qui est probablement I<Sendmail>, je ne le recommande pas, à moins que vous sachiez ce que vous faites. Et, franchement, si vous lisez ceci, vous ne savez probablement pas ce que vous faites :-)
+
+Si votre MTA existant est I<Sendmail>, vous devriez pouvoir le stopper en lançant le script F<init.d> avec comme argument "stop". C'est à dire que l'une de ces commandes devrait marcher :
+
+!block example
+    /etc/init.d/sendmail stop
+    /sbin/init.d/sendmail stop
+    /etc/rc.d/init.d/sendmail stop
+!endblock
+
+Si vous ne trouvez pas de script F<init.d/sendmail>, vous pouvez récupérer le PID de F<sendmail> en utilisant "F<ps -ef|grep sendmail>" ou "F<ps waux|grep sendmail>" et le stopper en utilisant :
+
+!block example
+    kill I<PID-de-sendmail>
+!endblock
+
+Si votre MTA n'est pas I<Sendmail>, vérifiez sa documentation pour la procédure d'extinction correcte.
+
+Vous devriez aussi penser à supprimer votre ancien MTA complètement de votre système. Au moins, désactiver le script F<init.d> pour qu'il n'essaye pas de le lancer quand le système redémarre.
+
+Sur Red Hat Linux, supprimer F<Sendmail> se fait avec :
+
+>    rpm -e --nodeps sendmail
+
+!block note 
+Si vous utilisez une distribution Linux basée sur RPM, telle que Red Hat, supprimer le paquet MTA peut poser des problèmes au final. Des utilitaires qui mettent à jour votre système peuvent essayer de ré-installer I<Sendmail>, ou les paquets MUA (Mail User Agent, Agent Mail Utilisateur, NdT) pourraient ne pas être installables parce qu'ils ne peuvent pas appeler un MTA qui n'est pas installé. Mate Wierdl propose un paquet appelé "fake-mta" qui peut être installé pour éviter ces problèmes. Installez simplement le RPM disponible depuis {{URL:http://www.csi.hu/mw/fake_mta-1-1memphis.noarch.rpm}}.
+!endblock
+
+Vérifiez que rien n'écoute sur le port SMTP (25). Les coupables peuvent être l'ancien MTA, F<inetd> ou F<xinetd>. La commande suivante ne doit donner aucun résultat (à moins que le service F<qmail-smtpd> tourne) :
+
+>    netstat -a | grep smtp
+
+Si quelque chose tourne, soyez sûr que ça n'est pas I<qmail> en tapant :
+
+>    qmailctl stop
+
+Et répétez la vérification F<netstat> :
+
+>    netstat -a | grep smtp
+
+Si vous avez toujours un résultat à cette commande, vous devez identifier le coupable et régler le problème avant que le service SMTP I<qmail> puisse tourner.
+
+Pour finir, remplacez F</usr/lib/sendmail> avec une version I<qmail> :
+
+!block example
+    mv /usr/lib/sendmail /usr/lib/sendmail.old			I<# ignorer les erreurs>
+    mv /usr/sbin/sendmail /usr/sbin/sendmail.old		I<# ignorer les erreurs>
+    chmod 0 /usr/lib/sendmail.old /usr/sbin/sendmail.old	I<# ignorer les erreurs>
+    ln -s /var/qmail/bin/sendmail /usr/lib
+    ln -s /var/qmail/bin/sendmail /usr/sbin
+!endblock
+
+Note : il est important de créer les liens F<sendmail>, quel que soit votre précédent MTA, s'il y en avait. La commande F<sendmail> est invoquée par beaucoup d'application pour envoyer des mails.
+
+La dernière étape est de créer quelques alias système.
+
+H3[id="system-aliases"]Créer des alias système
+
+Il y a trois alias système qui devraient être créés sur toutes les installations I<qmail> :
+
+!block table
+Alias			But
+F<postmaster>		requis de RFC 2821, pointe vers l'administrateur mail (vous)
+F<mailer-daemon>	destinataire standard de facto pour quelques retours (bounce, NdT)
+F<root>			redirige les mails du compte utilisateur privilégié vers l'administrateur système
+!endblock
+
+Pour créer ces alias, décidez pour chacun où vous voulez qu'ils aillent (à un utilisateur local ou à une adresse distante) et créez et renseignez les fichiers F<.qmail> appropriés. Par exemple, disons que l'utilisateur local F<dave> est administrateur à la fois mail et système :
+
+!block example
+    echo dave > /var/qmail/alias/.qmail-root
+    echo dave > /var/qmail/alias/.qmail-postmaster
+    ln -s .qmail-postmaster /var/qmail/alias/.qmail-mailer-daemon
+    chmod 644 /var/qmail/alias/.qmail-root /var/qmail/alias/.qmail-postmaster 
+!endblock
+
+Voir F<INSTALL.alias> pour plus de détails.
+
+H3[id="start-it"]Démarrez I<qmail>
+
+Si vous avez coupé I<qmail> au-dessus, après avoir créé les liens dans F</service>, vous devriez le redémarrer maintenant :
+
+>    qmailctl start
+
+H2[id="test"]Tester l'installation
+
+I<qmail> devrait maintenant tourner. D'abord, lancer F<qmailctl stat> pour vérifier que les services sont vivants et fonctionnels :
+
+!block example
+    # qmailctl stat
+    /service/qmail-send: up (pid 30303) 187 seconds
+    /service/qmail-send/log: up (pid 30304) 187 seconds
+    /service/qmail-smtpd: up (pid 30305) 187 seconds
+    /service/qmail-smtpd/log: up (pid 30308) 187 seconds
+    messages in queue: 0
+    messages in queue but not yet preprocessed: 0
+!endblock
+
+Tous les quatre services doivent être "up" depuis plus d'une seconde. S'ils ne le sont pas, vous avez probablement une coquille dans un script run associé, ou vous avez oublié une ou plusieurs étapes dans la création des fichiers, dossiers ou liens nécessaires. Retournez à l'installation pas à pas et re-vérifiez votre travail.
+
+Ca aide parfois de lancer le service à la main, pour trouver les problèmes de configuration. Par exemple, si votre service F<qmail-smtpd/log> ne marche pas, faites :
+
+!block example
+    cd /service/qmail-smtpd/log
+    svc -d .
+    ./run
+    I<s'il n'y a pas d'erreur, entrez une ligne de texte et pressez Entrée>
+    I<s'il n'y a toujours pas d'erreur, pressez CTRL-D (fin de fichier)>
+!endblock
+
+A ce point, vous devriez être capable d'identifier le problème et de le régler. Une fois que c'est fait, retournez dans le dossier des services si nécessaire et faites :
+
+>    svc -u .
+
+Une fois que les services sont tous "up" avec une durée de vie > 1 seconde, suivez les instructions dans F<TEST.deliver> et F<TEST.receive> pour vérifier qu'ils fonctionnent correctement. Notez qu'en suivant ces instructions, le journal (log, NdT) sera géré par F<multilog> dans F</var/log/qmail> et non F<splogger> quelque part comme F</var/log/maillog>.
+
+!block note
+Si vous avez choisi le format de boite aux lettres maildir comme méthode de livraison par défaut, vous devrez créer un répertoire F<Maildir> dans votre répertoire racine (home directory, NdT) et dans le répertoire par défaut des F<alias> avant de tester ces instructions. Voir la section {{CMD[jump="#maildir-delivery"]maildir}} pour savoir comment créer proprement ce dossier.
+!endblock
+
+H1[id="configuration"]Configuration
+
+Vous avez installé un I<qmail>, grâce à la méthode recommandée de l'archive (tarball, NdT) source, ou un paquet qui se compile automatiquement, ou un paquet I<var-qmail>. Cette section contient les informations nécessaires pour configurer I<qmail> pour le faire marcher comme vous voulez.
+
+H2[id="config-files"]Fichiers de configuration
+
+Tous les fichiers de configuration système de I<qmail>, avec pour exception les fichiers F<.qmail> dans F<~alias>, se trouvent dans F</var/qmail/control>. La page man de F<qmail-control> contient un tableau identique au suivant :
+
+!block table
+Fichier_contrôle					Défaut		Utilisé par			But
+{{N[id="badmailfrom"]badmailfrom}}			I<aucun>	qmail-smtpd		liste noire d'expéditeurs (From)
+{{N[id="bouncefrom"]bouncefrom}}			MAILER-DAEMON	qmail-send			Nom d'utilisateur de l'expéditeur de retour (bounce, NdT)
+{{N[id="bouncehost"]bouncehost}}			me		qmail-send			nom d'hôte de l'expéditeur de retour (bounce, NdT)
+{{N[id="concurrencyincoming"]concurrencyincoming}}	I<aucun>	/service/qmail-smtpd/run	maximum de connexions SMTP entrantes simultanées
+{{N[id="concurrencylocal"]concurrencylocal}}		10		qmail-send		maximum de livraisons locales simultanées
+{{N[id="concurrencyremote"]concurrencyremote}}		20		qmail-send		maximum de livraisons distantes simultanées
+{{N[id="defaultdelivery"]defaultdelivery}}		I<aucun>	/var/qmail/rc		fichier .qmail par défaut
+{{N[id="defaultdomain"]defaultdomain}}			me		qmail-inject			nom de domaine par défaut
+{{N[id="defaulthost"]defaulthost}}			me		qmail-inject			nom d'hôte par défaut
+{{N[id="databytes"]databytes}}				0		qmail-smtpd		nombre maximum d'octets d'un message (0=pas de limite)
+{{N[id="doublebouncehost"]doublebouncehost}}		me		qmail-send			nom d'hôte de l'expéditeur d'un double retour (double bounce, NdT)
+{{N[id="doublebounceto"]doublebounceto}}		postmaster	qmail-send		utilisateur qui reçoit les doubles retours (double bounce, NdT)
+{{N[id="envnoathost"]envnoathost}}			me		qmail-send		domaine par défaut pour les adresses sans "@"
+{{N[id="helohost"]helohost}}				me		qmail-remote			nom d'hôte utilisé lors de la commande SMTP HELO
+{{N[id="idhost"]idhost}}				me		qmail-inject			nom d'hôte pour les Message-ID
+{{N[id="localiphost"]localiphost}}			me		qmail-smtpd			nom de substitution pour les adresses IP locales
+{{N[id="locals"]locals}}				me		qmail-send		domaines que l'on livre localement
+{{N[id="me"]me}}					I<FQDN> (NdT)	nombreux		valeur par défaut de nombreux fichiers de contrôle
+{{N[id="morercpthosts"]morercpthosts}}			I<aucun>	qmail-smtpd		base de données de rcpthosts secondaire
+{{N[id="percenthack"]percenthack}}			I<aucun>	qmail-send		domaines qui peuvent utiliser le relais type "%"
+{{N[id="plusdomain"]plusdomain}}			me		qmail-inject		domaine de substitution pour les "+" de fin de chaine
+{{N[id="qmqpservers"]qmqpservers}}			I<aucun>	qmail-qmqpc		adresses IP des serveurs QMQP
+{{N[id="queuelifetime"]queuelifetime}}			604800		qmail-send		nombre de secondes pendant lesquelles un message peut rester dans la file d'attente
+{{N[id="rcpthosts"]rcpthosts}}				I<aucun>	qmail-smtpd		domaines pour lesquels on accepte les messages
+{{N[id="smtpgreeting"]smtpgreeting}}			me		qmail-smtpd		message d'accueil SMTP
+{{N[id="smtproutes"]smtproutes}}			I<aucun>	qmail-remote		routes SMTP artificielles
+{{N[id="timeoutconnect"]timeoutconnect}}		60		qmail-remote		combien de temps, en secondes, attendre une connexion SMTP
+{{N[id="timeoutremote"]timeoutremote}}			1200		qmail-remote		combien de temps, en secondes, attendre les serveurs distants
+{{N[id="timeoutsmtpd"]timeoutsmtpd}}			1200		qmail-smtpd		combien de temps, en secondes, attendre les clients SMTP
+{{N[id="virtualdomains"]virtualdomains}}		I<aucun>	qmail-send		domaines et utilisateurs virtuels
+!endblock
+
+(NdT : FQDN = Fully Qualified Domain Name, nom de domaine complètement qualifié, du type dauphin.exemple.com)
+
+Pour plus d'informations concernant un fichier de contrôle particulier, voir la page man du module listé dans "Utilisé par".
+
+H2[id="relaying"]Relayage
+
+H3[id="relaying-intro"]Introduction
+
+Qu'est-ce que le I<relayage> ? C'est quand un MTA accepte un message via SMTP qui I<ne semble pas> être destiné B<à> une adresse locale ou B<émanant> d'un expéditeur local.
+
+Dans les temps pre-spam, il était habituel de configurer les MTA en tant que des relais I<ouverts> : des serveurs aux moeurs faciles qui acceptaient les mails de n'importe qui pour n'importe qui.
+
+La plupart des MTA sont maintenant configurés pour désactiver le relayage, ou pour uniquement accepter que certains utilisateurs ou systèmes de confiance les utilisent comme relais.
+
+Chris Johnson a écrit un très bon document sur ce sujet pour les utilisateurs de I<qmail>. Je vous encourage à visiter {{URL:http://www.palomine.net/qmail/relaying.html}}.
+
+H3[id="relaying-disabling"]Désactiver le relayage
+
+Si vous suivez les instructions officielles pour installer I<qmail>, le relayage sera coupé par défaut. Ceci se fait grâce à la publication du fichier F</var/qmail/control/rcpthost> avec les noms de domaines complètement qualifiés (FQDN, NdT) listés dans F<locals> et F<virtualdomains> (les hôtes locaux). Le nom de ce fichier de contrôle, F<rcpthosts>, vient de la commande SMTP F<RCPT> (recipient, c'est à dire destinataire, NdT). Dans une session SMTP, RCPT est utilisé pour spécifier les adresses des destinataires d'un message. Alors, F<rcpthosts> liste les noms d'hôte valides qui peuvent apparaître dans l'adresse RCPT.
+
+H3[id="relaying-selective"]Autoriser un relayage sélectif
+
+La plupart des utilisateurs uniques sur leur machine et des petits serveurs de travail peuvent désactiver complètement le relayage, mais si vous devez gérer une communauté d'utilisateurs distribuée, vous devrez trouver un moyen d'autoriser vos utilisateurs, et I<uniquement> vos utilisateurs, à utiliser votre système comme relais. Pour se faire, vous pouvez utiliser I<tcpserver> pour gérer la variable d'environnement F<RELAYCLIENT>, qui dit à F<qmail-smtpd> de passer outre le fichier F<rcpthosts>.
+
+Si vous suivez les instructions d'installation de ce document, le relayage sélectif sera autorisé par défaut. Pour donner à un client un accès relais, ajoutez une entrée à F</etc/tcp.smtp> comme suit :
+
+!block example
+    I<adresse IP du client>:allow,RELAYCLIENT=""
+!endblock
+
+Et reconstruisez la base de données des accès SMTP en faisant :
+
+>    qmailctl cdb
+
+ou :
+
+!block example
+    tcprules /etc/tcp.smtp.cdb /etc/tcp.smtp.tmp < /etc/tcp.smtp
+    chmod 644 /etc/tcp.smtp*
+!endblock
+
+Si vous avez suivi les instructions officielles d'installation, Chris Johnson a écrit un autre bon document sur comment configurer I<qmail> pour autoriser des hôtes sélectionnés à relayer. Voir {{URL:http://www.palomine.net/qmail/selectiverelay.html}}.
+
+H2[id="multiple-hostnames"]Noms d'hôte multiples
+
+Si votre système est connu sous plus d'un nom, c'est à dire toutes les adresses de la forme F<I<utilisateur>@hote1.exemple.com> peuvent aussi être écrites F<I<utilisateur>@exemple.com> ou F<I<utilisateur>@mail.exemple.com>, alors vous allez devoir le dire à I<qmail> pour qu'il sache quels messages il doit livrer localement et quels messages il peut accepter de systèmes distants.
+
+Pour faire cela, ajoutez simplement tous les noms dans les deux fichiers de contrôle :
+
+* F<rcpthosts>, qui dit à F<qmail-smtpd> d'accepter les mails adressés à ces hôtes, et
+* F<locals>, qui dit à F<qmail-send> que les adresses de ces hôtes doivent être livrées localement.
+
+Envoyez à F<qmail-send> un signal F<HUP> (hangup) pour lui dire de relire le fichier F<locals>. Si vous avez F<qmailctl>, vous pouvez faire :
+
+>    qmailctl reload
+
+H2[id="virtual-domains"]Domaines virtuels
+
+Les domaines virtuels sont similaires au principe des noms d'hôte multiples évoqués dans la section précédente, mais avec quelques différences importantes. Premièrement, si F<exemple.net> héberge le domaine virtuel F<virtuel.exemple.com>, les messages envoyés à F<joe@exemple.net> ne doivent généralement B<pas> arriver dans la même boite aux lettres que les messages envoyés à F<joe@virtuel.exemple.com>. L'espace de livraison pour chaque domaine est distinct.
+
+Avec I<qmail>, les domaines virtuels peuvent être configurés dans le fichier F<virtualdomains>, qui consiste en une ou plusieurs entrées de la forme :
+
+!block example
+    I<utilisateur>@I<domaine>:I<ajout>
+!endblock
+
+I<qmail> convertit F<I<utilisateur>@I<domaine>> en F<I<ajout>-I<utilisateur>@I<domaine>> et traite le résultat comme si F<I<domaine>> était local. La partie F<I<utilisateur>@> est optionnelle. Si elle est omise, l'entrée correspondra à I<toutes> les adresses F<@I<domaine>>.
+
+Retournons à notre scénario d'exemple ci-dessus. Si l'administrateur mail de exemple.net veut créer un domaine virtuel, F<virtuel.exemple.com>, sous le contrôle administratif de l'utilisateur F<john>, l'entrée suivante dans F<virtualdomains> le fera :
+
+!block example
+    virtuel.exemple.com:john
+!endblock
+
+Un message entrant pour F<joe@virtuel.exemple.com> sera ré-écrit pour F<john-joe@virtuel.exemple.com> et livré localement. Voir la section {{CMD[jump="#dot-qmail-files"].qmail}} et la sous-section sur les {{CMD[jump="#extension-addresses"]adresses étendues}} pour plus d'information sur la façon de gérer son domaine virtuel pour john.
+
+Comme avec les noms d'hôte multiples, tous les domaines virtuels doivent être listés dans F<rcpthosts> pour que F<qmail-smtpd> accepte les messages qui leur sont adressés. Cependant, contrairement aux noms d'hôte multiples, les domaines virtuels B<ne> B<doivent> B<pas> être ajoutés dans F<locals>.
+
+Après avoir modifié F<virtualdomains>, envoyez à F<qmail-send> un signal F<HUP> (hangup) pour lui dire de relire le fichier. Si vous avez F<qmailctl>, vous pouvez faire :
+
+>    qmailctl reload
+
+N'oubliez pas d'ajouter aussi les domaines virtuels à F<rcpthosts>.
+
+Note : Les entrées échangeur de mail (mail exchanger, MX, NdT) des serveurs de noms de domaine (Domain Name Server, DNS, NdT) doivent être configurés pour diriger les messages destinés aux domaines virtuels aux serveurs de mails appropriés. C'est un travail pour l'administrateur du serveur de nom, et est hors du champ de ce guide.
+
+H2[id="aliases"]Alias
+
+Le mécanisme standard d'alias de I<qmail> est une conséquence naturelle du mécanisme de livraison locale. F<qmail-local> essaye de livrer un message adressé à F<I<partie_locale>@hote> à un utilisateur nommé F<I<partie_locale>>. Si aucun utilisateur correspondant n'est trouvé, le message sera livré à l'utilisateur F<alias>, un pseudo-utilisateur sur tous les systèmes I<qmail> dont le dossier racine est habituellement F</var/qmail/alias>.
+
+Par exemple, disons que vous voulez créer un alias F<info@exemple.com> pour faire suivre les messages à l'utilisateur F<tom>. Sur F<exemple.com>, faites en tant qu'utilisateur F<root> :
+
+!block example
+    echo \&tom > /var/qmail/alias/.qmail-info
+!endblock
+
+La section F<{{CMD[jump="#dot-qmail-files"].qmail}}> et la sous-section sur les {{CMD[jump="#extension-addresses"]extension d'adresses}} décrivent comment créer des fichiers F<.qmail> qui spécifient quel alias existe, et que faire des messages qui leur sont envoyés.
+
+L'appendice {{CMD[jump="#gotchas"]Problèmes usuels}} couvre quelques cas compliqués à propos de l'utilisation des alias -- alias contenant des caractères majuscules, des points ('.') -- et F<man dot-qmail> contient une documentation complète sur l'utilisation des fichiers F<.qmail>.
+
+Notez que grâce à la façon dont les alias sont implémentés dans I<qmail>, un alias ne pourra I<jamais> outrepasser la livraison d'un utilisateur valide. C'est à dire, si F<rachel> est un utilisateur normal, F<~alias/.qmail-rachel> ne sera pas utilisé.
+
+Le paquet I<{{CMD[jump="#fastforward"]fastforward}}> offre un mécanisme d'alias alternatif qui met plusieurs alias dans un seul fichier compatible avec la base de données d'alias de I<Sendmail>.
+
+La section suivante, qmail-users, décrit un autre mécanisme qui peut être utilisé pour implémenter des alias.
+
+H2[id="qmail-users"]qmail-users
+
+I<qmail-users> est un système pour assigner des adresses à des utilisateurs. Une série de fichiers de configuration se situe dans F</var/qmail/users>. Le fichier F<assign> est un tableau d'assignation. Il y a deux types d'assignations : simple et générique (wildcard, NdT).
+
+Note : F<assign> contient une série d'assignations, une par ligne, suivie par une ligne contenant un simple point (.). Si vous créez F<assign> manuellement, n'oubliez pas la ligne avec le point.
+
+H3[id="simple-assignment"]Assignation simple
+
+Une assignation simple ressemble à :
+
+!block example
+=I<addresse>:I<utilisateur>:I<uid>:I<gid>:I<dossier>:I<tiret>:I<extension>:
+!endblock
+
+Ce qui veut dire que les messages reçus pour I<adresse> seront livrés à l'utilisateur I<utilisateur>, avec les I<uid> et I<gid> spécifiés, et le fichier F<I<dossier>/.qmailI<tiret>I<extension>> spécifie comment le message doit être livré.
+
+H3[id="wildcard-assignment"]Assignation générique (wildcard, NdT)
+
+Une assignation générique (wildcard, NdT) ressemble à :
+
+!block example
++I<prefix>:I<utilisateur>:I<uid>:I<gid>:I<dossier>:I<tiret>:I<ajout>:
+!endblock
+
+Ce qui veut dire que les messages reçus pour les adresses de la forme I<prefix>I<reste> seront livrés à l'utilisateur I<utilisateur>, avec les I<uid> et I<gid> spécifiés, et le fichier F<I<dossier>/.qmailI<tiret>I<ajout>I<reste>> spécifie comment le message doit être livré.
+
+H3[id="qmail-user-programs"]Programmes de qmail-user
+
+qmail-user a deux programmes pour aider : F<qmail-newu> et F<qmail-pw2u>.
+
+F<qmail-newu> traite le fichier F<assign> et génère un fichier de base de données constante (CDB) appelé <cdb> dans F</var/qmail/users>. CDB est un format binaire auquel F<qmail-lspawn> peut accéder rapidement, même quand il contient des milliers d'assignations.
+
+F<qmail-pw2u> convertit la base de données utilisateur du système, F</etc/passwd>, et une série d'assignation appropriée pour F<assign>. F<qmail-pw2u> utilise un ensemble de fichier pour modifier les règles de traductions.
+
+* F<include> : utilisateurs à inclure
+* F<exclude> : utilisateurs à exclure
+* F<mailnames> : "nom de mail" alternatifs pour les utilisateurs
+* F<subusers> : adresses supplémentaires gérées par un utilisateur, avec une extension F<.qmail> optionnelle
+* F<append> : assignations diverses
+
+!block note
+Note : si vous utilisez F<qmail-pw2u>, n'oubliez pas de relancer F<qmail-pw2u> et F<qmail-newu> à chaque fois que vous ajoutez un utilisateur, supprimez un utilisateur ou modifiez les UID ou GID. Une séquence typique serait :
+
+>    qmail-pw2u </etc/passwd >/var/qmail/users/assign
+>    qmail-newu
+!endblock
+
+H2[id="spam"]Contrôle de spam
+
+Chris Hardie a écrit un excellent HOWTO sur l'anti spam I<qmail>. Il est disponible depuis {{URL:http://www.summersault.com/chris/techno/qmail/qmail-antispam.html}}.
+
+H2[id="viruses"]Détection de virus
+
+Jason Haar a écrit Qmail-Scanner, un scanneur de contenu pour I<qmail>. Voir {{URL:http://qmail-scanner.sourceforge.net/}} pour plus d'information.
+
+Qmail-Scanner inclut un simple scanneur intégré, mais un scanneur sérieux nécessite un scanneur de virus séparé -- soit l'un des scanneurs commerciaux supportés, soit le scanneur gratuit de Tomasz Kojm, Clam Antivirus, disponible ici {{URL:http://clamav.elektrapro.com/}}.
+
+H1[id="usage"]Utilisation
+
+Cette section couvre l'utilisation de I<qmail> pour des utilisateurs normaux. Si vous recevez ou envoyez des mails avec un système I<qmail>, c'est ici que vous trouverez des informations sur comment le faire avec I<qmail>.
+
+H2[id="dot-qmail-files"]Fichiers F<.qmail>
+
+La livraison des mails aux utilisateurs est habituellement contrôlée par un ou plusieurs fichiers ".qmail" (prononcé I<point ku mail> en français, et I<dot kyoo mail> en anglais, NdT) -- fichiers dans le dossier racine de l'utilisateur, commençant par F<.qmail>. La page man de F<dot-qmail> décrit l'utilisation des fichiers F<.qmail>.
+
+Les fichiers F<.qmail> contiennent une liste d'instructions de livraison, une instruction par ligne. Le premier caractère de la ligne détermine le type de livraison impliqué :
+
+!block table
+Caractere	Type_de_livraison					Valeur
+E<doubledagger>	aucun I<(commentaire)>					ignoré
+|		programme						commande à exécuter dans un shell
+/ ou .		mbox I<(si le dernier caractère n'est pas un /)>	chemin de la mbox I<(incluant le / ou .)>
+/ ou .		maildir I<(si le dernier caractère est un /)>		chemin du maildir I<(incluant le / ou .)>
+&		transfert						adresse de transfert du message
+lettre ou nombre	transfert					adresse de transfert du message I<(incluant le premier caractère)>
+!endblock
+
+H3[id="program-delivery"]Livraison par programme
+
+Quand il rencontre une livraison par programme, I<qmail> lance un shell (F</bin/sh>) pour exécuter la commande, et donne à la commande une copie du message reçu dans l'entrée standard. La page man F<qmail-command> documente en détail ce processus.
+
+La livraison par programme est très puissante, et peut être utilisée pour implémenter une vaste gamme de fonctionnalités, telles que le filtrage de message, la réponse automatique, et la livraison via des agents de livraison tierces comme I<procmail>.
+
+Par exemple :
+
+>    |preline /usr/ucb/vacation djb
+
+Ceci fait que I<qmail> lance F<preline>, lui passe F</usr/ucb/vacation> et F<djb> en arguments, et lui fournit une copie du message dans l'entrée standard.
+
+H3[id="mbox-delivery"]Livraison mbox
+
+Mbox est le format de boite aux lettres standard d'UNIX dans lequel de multiples messages sont stockés dans un fichier unique et les messages commencent par la ligne "F<From >". Cette ligne ressemble à un champ d'entête, mais ça n'est pas le cas : c'est juste quelque chose que l'agent de livraison ajoute pour que le lecteur du mail puisse voir quand chaque message commence.
+
+Par exemple :
+
+>    ./Mailbox
+
+Ceci fait que les messages seront ajoutés dans F<$HOME/Mailbox>, avec une ligne "F<From >" insérée. Une boite aux lettres simple mbox avec un seul message ressemble à ça :
+
+>    From utilisateur1@exemple.net Thu May 13 18:34:50 1999
+>    Received: (qmail 1287205 invoked from network); 13 May 1999 18:34:49 -0000
+>    From: utilisateur1@exemple.net
+>    To: utilisateur2@exemple.com
+>    Sujet: hey
+>
+>    Quoi de neuf ?
+
+La première ligne a été ajoutée à la livraison par I<qmail>.
+
+H3[id="maildir-delivery"]Livraison maildir
+
+Maildir est un format de boite aux lettres créé par Dan Bernstein pour pallier les imperfections du format mbox. Une boite aux lettres Maildir est un dossier contenant trois sous-dossiers, F<new>, F<cur> et F<tmp>. Chaque message dans une boite aux lettres format Maildir est un fichier séparé dans un des sous-dossiers, selon son statut : F<new> pour non lus, F<cur> pour les messages qui ont été vus, et F<tmp> pour les messages en cours de livraison. La page man de F<maildir> décrit le format de maildir en détail.
+
+Un des bénéfices du format maildir est qu'il est fiable, même si ça n'utilise pas les blocages (lock, NdT) pour éviter les mises à jour simultanées de la part de différents agents. Ceci veut dire que les boites aux lettres maildir peuvent reposer sur des systèmes de fichiers montés en NFS en toute sécurité.
+
+Exemple :
+
+>    ./Maildir/
+
+Ceci fait que les messages seront sauvés dans F<$HOME/Maildir>, une boite aux lettres au format maildir.
+
+Note : F<qmail-local> peut livrer un mail dans des boites aux lettres maildir, mais ne peut pas les créer. Les boites maildir doivent être créées avec le programme F<maildirmake> qui est fourni avec I<qmail>. Exemple, "F<maildirmake ~/Maildir>". Prenez soin de lancer F<maildirmake> en tant que propriétaire du maildir, et B<non> root. Votre version de la commande F<useradd> ou F<adduser> supporte peut-être les dossiers "squelettes" (skeleton, NdT), exemple F</etc/skel>, ou vous pouvez créer un maildir qui sera copié pour tous les nouveaux utilisateurs.
+
+H3[id="forward-delivery"]Livraison ré-expédiée
+
+La livraison ré-expédiée renvoie le message à une adresse spécifique. Les adresses spécifiées dans les fichiers F<.qmail> ne peuvent pas contenir des champs de commentaires ou des espaces.
+
+Ces exemples sont B<faux> :
+
+>    &<utilisateur@exemple.com>
+>    & utilisateur@exemple.com
+>    &Utilisateur Joe <utilisateur@exemple.com>
+
+Ces exemples sont corrects :
+
+>    &utilisateur@exemple.com
+>    utilisateur@exemple.com
+>    &utilisateur
+
+Les deux premiers envoient une copie du message à F<utilisateur@exemple.com>. Le dernier envoie une copie à l'utilisateur local F<utilisateur>.
+
+H3[id="extension-addresses"]Les adresses étendues
+
+I<qmail> supporte les adresses étendues, gérées par les utilisateurs. En plus des adresses de bases, F<I<identifiant>@I<nom_d_hote>.I<domaine>>, les utilisateurs peuvent recevoir des mails à F<I<identifiant>-I<extension>@I<nom_d_hote>.I<domaine>>. Pour la suite de cette section, je laisserai la partie "@I<nom_d_hote>.I<domaine>", comme nous considérons que tout ceci se passe sur un système local.
+
+Les instructions de livraison pour F<I<identifiant>-I<extension>> sont dans F<~I<identifiant>/.qmail-I<extension>>.
+
+Par exemple, F<dave-lwq@sparge.exemple.com> est controlé par F<~dave/.qmail-lwq> sur l'hôte sparge.
+
+Les extensions peuvent avoir plusieurs champs, exemple F<dave-list-qmail>, contrôlé par F<~dave/.qmail-liste-qmail>. Dans cet exemple, F<dave-liste-qmail> est inscrit à la liste de diffusion I<qmail> et F<~dave/.qmail-liste-qmail> range les messages dans une boite aux lettres distincte.
+
+Les fichiers F<.qmail> peuvent être I<génériques> en utilisant F<-default>. Donc, F<dave-liste-qmail> peut aussi être géré par F<~dave/.qmail-list-default>. Ceci permet à un fichier F<.qmail> "attrape-tout" (catch-all, NdT) de gérer toutes les adresses F<dave-liste-I<n'importe_quoi>>. Notez que F<dave-liste> ne sera pas géré par F<~dave/.qmail-liste-default> parce que ça ne correspond pas au "-" après "liste".
+
+I<qmail> utilise la plus proche correspondance qu'il trouve. Par exemple, quand un message arrive adressé à F<dave-liste-qmail>, il utilisera le premier qui suit qui correspondra :
+
+>    .qmail-list-qmail
+>    .qmail-list-default
+>    .qmail-default
+
+S'il n'y a pas de fichier F<.qmail> correspondant, la livraison échouera et le message rebondira vers l'expéditeur (bounce message, NdT).
+
+H2[id="sending-messages"]Envoyer des messages
+
+Les utilisateurs de mail n'utilisent d'habitude pas le MTA directement pour envoyer des messages. Typiquement, les messages sont créés et envoyés en utilisant un Agent Utilisateur de Mail (Mail User Agent, MUA, NdT) tel que I<pine> ou I<mutt>, qui ensuite appellent le MTA pour livrer le message. Le processus de prise en main du message par le MTA est appelé l'I<injection>.
+
+Il y a deux façons d'injecter les messages dans la plupart des MTA : via le Protocole de Transfert de Mail Simple (Simple Mail Transfert Protocol, NdT), SMTP, ou en utilisant un programme fourni par le MTA pour cette tache.
+
+H3[id="smtp"]SMTP
+
+Les MUA peuvent ouvrir des connexions TCP sur le port 25, le port SMTP standard, sur l'hôte local ou un serveur de mail désigné. Le MUA et le MTA engagent alors un dialogue qui a pour résultat soit :
+
+* le message est transféré au MTA, soit
+* un statut d'erreur retourné au MUA
+
+SMTP n'a pas de mécanisme d'authentification, donc aucun identifiant ni mot de passe n'est nécessaire pour envoyer un message. Néanmoins, beaucoup de MTA refusent d'accepter les messages qui ne semblent pas venir d'un utilisateur local ou à destination d'un utilisateur local. Si un message correctement formaté est rejeté, les restrictions de relais en sont le plus probablement la cause. Voir la section {{CMD[jump="#relaying"]Relayage}} pour plus d'informations sur la configuration de relayage.
+
+H3[id="/var/qmail/bin/sendmail"]F</var/qmail/bin/sendmail>
+
+Pendant de nombreuses années, I<Sendmail> a été I<le> MTA d'UNIX. Il était si omniprésent que de nombreux programmeurs ont simplement supposé que c'était le MTA. Le résultat est que l'injection locale de I<Sendmail> est devenue l'Interface du Programmeur d'Application (Application Programmer Interface, API, NdT) standard pour l'injection locale de mail. I<qmail> et les MTA autres que I<Sendmail> fournissent un programme F<sendmail> qui marche de la même façon que le vrai F<sendmail> de I<Sendmail> pour l'injection locale.
+
+Le F<sendmail> de I<qmail>, qui est normalement dans F</var/qmail/bin/sendmail>, remplace habituellement le F<sendmail> de I<Sendmail> sur les systèmes I<qmail>. Les emplacements typiques du programme F<sendmail> incluent :
+
+* F</usr/lib/sendmail>
+* F</usr/sbin/sendmail>
+
+Sur un système I<qmail>, "F<ls -l I<chemin-vers-sendmail>>" doit montrer que sendmail est un lien symbolique vers F</var/qmail/bin/sendmail> :
+
+>  $ ls -l /usr/lib/sendmail
+>  lrwxrwxrwx   1 root     root           29 Feb 19 11:04 /usr/lib/sendmail -> /var/qmail/bin/sendmail
+
+H3[id="qmail-inject"]F<qmail-inject>
+
+En plus d'émuler l'API sendmail, I<qmail> a son propre programme d'injection : F<qmail-inject>. En fait, F<sendmail> est un emballage de F<qmail-inject>.
+
+En tant qu'API, F<sendmail> est probablement mieux parce qu'il est bien plus largement disponible. L'API I<qmail> fournie par F<qmail-inject> marchera uniquement sur des systèmes avec I<qmail>, mais l'interface F<sendmail> est quasiment universelle.
+
+Par exemple, pour envoyer un message vide à F<joe@exemple.com> :
+
+> echo To: joe@exemple.com | /var/qmail/bin/qmail-inject
+
+H2[id="environment-variables"]Variables d'environnement
+
+Quelques programmes I<qmail> valuent ou utilisent des variables d'environnement. Le tableau suivant liste ces variables et décrit leur usage.
+
+!block table
+Nom							Page_man		Valuée_ou_utilisée	But
+{{N[id="DATABYTES"]DATABYTES}}				F<qmail-smtpd>		utilisée	Passe outre F<control/databytes>
+{{N[id="DEFAULT"]DEFAULT}}				F<qmail-command>	valuée		Portion d'adresse correspondant à "-default" dans un fichier F<.qmail>
+{{N[id="DTLINE"]DTLINE}}				F<qmail-command>	valuée		Champs Delivered-To de l'entête
+{{N[id="EXT"]EXT}}					F<qmail-command>	valuée		L'adresse étendue
+{{N[id="EXT2"]EXT2}}					F<qmail-command>	valuée		Portion de EXT suivant le premier tiret
+{{N[id="EXT3"]EXT3}}					F<qmail-command>	valuée		Portion de EXT suivant le second tiret
+{{N[id="EXT4"]EXT4}}					F<qmail-command>	valuée		Portion de EXT suivant le troisième tiret
+{{N[id="HOME"]HOME}}					F<qmail-command>	valuée			Le dossier racine de l'utilisateur
+{{N[id="HOST"]HOST}}					F<qmail-command>	valuée			La partie domaine de l'adresse du destinateur
+{{N[id="HOST2"]HOST2}}					F<qmail-command>	valuée		Portion de HOST précédant le dernier point.
+{{N[id="HOST3"]HOST3}}					F<qmail-command>	valuée		Portion de HOST précédant l'avant dernier point
+{{N[id="HOST4"]HOST4}}					F<qmail-command>	valuée		Portion de HOST précédant l'avant avant dernier point
+{{N[id="LOCAL"]LOCAL}}					F<qmail-command>	valuée			La partie I<locale> de l'adresse de destinataire
+{{N[id="LOGNAME"]LOGNAME}}				F<qmail-inject>		utilisée		Nom d'utilisateur dans le champ d'entête From (4)
+{{N[id="MAILHOST"]MAILHOST}}				F<qmail-inject>		utilisée		Nom de l'hôte dans le champ d'entête From (2)
+{{N[id="MAILNAME"]MAILNAME}}				F<qmail-inject>		utilisée		Nom personnel dans le champ d'entête From (2)
+{{N[id="MAILUSER"]MAILUSER}}				F<qmail-inject>		utilisée		Nom d'utilisateur dans le champ d'entête From (2)
+{{N[id="NAME"]NAME}}					F<qmail-inject>		utilisée		Nom personnel dans le champ d'entête From (3)
+{{N[id="NEWSENDER"]NEWSENDER}}				F<qmail-command>	valuée		Adresse transférée (fowarding address, NdT) d'expéditeur (voir "man dot-qmail")
+{{N[id="QMAILDEFAULTDOMAIN"]QMAILDEFAULTDOMAIN}}	F<qmail-inject>		utilisée	Outrepasse F<control/defaultdomain>
+{{N[id="QMAILDEFAULTHOST"]QMAILDEFAULTHOST}}		F<qmail-inject>		utilisée	Outrepasse F<control/defaulthost>
+{{N[id="QMAILHOST"]QMAILHOST}}				F<qmail-inject>		utilisée		Nom de l'hôte dans le champ d'entête From (1)
+{{N[id="QMAILIDHOST"]QMAILIDHOST}}			F<qmail-inject>		utilisée	Outrepasse F<control/idhost>
+{{N[id="QMAILINJECT"]QMAILINJECT}}			F<qmail-inject>		utilisée	Spécifie de nombreuses options (voir prochain tableau)
+{{N[id="QMAILMFTFILE"]QMAILMFTFILE}}			F<qmail-inject>		utilisée	Fichier contenant une liste d'adresses de listes de diffusion pour générer les Mail-Followup-To
+{{N[id="QMAILNAME"]QMAILNAME}}				F<qmail-inject>		utilisée		Nom personnel dans le champ d'entête From (1)
+{{N[id="QMAILPLUSDOMAIN"]QMAILPLUSDOMAIN}}		F<qmail-inject>		utilisée	Outrepasse F<control/plusdomain>
+{{N[id="QMAILSHOST"]QMAILSHOST}}			F<qmail-inject>		utilisée		Nom d'hôte dans l'adresse de l'expéditeur sur l'enveloppe
+{{N[id="QMAILSUSER"]QMAILSUSER}}			F<qmail-inject>		utilisée		Nom d'utilisateur dans l'adresse de l'expéditeur sur l'enveloppe
+{{N[id="QMAILUSER"]QMAILUSER}}				F<qmail-inject>		utilisée		Nom d'utilisateur dans le champ d'entête From (1)
+{{N[id="RECIPIENT"]RECIPIENT}}				F<qmail-command>	valuée		Adresse du destinataire sur l'enveloppe
+{{N[id="RELAYCLIENT"]RELAYCLIENT}}			F<qmail-smtpd>		utilisée	Ignore F<control/rcpthosts> et ajoute la valeur à l'adresse de destinataire
+{{N[id="RPLINE"]RPLINE}}				F<qmail-command>	valuée		Champs d'entête Return-Path
+{{N[id="SENDER"]SENDER}}				F<qmail-command>	valuée		Adresse de l'expéditeur sur l'enveloppe
+{{N[id="UFLINE"]UFLINE}}				F<qmail-command>	valuée		Ligne "From " dans le style UUCP
+{{N[id="USER"]USER}}					F<qmail-command>	valuée	L'utilisateur courant
+{{N[id="USER"]USER}}					F<qmail-inject>		utilisée		Nom d'utilisateur dans le champ d'entête From (3)
+!endblock
+
+!block table; title="Drapeaux QMAILINJECT (flags, NdT)"
+Lettre	But
+c	Utilise le style "adresse commentée" dans le champ From
+s	Ne pas regarder le champ Return-Path des messages entrants
+f	Efface tous les champs From des messages entrants
+i	Efface tous les champs Message-ID des messages entrants
+r	Utilise un VERP par destinataire
+m	Utilise un VERP par message
+!endblock
+
+H1[id="advanced-topics"]Sections avancées
+
+H2[id="procmail"]I<procmail>
+
+I<procmail> est un Agent de Livraison de Messages (Message Delivery Agent, MDA, NdT). La fonction d'un MDA est d'accepter un message d'un MTA pour un utilisateur ou une boite aux lettres spécifique, et de livrer ce message selon les désirs de l'utilisateur. I<procmail> peut être utilisé pour filtrer les messages selon le contenu de différents champs d'entête ou le corps du message. Par exemple, les messages en provenance d'une certaine personne peuvent être dirigés dans une boite aux lettres pour cette personne.
+
+Il y a quelques trucs pour faire tourner I<procmail> avec I<qmail>. Tout d'abord, I<procmail> est d'habitude construit pour livrer dans une boite aux lettres format mbox dans F</var/spool/mail>. Vous pouvez reconstruire le I<procmail> par défaut pour livrer dans F<$HOME> ou vous pouvez apprendre aux utilisateurs de ne pas faire confiance à la position par défaut de I<procmail> pour la boite aux lettres. Sauf si vous le corrigez pour une livraison dans F<$HOME>, F<procmail> utilisera toujours F</var/spool/mail> pour les fichiers temporaires.
+
+Un autre problème est que la commande F<qmail-command> et F<procmail> n'ont pas la même compréhension des codes de sortie. F<procmail> utilise les codes de sortie standards : zéro veut dire I<succès>, non zéro veut dire I<erreur>, et la cause de l'erreur est indiquée par F</usr/include/sys/errno.h>. F<qmail-command> utilise certains codes autres que zéro pour notifier des erreurs permanentes et les autres sont considérées comme non permanentes. Un petit script shell d'interface peut être utilisé pour traduire les codes de sortie pour F<qmail-command>. Un tel script a été posté sur la liste de diffusion I<qmail> et est disponible depuis les archives à cette adresse : {{URL:http://www.ornl.gov/its/archives/mailing-lists/qmail/1998/04/msg00487.html}}.
+
+Par ailleurs, les anciennes versions de I<procmail> (avant 3.14) ne délivrent pas directement dans des boites aux lettres au format maildir. Votre meilleur choix est de mettre à jour I<procmail> à la version actuelle. Une autre approche est I<safecat>, un programme qui écrit un message de l'entrée standard dans un maildir spécifié. Les utilisateurs peuvent aussi écrire des recettes pour procmail (instructions de livraison) qui utilisent I<{{CMD[jump="#safecat"]safecat}}> pour sauvegarder le message. Vous pouvez aussi vous passer de I<procmail> complètement et utiliser I<{{CMD[jump="#maildrop"]maildrop}}>.
+
+Finalement, F<procmail> s'attend à ce que les messages qu'il reçoit soient au format mbox. La livraison normale de I<qmail> inclut uniquement le message du mail, sans la ligne "F<From >". La commande F<preline> peut être utilisée pour formater le message tel que F<procmail> l'attend. Le script dont le lien est au-dessus inclus la commande F<preline>.
+
+Par exemple, disons que l'utilisateur "dave" veut que ces mails soient traités par F<procmail>. Son administrateur système a construit procmail pour livrer dans F<$HOME> par défaut, et a mis à disposition le script de traduction des codes de retour indiqué plus haut, appelé F</usr/local/bin/qmail-procmail>. Son fichier F<.qmail> doit ressembler à :
+
+>    |/usr/local/bin/qmail-procmail
+
+H2[id="pop-imap-servers"]Serveurs POP et IMAP
+
+I<qmail> inclut un serveur POP, I<qmail-pop3d>, mais il n'est pas configuré et installé durant l'installation de I<qmail>. Vous pouvez aussi utiliser un autre des serveur POP ou IMAP disponible, même si la plupart d'entre eux sont ont été écrit pour I<Sendmail> et nécessiteront un peu de travail pour les utiliser avec I<qmail>.
+
+H3[id="qmail-pop3d"]I<qmail-pop3d>
+
+I<qmail-pop3d> est le serveur POP inclus dans I<qmail>. C'est un bon serveur POP, et de nombreux sites I<qmail> l'utilisent. Il est modulaire, et il supporte de multiple schéma d'authentfication via des modules alternatifs.
+
+Note : I<qmail-pop3d> supporte B<uniquement> les boites aux lettres au format maildir, donc si vous avez des utilisateurs qui se connectent au serveur POP et font tourner leur MUA localement, ils devront tous supporter maildir. Si tous vos utilisateurs lisent leurs mails via POP, le format des boites aux lettres sur le serveur n'est pas un problème.
+
+H4[id="pop3d-arch"]Architecture de I<qmail-pop3d>
+
+Un serveur I<qmail-pop3d> est composé de trois modules :
+
+* F<qmail-popup> -- récupère l'identifiant et le mot de passe
+* F<checkpassword> -- vérifie l'identifiant et le mot de passe
+* F<qmail-pop3d> -- le démon POP
+
+Typiquement, F<qmail-popup> est lancé via F<inetd> ou F<tcpserver>, en écoutant sur le port 110, le port POP3. Quand la connexion est établie, il demande l'identifiant et le mot de passe. Ensuite, il invoque F<checkpassword>, qui vérifie l'identifiant et le mot de passe et invoque F<qmail-pop3d> s'ils sont valides.
+
+H4[id="pop3d-installation"]Installation de I<qmail-pop3d>
+
+1. Installez complètement et testez I<qmail>. Si vous voulez que tous vos utilisateurs aient des boites aux lettres POP, soyez sûr que defaultdelivery est mis à F<./Maildir/>. Si vous avez installé le script F</var/qmail/rc> de la section Installation, ceci est configuré dans F<control/defaultdelivery>. Sinon, c'est probablement dans F</var/qmail/rc> sur le ligne de la commande F<qmail-start>.
+
+2. Téléchargez un programme F<checkpassword> depuis {{URL:http://www.qmail.org/top.html#checkpassword}}. Le F<checkpassword> standard, {{URL:http://cr.yp.to/checkpwd.html}}, est un bon choix si vous n'avez besoin de rien de fantaisiste.
+
+3. Compilez et installez F<checkpassword> selon les indications. Soyez sûr de l'installer dans  F</bin/checkpassword>.
+
+4. Créez un script F</var/qmail/supervise/qmail-pop3d/run> contenant :
+
+!block example
+    #!/bin/sh
+    exec /usr/local/bin/softlimit -m 2000000 \
+        /usr/local/bin/tcpserver -v -R -H -l 0 0 110 /var/qmail/bin/qmail-popup \
+            I<FQDN> /bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir 2>&1
+!endblock
+
+où I<FQDN> (Fully Qualifed Domain Name, NdT) est le nom complètement qualifié du serveur POP que vous mettez en place, par exemple F<pop.exemple.net>.
+
+5. Créez un script F</var/qmail/supervise/qmail-pop3d/log/run> contenant :
+
+!block example
+    #!/bin/sh
+    exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t \
+        /var/log/qmail/pop3d
+!endblock
+
+6. Mettez en place le dossier de journal ainsi que les permissions sur les scripts F<run>, et liez le service dans F</service> :
+
+!block example
+    chmod +t /var/qmail/supervise/qmail-pop3d	I<# si daemontools < 0.75>
+    mkdir /var/log/qmail/pop3d
+    chown qmaill /var/log/qmail/pop3d
+    chmod 755 /var/qmail/supervise/qmail-pop3d/run
+    chmod 755 /var/qmail/supervise/qmail-pop3d/log/run
+    ln -s /var/qmail/supervise/qmail-pop3d /service
+!endblock
+
+7. Ajoutez ce qui suit dans la section "start" de F<qmailctl> :
+
+!block example
+    if svok /service/qmail-pop3d ; then
+      svc -u /service/qmail-pop3d
+    else
+      echo le superviseur de qmail-pop3d ne tourne pas
+    fi
+!endblock
+
+8. Ajoutez ce qui suit dans la section "stop" de F<qmailctl> :
+
+!block example
+    echo "  qmail-pop3d"
+    svc -d /service/qmail-pop3d
+!endblock
+
+9. Ajoutez ce qui suit dans la section "stat" de F<qmailctl> :
+
+!block example
+    svstat /service/qmail-pop3d
+    svstat /service/qmail-pop3d/log
+!endblock
+
+10. Ajoutez ce qui suit dans la section "pause" de F<qmailctl> :
+
+!block example
+    echo "Pause qmail-pop3d"
+    svc -p /service/qmail-pop3d
+!endblock
+
+11. Ajoutez ce qui suit dans la section "cont" de F<qmailctl> :
+
+!block example
+    echo "Relance qmail-pop3d"
+    svc -c /service/qmail-pop3d
+!endblock
+
+12. Ajoutez ce qui suit dans la section "restart" de F<qmailctl> :
+
+!block example
+    echo "* Relance qmail-pop3d."
+    svc -t /service/qmail-pop3d
+!endblock
+
+H3[id="qpopper"]I<Qpopper>
+
+Si vous avez besoin d'un démon POP qui marche avec les boites aux lettres au format mbox, vous pouvez utiliser I<Qpopper> de Qualcomm. I<Qpopper> est disponible à {{URL:http://www.eudora.com/qpopper_general/}}.
+
+H3[id="solidpop"]I<SolidPOP>
+
+Le serveur POP3 I<SolidPOP> supporte à la fois les boites aux lettres format maildir et mbox. Il est disponible à {{URL:http://solidpop3d.pld.org.pl/}}.
+
+H3[id="imap-maildir"]I<imap-maildir>
+
+David R. Harris a nettoyé le correctif qui ajoute le support maildir au serveur IMAP de l'Université de Washington et documenté l'installation. Voir {{URL:http://www.davideous.com/imap-maildir/}}.
+
+H3[id="courier-imap"]I<Courier-IMAP>
+
+Sam Varshavchik a écrit un serveur IMAP qui supporte B<uniquement> les boites aux lettres maildir. Il est disponible depuis {{URL:http://www.inter7.com/courierimap/}}.
+
+H2[id="pop-imap-clients"]Clients POP et IMAP
+
+H3[id="fetchmail"]I<fetchmail>
+
+I<fetchmail> est un programme qui récupère les mails depuis un serveur POP ou IMAP et les re-injecte localement. I<fetchmail> n'a pas de problème pour récupérer les mails depuis les serveurs I<qmail>, mais il y a quelques trucs pour qu'il marche bien sur un client I<qmail>.
+
+Voici un fichier exemple F<.fetchmailrc> pour un utilisateur sur un système I<qmail> :
+
+!block example
+poll mail.exemple.net proto pop3 nodns
+    user dsill with password flubgart is dave here
+    fetchall forcecr to * here
+!endblock
+
+Ceci dit à I<fetchmail> de se connecter à mail.exemple.net via POP3, s'identifier en tant qu'utilisateur F<dsill>, mot de passe F<flubgart>, récupérer tous les messages et les livrer à dave@localhost. L'instruction F<forcecr> fait que I<fetchmail> termine chaque ligne avec un retour à la ligne quand il injecte le mail dans le système local via SMTP. I<qmail> en a besoin.
+
+H3[id="getmail"]I<getmail>
+
+I<getmail> est un programme qui récupère les mails depuis un serveur POP et les livre dans des boites aux lettres maildir. C'est en fait un script Python, donc vous aurez certainement à installer un interpréteur Python avant de pouvoir utiliser I<getmail>.
+
+I<getmail> a été écrit par Charles Cazabon, qui maintient un page web à ce propos à cette adresse : {{URL:http://www.qcc.sk.ca/~charlesc/software/getmail-2.0/getmail.html}}.
+
+H2[id="multi-rcpt"]Livraison multi-RCPT contre simple RCPT
+
+Disons que vous êtes un MTA, et qu'un de vos utilisateurs envoie un message à trois personnes sur hotex.exemple.com. Il y a plusieurs façons pour vous de faire ça.
+
+^ Vous pouvez ouvrir une connexion SMTP vers hotex, envoyer une copie du message au premier utilisateur, envoyer une copie au deuxième utilisateur, envoyer une copie au troisième utilisateur, puis fermer la connexion.
+
++ Vous pouvez lancer trois processus, chacun ouvrant une connexion SMTP vers hotex, envoyant une copie du message à un des utilisateurs, et fermant la connexion.
+
++ Vous pouvez ouvrir une connexion SMTP vers cet hôte, envoyer une copie du message adressé I<aux trois> utilisateurs, puis fermer la connexion.
+
+La première méthode est clairement inférieure à la troisième. Même si le message est petit, ça prendra au moins autant de temps. Et si le message est lourd, ça prendra beaucoup plus de temps I<et> utilisera plus de bande passante réseau.
+
+Donc écartons cette méthode.
+
+La seconde et la troisième méthodes sont un tout petit peu plus intéressantes.
+
+La troisième méthode n'ouvre qu'une connexion vers hotex, et n'envoie qu'une copie du message. C'est une utilisation efficace de la bande passante.
+
+La seconde méthode utilise plusieurs connexions et envoie plusieurs copies du message. Ceci gaspille de la bande passante, mais à cause de la nature du protocole SMTP, nécessite moins de délais d'aller retour, et est plus rapide que la troisième méthode. C'est aussi plus simple que la troisième méthode, donc le MTA peut être codé de façon plus directe. Et finalement, parce que chaque destinataire reçoit sa propre copie du message, il est possible d'implémenter les VERP (voir section suivante) dans le MTA.
+
+I<qmail> utilise I<toujours> la seconde méthode (simple RCPT). Il n'y a pas de correctif pour implémenter la troisième méthode (multi RCPT) -- ceci nécessiterait un travail B<majeur>.
+
+Même s'il y a des cas pathologiques où cette méthode est plus lente que celle des multi-RCPT, les avantages de simplicité et de VERP outrepasse ses défauts.
+
+La livraison simple RCPT utilise I<effectivement> plus de bande passante que la livraison multi RCPT, mais la différence est souvent exagérée. La plupart des messages ont, au plus, quelques destinataires, et sont habituellement sur différents hôtes, donc la livraison multi RCPT n'apporte rien. Même sur un serveur de liste de diffusion, où la livraison multi RCPT peut aider, les gains potentiels sont faibles parce que SMTP n'utilise qu'une fraction de la bande passante par rapports à la plupart des liens -- HTTP prend généralement la plus grosse part du gâteau.
+
+Par exemple, si 10% de la bande passante sortante est utilisée par SMTP, et que l'usage de votre bande passante SMTP peut être réduit de, disons, 25% en utilisant la livraison multi RCPT, ça ne diminuera l'usage de la bande passante par SMTP qu'à 7,5%.
+
+H2[id="verp"]VERP
+
+Quand un message n'est pas livrable, le MTA responsable est supposé retourner un message de retour (bounce message, NdT) à l'expéditeur de l'enveloppe (envelope return path, ERP, NdT). Le message doit inclure l'adresse de destinataire, la raison pour laquelle le message n'est pas livrable, et si le problème est temporaire ou permanent. Malgré tout, certains MTA ne font pas les choses de la bonne façon. Ils peuvent parfois envoyer le message de retour à l'adresse du champ From de l'entête, ou le rebond (bounce, NdT) ne peut pas identifier le destinataire.
+
+Pour la plupart des messages utilisateur vers utilisateur, ces problèmes ne sont pas très graves. On peut d'habitude comprendre les choses en se basant sur le temps de retour, ou sur le contenu du retour. Pour les listes de diffusion, le problème des mauvais retours est plus sérieux. Les inscrits se déplacent et font suivre leurs mails à leur nouvelle adresse. Si la nouvelle adresse a des problèmes de livraison, il peut être impossible de dire quelle adresse d'inscrit pose problème si le message de retour ne contient que la nouvelle adresse.
+
+Dan Bernstein propose une solution à ces problèmes appelée VERP (Chemin de Retour de l'Enveloppe Variable, Variable Envelope Return Path, NdT). En utilisant les VERP, chaque message envoyé à chaque inscrit de la liste a une adresse de retour unique. Ceci permet à la personne qui gère les messages d'erreur d'identifier l'inscrit qui pose problème.
+
+Par exemple, une liste de diffusion sans VERP typique a pour une adresse de retour de l'adresse F<I<nom_de_la_liste>-proprietaire@I<domaine>>. Pour une liste avec VERP, l'adresse de retour ressemblera à F<I<nom_de_la_liste>-proprietaire-U<I<inscrit>=I<idomaine>>@I<ldomaine>>, où l'adresse de l'inscrit, F<I<inscrit>@I<idomaine>>, est entre le "proprietaire" et le "@" (le "@" de l'adresse de l'inscrit est remplacé par un "=").
+
+Le gestionnaire de liste de diffusion I<{{CMD[jump="#ezmlm"]ezmlm}}> utilise les VERP pour gérer automatiquement les retours. Il fournit même aux utilisateurs avec des problèmes de livraison temporaires une liste des messages qu'ils ont ratés pour qu'ils puissent les récupérer depuis l'archive.
+
+Russell Nelson a écrit un gestionnaire de retour pour I<Majordomo> sous I<qmail>, mais ne le maintient plus. Il est disponible depuis {{URL:http://www.qmail.org/bounceman-0.4.shar}}.
+
+H2[id="troubleshooting"]Dépannage
+
+H3[id="processes"]Processus
+
+Une installation complète mais minimale de I<qmail> qui fonctionne correctement doit toujours avoir les quatre processus suivant :
+
+* F<qmail-send> qui tourne en tant qu'utilisateur F<qmails>
+* F<qmail-clean> qui tourne en tant qu'utilisateur F<qmailq>
+* F<qmail-rspawn> qui tourne en tant qu'utilisateur F<qmailr>
+* F<qmail-lspawn> qui tourne en tant qu'utilisateur F<root>
+
+Selon votre type d'UNIX, l'une des deux commandes suivantes doit lister ces processus, et potentiellement quelques autres :
+
+>    ps -ef | grep qmail
+>    ps waux | grep qmail
+
+Par exemple :
+!block example
+[dave@sparge dave]$ B<ps waux|grep qmail>
+dave      2222  0.0  0.8   836   348  p4 S    10:25   0:00 grep qmail 
+qmaild     351  0.0  1.0   840   400  ?  S N  12:43   0:00 /usr/local/bin/tcpserver -v -x /etc/tcp.smtp.cdb -u 49491 -g 31314 0 smtp /var/qmail/bin/qmail-smtpd-
+qmaild    2220  0.0  1.0   844   420  ?  S N  10:25   0:00 /usr/local/bin/tcpserver -v -x /etc/tcp.smtp.cdb -u 49491 -g 31314 0 smtp /var/qmail/bin/qmail-smtpd-
+qmaill     365  0.0  0.8   748   344  ?  S N  12:43   0:00 splogger qmail
+B<qmailq     368  0.0  0.7   736   292  ?  S N  12:43   0:00 qmail-clean>
+B<qmailr     367  0.0  0.6   732   272  ?  S N  12:43   0:00 qmail-rspawn>
+B<qmails     350  0.0  0.8   776   336  ?  S N  12:43   0:00 qmail-send>
+root       340  0.0  0.6   724   252  ?  S N  12:43   0:00 /usr/local/sbin/supervise /var/supervise/qmail-send /var/qmail/rc 
+root       341  0.0  0.6   724   252  ?  S N  12:43   0:00 /usr/local/sbin/supervise /var/supervise/tcpserver-qmail /usr/local/bin/tcpserver -v -x /etc/tcp.smtp
+B<root       366  0.0  0.7   736   276  ?  S N  12:43   0:00 qmail-lspawn ./Mailbox>
+[dave@sparge dave]$ 
+!endblock
+
+Si vous faites tourner I<qmail> ou I<qmail-smtpd> avec F<supervise>, comme dans l'exemple ci-dessus, vous devez voir ces processus aussi. Et si vous faites tourner F<qmail-smtpd> avec F<tcpserver>, vous devez voir le processus parent F<tcpserver> plus un processus F<tcpserver> pour chaque connexion SMTP active I<entrante>.
+
+Si vous utilisez F<splogger> (ou F<multilog> ou F<cyclog>) pour gérer le journal, vous aurez un processus F<splogger> (ou F<multilog> ou F<cyclog>) ou deux qui tournent en tant qu'utilisateur F<qmaill>.
+
+De plus, si I<qmail> est occupé à livrer des messages en local ou à distance, vous verrez au plus autant de processus F<qmail-local> que la valeur de F<concurrencylocal> et autant de processus F<qmail-remote> que la valeur de F<concurrencyremote>.
+
+H3[id="logs"]Journal (logs, NdT)
+
+H4[id="multilog"]F<multilog>
+
+F<multilog>, qui est un composant du paquet I<{{CMD[jump="#daemontools"]daemontools}}>, note les messages dans une série de fichiers dans un dossier spécifique.
+
+Le dossier du journal (log, NdT) est spécifié dans la ligne de commande de F<multilog>, vous pouvez donc le retrouver en examinant les scripts de démarrage de I<qmail>.
+
+Le nombre de fichiers dans le dossier de journal, et la taille maximum de chaque fichier, sont déterminés par les options de F<multilog>. Le nom des fichiers de journal est l'heure au format TAI (Temps Atomique International), à l'heure de création du fichier. La commande F<tai64nlocal>, aussi composant des I<daemontools>, convertie les heures TAI en heures locales, lisible par l'homme.
+
+Une entrée de journal F<multilog> typique ressemble à :
+
+>@4000000038c3eeb104a6ecf4 delivery 153: success: did_1+0+0/
+
+"@4000000038c3eeb104a6ecf4" est l'heure optionnelle, mais recommandée.
+"delivery 153: success: did_1+0+0/" est le message du journal lui-même.
+
+H4[id="splogger"]F<splogger>
+
+F<splogger> utilise le système de journal I<syslog> pour dater les messages, et les envoyer au démon I<syslog>. I<Syslog> est configuré dans F</etc/syslog.conf>. Les messages envoyés à I<syslog> ont une fonction et une I<priorité>. Les entrées de F</etc/syslog.conf> filtrent sur la fonction et la priorité pour rediriger vers le fichier de journal désiré, l'hôte de journal distant, ou la console. F<splogger> enregistre la fonction F<mail> par défaut, donc chercher (F<grep>, NdT) "mail" dans le fichier F<syslog.conf> vous montrera les dispositions pour l'enregistrement des messages de I<qmail>.
+
+Les emplacements typiques sont :
+
+* F</var/log/syslog>
+* F</var/adm/SYSLOG>
+* F</var/log/maillog>
+
+Une entrée de journal de I<syslog> typique ressemble à :
+
+>Jun  3 11:35:23 sparge qmail: 928424123.963558 delivery 153: success: did_1+0+0/
+
+"Jun 3 11:35:23" est la date de I<syslog>.
+
+"sparge" est le nom du système qui a envoyé le message.
+
+"qmail:" est l'étiquette sous laquelle I<splogger> met toutes les entrées I<qmail>.
+
+"928424123.963558" est une date TAI optionnelle (voir section suivante).
+
+"delivery 153: success: did_1+0+0/" est le message du journal lui-même.
+
+H4[id="log-messages"]Messages du journal
+
+Voici une séquence de journal typique pour un message envoyé depuis le système local vers un système distant :
+
+!block example
+B<1> @4000000038c3eeb027f41c7c new msg 93869
+B<2> @4000000038c3eeb027f6b0a4 info msg 93869: bytes 2343 from <dave@sill.org> qp 18695 uid 49491
+B<3> @4000000038c3eeb02877ee94 starting delivery 2392: msg 93869 to remote lwq@w3.to
+B<4> @4000000038c3eeb0287b55ac status: local 0/10 remote 1/20
+B<5> @4000000038c3eeb104a13804 delivery 2392: success: 209.85.127.177_accepted_message.
+   /Remote_host_said:_250_CAA01516_Message_accepted_for_delivery/
+B<6> @4000000038c3eeb104a4492c status: local 0/10 remote 0/20
+B<7> @4000000038c3eeb104a6ecf4 end msg 93869
+!endblock
+
+La ligne 1 indique que I<qmail> a reçu un nouveau message, et que son ID (identifiant, NdT) de la file d'attente est 93869. L'ID de la file d'attente est le numéro d'i-node du fichier F</var/qmail/queue/mess/NN/> -- le fichier de la file d'attente qui contient le message. L'ID de la file d'attente est garantie unique tant que le message reste dans la file d'attente.
+
+La ligne 2 dit que le message est de F<dave@sill.org> et qu'il pèse 2343 octets.
+
+La ligne 3 dit que F<qmail-remote> commence à livrer le message à F<lwq@w3.to>, et qu'il assigne à la livraison l'ID 2392.
+
+La ligne 4 dit qu'il y a 0 livraison locale et 1 livraison distante en suspens.
+
+La ligne 5 dit que la livraison 2392 est faite et avec succès, et elle retourne la réponse du serveur distant, qui contient souvent des informations qui seraient intéressantes pour l'administrateur de mail distant pour suivre la livraison. Dans ce cas, "CAA01516" est l'ID de livraison du système distant.
+
+La ligne 6 dit qu'il y a 0 livraison locale et 0 livraison distante en suspens, c'est à dire que la livraison est finie.
+
+La ligne 7 dit que le message a été livré complètement et supprimé de la file d'attente. A ce point, l'ID de file d'attente 93869 est réutilisable pour une autre livraison.
+
+H2[id="big-servers"]Serveurs conséquents
+
+Voir aussi I<{{CMD[jump="#qmail-ldap"]qmail-ldap}}>.
+
+H3[id="scalable-parallelism"]Parallélisme proportionnel
+
+Utilisez un serveur de fichier réseau NFS rapide pour stocker les dossiers des utilisateurs. Mettez en place plusieurs serveurs SMTP avec une préférence équivalente qui livrent tous dans des boites aux lettres maildir sur le serveur de fichiers.
+
+H2[id="migrating-to-qmail"]Migrer de I<Sendmail> à I<qmail>
+
+Lisez la page de Dan Bernstein I<Sendmail>->I<qmail> à cette adresse : {{URL:http://cr.yp.to/qmail/sendmail.html}}.
+
+H2[id="mailing-list-managers"]Gestionnaire de listes de diffusion
+
+Les gestionnaires de listes de diffusions (Mailing list managers, MLM, NdT) sont des systèmes pour aider les gérants de listes à faire tourner les listes de diffusions. Leurs fonctions se séparent en deux parties principales : gérer les listes d'inscrits et contrôler le renvoi des messages aux inscrits.
+
+La plupart des gestionnaires de listes de diffusions UNIX (tous ?) peuvent être construits pour marcher avec I<qmail>.
+
+H3[id="mlm-ezmlm"]I<ezmlm>
+
+I<ezmlm> a été écrit par Dan Bernstein, l'auteur de I<qmail>. Il a été écrit pour être utilisé avec I<qmail>, et se base sur plusieurs fonctionnalités de I<qmail>. Plus particulièrement, il utilise les {{CMD[jump="#verp"]VERPs}} pour gérer efficacement les messages de rebonds (bounce, NdT). I<ezmlm> est unique par rapport aux autres gestionnaires de listes de diffusions en ce sens qu'il ne traite pas les commandes envoyées à une adresse centrale du gestionnaire de liste de diffusion : il accole la commande au nom de la liste. Par exemple, pour s'inscrire à la liste "toto@liste.exemple.net", on doit envoyer un message à "toto-subscribe@liste.exemple.net".
+
+Pour plus d'informations à propos de I<ezmlm>, voir {{URL:http://www.ezmlm.org/}}, le site web non officiel de I<ezmlm>, et le site officiel de I<ezmlm-idx>, un additif très intéressant qui inclus beaucoup de fonctionnalités très utiles.
+
+H3[id="mlm-majordomo"]I<Majordomo>
+
+I<Majordomo> est un des gestionnaires de listes de diffusions UNIX les plus populaires. Il marche bien avec I<qmail> avec un petit nombre de modifications simples. Russ Allbery a écrit une FAQ à propos du couple I<qmail>/I<Majordomo>, disponible depuis {{URL:http://www.eyrie.org/~eagle/faqs/mjqmail.html}}.
+
+H2[id="patches"]Correctifs
+
+De nombreux correctifs du code source sont disponibles pour I<qmail>. Pour installer un correctif, téléchargez le, allez dans le dossier de source de I<qmail>, et appliquez le correctif en utilisant la commande F<patch>.
+
+!block example
+    cd /usr/local/src/qmail/qmail-1.03
+    patch -p0 </tmp/fichier_correctif
+!endblock
+
+!block note
+Voir la page F<man> de F<patch> pour plus d'informations. Ceci est juste un exemple. Par ailleurs, vous pouvez avoir besoin de la version actuelle de GNU patch pour appliquer avec succès certains correctifs. Voir {{URL:http://www.gnu.org/software/patch/patch.html}}.
+!endblock
+
+Interrompez I<qmail> en tuant le processus F<qmail-send> ou, si vous avez installé le script F<qmailctl> dans la section Installation, faites :
+
+>    qmailctl stop
+
+Ensuite, reconstruisez et installez les nouveaux binaires :
+
+>    make setup check
+
+Et relancez I<qmail> :
+
+>    qmailctl start
+
+Finalement, testez I<qmail> -- particulièrement la partie que vous avez corrigée.
+
+!block note
+Note : Même si {{URL:http://www.qmail.org/}} liste de nombreux correctifs pour I<qmail>, B<aucun> d'eux n'a été approuvé par l'auteur de I<qmail>. Ils peuvent introduire des problèmes de sécurité, de fiabilité, d'efficacité ou de fonctionnalité, non présent dans I<qmail>. La plupart des installations de I<qmail> n'ont besoin d'aucun correctif, ceci dit. B<Vous ne devriez installer aucun des correctifs dont vous n'avez pas clairement besoin.>
+!endblock
+
+H3[id="recommended-patches"]Correctifs recommandés
+
+qmail.org a une section "Correctifs recommandés" (Recommended Patches, NdT) : {{URL:http://qmail.org/top.html#patches}}. Ces correctifs règlent les quelques bugs connus de I<qmail>.
+
+H4[id="errno-patch"]Correctif F<errno.h>
+
+Ce correctif règle le problème des inclusions manquantes de F<errno.h>. Voir {{URL:http://news.gmane.org/article.php?id=13960&group=gmane.mail.qmail.general}}
+Pour une explication détaillée et le correctif lui-même.
+
+H4[id="qmail-local-tab-patch"]Correctif "qmail-local TAB"
+
+Ce correctif règle un bug mineur dans l'analyse syntaxique des fichiers F<.qmail> qui commencent avec des caractères TAB. {{URL:http://qmail.org/qmail-local-tab.patch}}
+
+H4[id="0.0.0.0-patch"]Correctif IP 0.0.0.0
+
+Ce correctif fait que l'adresse IP 0.0.0.0 est reconnue comme locale. {{URL:http://qmail.org/top.html#patches}}
+
+H3[id="dns-patches"]DNS
+
+Historiquement, les réponses DNS ont été limitées à 512 octets. Quelques sites importants ont commencé à retourner des réponses MX plus longues que ça. I<qmail> et beaucoup d'autres programmes ont des problèmes avec les requêtes DNS qui retournent des résultats très gros. Il y a trois moyens de régler ceci dans I<qmail>.
+
+H4[id="dnscache"]Faire tourner F<dnscache> de I<djbdns>
+
+F<dnscache> est, comme son nom l'implique, un serveur de cache de DNS. Il sait comment gérer les longues réponses DNS et généralement améliore les performances de consultations DNS pour tous les services qui utilisent DNS. Parce qu'il ne nécessite pas de corriger I<qmail>, c'est de loin la meilleure solution. Voir la section {{CMD[jump="#djbdns"]djbdns}} dans {{CMD[jump="#related-packages"]Paquets associés}} pour plus d'informations.
+
+H4[id="dns-bump"]Grossir la taille du tampon à 65536
+ 
+Ca marche avec les librairies de résolution BIND récentes, ce qui fera automatiquement des interrogations TCP à l'intérieur du code de la librairie si la réponse arrive avec le bit de troncation valué. C'est la résolution la plus simple, bien que c'est aussi potentiellement la plus consommatrice de mémoire, selon la façon dont votre système gère la pagination. Pour faire cela, changez simplement F<PACKETSZ> par F<65536> dans F<dns.c>, et reconstruisez I<qmail>.
+
+H4[id="dns-davis"]Le correctif de Christopher K. Davis,
+{{URL:http://www.ckdhr.com/ckd/qmail-103.patch}}
+
+C'est une adaptation du correctif de Chuck Foster qui devrait marcher avec n'importe quelle librairie de résolution, quelle que soit son ancienneté, et utilise un octet gardien pour éviter le bug "nombre d'octets placés dans le tampon" de la librairie. Il ne réassigne qu'une fois, à 65536, au lieu d'à la taille nécessaire, et donc peut être moins efficace en terme de mémoire que le correctif de Chuck (bien que, comme son correctif, il ne réassigne que si la réponse est plus longue que PACKETSZ, qui est par défaut à 512 octets). Après avoir réassigné, il force une requête TCP, plutôt que de demander à la librairie de résolution de le faire (évitant un aller-retour entre I<qmail> et le serveur de noms, bien que s'ils sont sur la même machine ou sur le même réseau local, il n'y a pas de souci).
+
+H3[id="qmail-ldap"]I<qmail-ldap>
+
+Ce correctif, d'Andre Oppermann, implémente le support Lightweight Directory Access Protocol (LDAP) dans I<qmail>. LDAP est comme un annuaire téléphonique réseau. En utilisant I<qmail-ldap>, il doit être possible pour un serveur POP de servir plusieurs milliers d'utilisateurs. Voir {{URL:http://www.nrg4u.com/}}.
+
+H2[id="qmtp"]QMTP
+
+QMTP est le Protocole de Transfert Rapide de Mail (Quick Mail Transfer Protocol, NdT), un remplacement du protocole SMTP conçu par Dan Bernstein. Le protocole est défini à {{URL:http://cr.yp.to/proto/qmtp.txt}}. QMTP est similaire à SMTP, mais est plus simple, plus rapide, et incompatible avec SMTP. I<qmail> inclut un serveur QMTP, F<qmail-qmtp>, qui se lance quasiment comme F<qmail-smtp>. QMTP utilise d'habitude le port 209.
+
+I<qmail> n'inclut pas un I<client> QMTP, mais le paquet I<serialmail> le fait. F<maildirqmtp> prend une boite aux lettres maildir et délivre les messages qu'elle contient à un serveur QMTP, via QMTP.
+
+QMTP n'est pas un vulgaire remplacement de SMTP, et n'est pas largement utilisé à travers Internet.
+
+Russ Nelson a un correctif pour F<qmail-remote> qui supporte QMTP. Il est disponible depuis {{URL:http://www.qmail.org/qmail-1.03-qmtpc.patch}}. Il a aussi une archive compressée qui peut être extraite dans F</service> pour mettre en place le service QMTP. Elle est disponible depuis {{URL:http://www.qmail.org/qmtpd-service.tar.gz}}.
+
+A1[id="acknowledgments"]Remerciements
+
+Tout d'abord, merci à Dan Bernstein pour avoir conçu et écrit un système aussi puissant et élégant. Après 5 années d'utilisation, I<qmail> continue de m'impressionner.
+
+Je voudrais aussi remercier les membres de la liste de diffusion I<qmail>. Russel Nelson mérite une mention spéciale en tant que l'un des contributeurs les plus utiles, patients, mieux informés et I<drôles>. Ces contributions à la communauté I<qmail> sont secondes juste derrières celles de DJB.
+
+Merci aussi à tout le monde qui revu et contribué à ce document, dont :
+
+* Vince Vielhaber
+* Chris Green
+* Christopher K. Davis
+* Scott Schwartz
+* Fred Lindberg
+* Russell P. Sutherland
+* Alex Miller
+* Tim Hunter
+* Frank D. Cringle
+* Mahlon Smith
+* Rogerio Brito
+* Tony Hansmann
+* Matthias Andree
+* Tillman Hodgson
+* Stefan Witzel
+* Scott Gifford
+* et tellement d'autres pour les mentionner...
+
+Un merci spécial à Henning Brauer pour donner le domaine lifewithqmail.org I<et> l'héberger !
+
+U<[[DOC_TITLE]]> a été écrit en utilisant Simple Document Format (SDF),un langage de balises basé sur Perl très bien qui génère du HTML, texte simple, PostScript, POC, et beaucoup d'autres formats. Ca rend le travail beaucoup plus facile. Voir {{URL:http://search.cpan.org/author/IANC/sdf-2.001/}} pour plus d'informations.
+
+A1[id="related-packages"]Paquets associés
+
+A2[id="dot-forward"]I<dot-forward>
+
+I<Sendmail> utilise les fichiers F<.forward>, prononcé I<dot forward>, qui permet aux utilisateurs de contrôler la livraison des messages qu'ils reçoivent. I<qmail> utilise un mécanisme similaire : les fichiers F<.qmail>. Le paquet dot-forward donne à I<qmail> la possibilité d'utiliser les fichiers F<.forward>. Les systèmes qui font tourner I<Sendmail> ou n'importe quel autre MTA qui utilise les fichiers F<.forward> devrait considérer l'utilisation de dot-forward, pour éviter d'avoir à convertir les fichiers F<.forward> existants vers leurs équivalents F<.qmail> -- ou simplement pour rendre la transition vers I<qmail> moins visible par leurs utilisateurs.
+
+I<dot-foward> est un petit paquet : facile à installer et à configurer. Les sources sont disponibles depuis {{URL:ftp://cr.yp.to/software/dot-forward-0.71.tar.gz}}.
+
+I<dot-forward> a été écrit par Dan Bernstein, qui maintient une page web à ce propos à {{URL:http://cr.yp.to/dot-forward.html}}.
+
+A2[id="fastforward"]I<fastforward>
+
+I<fastforward> est un autre ajout pour la compatibilité avec I<Sendmail>. I<Sendmail> utilise une base de données centrale pour les alias stockée dans un fichier unique, d'habitude F</etc/aliases>. I<qmail> utilise une série de fichiers dot-qmail dans F</var/qmail/alias>, un fichier par alias. Si vous migrez pour I<qmail>, et que vous avez un fichier d'alias au format I<Sendmail> que vous ne voulez pas convertir, I<fastforward> donne à I<qmail> la possibilité d'utiliser le fichier d'alias tel quel.
+
+Les sources sont disponibles depuis {{URL:ftp://cr.yp.to/software/fastforward-0.51.tar.gz}}.
+
+I<fastforward> a  été écrit par Dan Bernstein, qui maintient une page à ce propos à {{URL:http://cr.yp.to/fastforward.html}}.
+
+A2[id="ucspi-tcp"]I<ucspi-tcp>
+
+Le serveur SMTP de I<qmail> ne tourne pas en tant que démon seul (stand alone daemon, NdT). Un programme d'aide, tel que I<inetd>, I<xinetd> ou I<tcpserver> tourne en tant que démon. Quand il reçoit une connexion sur le port 25, le port SMTP, il exécute une copie de F<qmail-smtpd>.
+
+I<Inetd> est le serveur réseau standard "super serveur". Il peut être configuré avec F</etc/inetd.conf> pour lancer F<qmail-smtpd>, mais l'outil recommandé est F<tcpserver>, qui est une partie du paquet I<ucspi-tcp>. ucspi-tcp est un acronyme pour Programme d'Interface Client-Serveur UNIX pour TCP (UNIX Client-Server Program Interface for TCP, NdT), et se prononce I<ouks-pi ti ci pi>.
+
+F<tcpserver> est préféré à I<inetd> parce que :
+
+* F<tcpserver> permet de limiter le nombre de connexions simultanées à un service. I<Inetd> a un mécanisme de limitation par nombre de connexion qui désactive les services qui sont "trop" occupés.
+
+* F<tcpserver> peut être configuré pour refuser l'accès à certains hôtes ou pour reconnaître les hôtes locaux et les marquer pour que F<qmail-smtpd> les traite différemment.
+
+* F<tcpserver> est le seul serveur supporté par l'auteur de I<qmail>.
+
+Les sources sont disponible depuis {{URL:ftp://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz}}.
+
+Gerrit Pape distribue la documentation pour I<ucspi-tcp> sous forme de pages F<man> depuis  {{URL:http://smarden.org/pape/djb/}}.
+
+I<ucspi-tcp> a été écrit par Dan Bernstein, qui maintient une page à ce propos à  {{URL:http://cr.yp.to/ucspi-tcp.html}}.
+
+A2[id="daemontools"]I<daemontools>
+
+Le paquet I<daemontools> contient un ensemble d'utilitaires pour contrôler et surveiller les services. Il n'est pas obligatoire, mais il est fortement recommandé, particulièrement pour les systèmes importants. Il inclut :
+
+* F<supervise>, qui surveille un service et le relance s'il meurt.
+
+* F<svc>, qui parle avec F<supervise> et permet de stopper, mettre en pause ou relancer le service.
+
+* F<multilog>, qui maintient le journal (log, NdT) pour un service, assurant la rotation du journal pour le garder en dessous de la taille configurée.
+
+* F<setuidgid>, qui lance les programmes pour le super-utilisateur avec un UID et GID d'utilisateur normal
+
+Les sources de I<daemontools> sont disponibles depuis : {{URL:http://cr.yp.to/daemontools/daemontools-0.76.tar.gz}}.
+
+Gerrit Pape distribue la documentation pour I<daemontools> sous forme de pages F<man> depuis {{URL:http://smarden.org/pape/djb/}}.
+
+I<daemontools> a été écrit par Dan Bernstein, qui maintient une page à ce propos à  {{URL:http://cr.yp.to/daemontools.html}}.
+
+A2[id="qmailanalog"]I<qmailanalog>
+
+I<qmailanalog> traite les fichiers journaux (log, NdT) de I<qmail> et produit une série de rapport qui montre quelle quantité et quel type de travail le système fait. Si vous avez besoin de statistiques à propos de combien de messages sont envoyés ou reçus, quelle taille font-ils, et à quelle vitesse ils sont traités, I<qmailanalog> est ce dont vous avez besoin.
+
+Comme bonus, le programme F<matchup> combine les lignes de journal I<qmail> multiples par livraison en une seule -- de la même façon que dans les journaux I<Sendmail> habituels.
+
+Les sources de I<qmailanalog> sont disponible depuis {{URL:http://cr.yp.to/software/qmailanalog-0.70.tar.gz}}.
+
+I<qmailanalog> a été écrit par Dan Bernstein, qui maintient une page à ce propos à {{URL:http://cr.yp.to/qmailanalog.html}}.
+
+Note : I<qmailanalog> compte sur les horodateurs (timestamps, NdT) des entrées du journal avec le format de seconde fractionnelle utilisé par F<accustamp>. Pour l'utiliser avec les journaux générés par F<multilog>, qui sont au format TAI64N, vous aurez besoin de les traduire dans l'ancien format. Un programme pour faire ça est disponible depuis {{URL:http://www.qmail.org/tai64nfrac}}.
+
+A2[id="rblsmtpd"]I<rblsmtpd>
+
+Si vous n'avez jamais été spammé, vous pouvez vous considérer comme I<très> chanceux. La plupart des utilisateurs de mails ne sont que trop familiers avec les Mails Non Sollicités (Unsolicited Bulk E-mail, UBE, NdT), aussi connus sous le nom de "spam". La plupart sont des publicités pour des sites de sexe, des lettres chaînées (chain letters, NdT), ou d'autres escroqueries. Avant, jusqu'à 1998 à peu près, la plupart des MTA sur Internet étaient des I<relais ouverts>, c'est-à-dire qu'ils acceptaient des mails de la part de tout le monde I<à destination> de tout le monde, même si ni l'expéditeur ni le destinataire étaient des utilisateurs locaux. Les spammers utilisent ce genre de serveurs, s'ils en trouvent, pour livrer leur spam. Ceci couvre leurs traces, redirigeant le retour de flamme vers le site de relais "innocent", et leur préservent beaucoup de temps CPU (processeur, NdT) et de la bande passante réseau.
+
+Ce type de serveur relais est B<très> mal considéré de nos jours, et quelques groupes de surveillance anti-spam ont créé un système pour identifier les serveurs de relais ouverts et d'autres sources de spam, pour pouvoir refuser les connexions SMTP de leur part.
+
+I<rblsmtpd> est un démon RBL SMTP. Il se place entre F<tcpserver> et F<qmail-smtpd>, et rejette les connexions provenant de systèmes identifiés dans une de ces listes.
+
+Par exemple, pour lancer F<rblsmtpd> dans F<tcpserver>, essayez quelque chose comme :
+
+!block example
+    #!/bin/sh
+    QMAILDUID=`id -u qmaild`
+    NOFILESGID=`id -g qmaild`
+    MAXSMTPD=`cat /var/qmail/control/concurrencyincoming`
+    exec /usr/local/bin/softlimit -m 2000000 \
+    /usr/local/bin/tcpserver -v -R -H -l 0 -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
+        -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /usr/local/bin/rblsmtpd\
+        -r relays.ordb.org /var/qmail/bin/qmail-smtpd 2>&1
+!endblock
+
+I<rblsmtpd> était disponible en tant qu'utilitaire séparé avant, mais est maintenant intégré dans {{CMD[jump="#ucspi-tcp"]ucspi-tcp}}.
+
+I<rblsmtpd> a été écrit par Dan Bernstein, qui maintient une page à ce propos à  {{URL:http://cr.yp.to/ucspi-tcp/rblsmtpd.html}}.
+
+A2[id="serialmail"]I<serialmail>
+
+I<qmail> a été conçu pour une connexion haut débit permanente. I<serialmail> est un ensemble d'outils pour rendre I<qmail> plus approprié pour une connexion bas débit, intermittente. Avec I<serialmail> sur ce genre de système, I<qmail> est configuré pour livrer tous les mails distants dans un seul maildir. La commande F<maildirsmtp> de I<serialmail> est utilisée pour télécharger le maildir dans l'entonnoir mail (mail hub, NdT) de l'ISP (Internet Service Provider, Fournisseur d'Accès Internet, NdT) quand la connexion est faite. Si le FAI supporte QMTP (voir {{CMD[jump="#qmtp"]QMTP}} dans les {{CMD[jump="#advanced-topics"]Sections avancées}}), F<maildirqmtp> peut aussi être utilisé.
+
+I<serialmail> peut être utilisé du coté du FAI pour implémenter I<AutoTURN> : une connexion SMTP du client force le serveur à initier une connexion de retour vers le client pour envoyer les messages en file d'attente pour ce client. Ceci est similaire à la fonction ETRN SMTP.
+
+Les sources de I<serialmail> sont disponibles depuis {{URL:http://cr.yp.to/software/serialmail-0.75.tar.gz}}.
+
+I<serialmail> a été écrit par Dan Bernstein, qui maintient une page à ce propos à {{URL:http://cr.yp.to/serialmail.html}}.
+
+A2[id="mess822"]I<mess822>
+
+I<mess822> est une librairie et un ensemble d'applications pour analyser les messages mails conformes au RFC 822. L'application contient :
+
+* F<ofmipd> : un démon qui accepte les messages des clients et réécrit les champ From en se basant sur une base de données.
+
+* F<new-inject> : un remplacement de F<qmail-inject> qui supporte la réécriture des noms d'hôtes par les utilisateurs.
+
+* F<iftocc> : un utilitaire F<.qmail> qui vérifie si le message a été envoyé à une adresse spécifique.
+
+* F<822 header>, F<822field>, F<822date>, et F<822received> : extrait des informations d'un message.
+
+* F<822print> : affiche proprement un message.
+
+Les sources de I<mess822> sont disponibles depuis {{URL:http://cr.yp.to/software/mess822-0.58.tar.gz}}.
+
+I<mess822> a été écrit par Dan Bernstein, qui maintient une page à ce propos à {{URL:http://cr.yp.to/mess822.html}}.
+
+A2[id="ezmlm"]I<ezmlm>
+
+I<ezmlm> est un gestionnaire de liste de diffusions (mailing list manager, MLM, NdT) hautes performances et facile à utiliser pour I<qmail>. Si vous êtes familier avec I<LISTSERV> ou I<Majordomo>, vous savez ce que fait un gestionnaire de liste de diffusion. Pour plus d'informations à propos des listes de diffusion avec I<qmail> voir {{CMD[jump="#mailing-list-managers"]Gestionnaire de listes de diffusion}} dans {{CMD[jump="#advanced-topics"]Sections avancées}}.
+
+Les sources de I<ezmlm> sont disponibles depuis {{URL:http://cr.yp.to/software/ezmlm-0.53.tar.gz}}.
+
+I<ezmlm> a été écrit par Dan Bernstein, qui maintient une page à ce propos à {{URL:http://cr.yp.to/ezmlm.html}}.
+
+Fred Lindberg et Fred B. Ringel ont développé une extension à I<ezmlm> appelée I<ezmlm-idx>. Elle ajoute beaucoup de fonctionnalités utiles et est fortement recommandée. Elle est disponible depuis {{URL:http://www.ezmlm.org/}}.
+
+A2[id="safecat"]I<safecat>
+
+I<safecat> écrit avec fiabilité un fichier dans une boite aux lettres maildir. Il est particulièrement utile pour classer les messages dans les règles I<procmail>. Par exemple, la rêgle suivante classe tous les messages dans F<Maildir> :
+
+!block example
+:0w
+|safecat Maildir/tmp Maildir/new
+!endblock
+
+I<safecat> a été écrit par Len Budney, qui maintient une page à ce propos à {{URL:http://www.pobox.com/~lbudney/linux/software/safecat.html}}.
+
+A2[id="djbdns"]I<djbdns>
+
+I<djbdns> est un serveur DNS écrit par l'auteur de I<qmail>. Il inclut F<tinydns>, un serveur DNS de contenu, et F<dnscache>, un serveur DNS de cache.
+
+La page officielle de I<djbdns> est {{URL:http://cr.yp.to/djbdns.html}}.
+
+A2[id="maildrop"]I<maildrop>
+
+I<maildrop> est un filtre de mail similaire à I<procmail>.
+
+I<maildrop> a été écrit par Sam Varshavchik, qui maintient une page à ce propos à {{URL:http://www.flounder.net/~mrsam/maildrop}}.
+
+A2[id="syncdir"]I<syncdir>
+
+I<syncdir> est une petite librairie qui rend l'appel système F<link()> synchrone. Elle est nécessaire quand vous utilisez I<qmail> avec la file d'attente sur un système de fichier qui ne fait pas les F<link()> de façon synchrone, tels que ext2fs de Linus, Reiserfs, XFS de SGI, et FFS de BSD avec les mises à jour soft.
+
+I<syncdir> a été écrit par Bruce Guenter et est disponible depuis {{URL:http://untroubled.org/syncdir/}}. Les instructions d'installation sont disponibles depuis {{URL:http://www.ornl.gov/its/archives/mailing-lists/qmail/2001/12/msg00949.html}}.
+
+A1[id="how-mail-works"]Comment fonctionne le courrier sur Internet
+
+A2[id="from-a-to-b"]Comment un message va du point A au point B
+
+Quand un utilisateur sur un hôte envoie un message à un utilisateur sur un hôte différent, il se passe beaucoup de choses derrière la scène dont vous ne vous doutez peut-être pas.
+
+Disons que Alice, F<alice@alpha.exemple.com>, veut envoyer un message à Bob, F<bob@beta.exemple.com>. Voici ce qui se passe :
+
+1. Alice rédige le message avec son client mail (mail user agent, MUA, NdT), quelque chose comme I<mutt> ou I<pine>. Elle spécifie le destinataire dans le champ I<To>, le sujet du message dans le champ I<Subject>, et le texte du message. Il ressemble à :
+
+>    To: bob@beta
+>    Subject: déjeuner
+>
+>    Qu'est-ce que tu dis d'une pizza ?
+
+2. Elle est contente du message, et dit au MUA de l'envoyer.
+
+3. A ce moment, le MUA peut ajouter des champs d'entête supplémentaires, tels que I<Date> et I<Message-Id> et modifier les valeurs qu'Alice a entré (exemple, remplacer F<bob@beta> par "F<Bob <bob@beta.exemple.com>>"). Ensuite, le MUA I<injecte> le message dans le système de mail. Il y a deux façons de le faire : il peut lancer un programme fournit par le système de mail pour injecter les messages, ou il peut ouvrir une connexion sur le port Simple Mail Transfer Protocol (SMTP) soit du système local, soit du serveur de mail distant. Pour cet exemple, nous supposerons que le MUA utilise un programme local d'injection pour passer les messages au MTA. Les détails de l'injection varient selon le MTA, mais sur les systèmes UNIX la méthode I<sendmail> est un standard. Avec cette méthode, le MUA peut mettre l'entête et le corps du mail dans un fichier, séparé par une ligne vide, et passer le fichier au programme F<sendmail>.
+
+4. Si l'injection réussit -- le message est syntaxiquement correct et F<sendmail> a été invoqué correctement -- le message est maintenant sous la responsabilité du MTA. Les détails varient beaucoup d'un MTA à l'autre, mais généralement le MTA sur alpha examine l'entête pour déterminer où il doit envoyer le message, ouvre une connexion SMTP sur beta, et transfère le message au MTA du système beta. Le dialogue SMTP nécessite que les messages soient envoyés en deux morceaux : l'I<enveloppe>, qui spécifie l'adresse du destinataire (F<bob@beta.exemple.com>) et l'adresse de retour (F<alice@alpha.exemple.com>), et le message lui-même, qui est l'entête et le corps.
+
+5. Si le MTA de beta rejette le message, peut-être parce qu'il n'y a pas d'utilisateur I<bob> dans le système, le MTA sur alpha envoie un I<message de rebond> (bounce message, NdT) à l'adresse de retour, F<alice@alpha>, pour lui notifier le problème.
+
+6. Si le MTA de beta accepte le message, il regarde l'adresse du destinataire, détermine s'il est local à beta ou sur un système distant. Dans ce cas, il est local, donc soit le MTA livre lui-même le message, soit il le passe à l'I<agent de livraison de mail> (mail delivery agent, MDA, NdT) tel que F</bin/mail> ou F<procmail>.
+
+7. Si la livraison échoue, peut-être parce que Bob a excédé son quota de mail, le MTA de beta envoie un message de rebond (bounce message, NdT) à l'adresse de retour de l'enveloppe, F<alice@alpha>.
+
+8. Si la livraison réussit, le message attend dans la boite aux lettres de Bob jusqu'à ce que son MUA le lise et l'affiche.
+
+A2[id="more-information"]Informations supplémentaires
+
+Pour plus d'informations sur la façon dont le courrier fonctionne sur Internet, voir une ou plusieurs des adresses suivantes :
+
+* Internet mail, par l'auteur de I<qmail>. {{URL:http://cr.yp.to/im.html}}
+
+* SMTP, par l'auteur de I<qmail>. {{URL:http://cr.yp.to/smtp.html}}
+
+* Internet mail message header format, par l'auteur de I<qmail>. {{URL:http://cr.yp.to/immhf.html}}
+
+A3[id="rfcs"]RFC Internet
+
+Les RFC (Internet Requests for Comment, Appel aux Commentaires Internet, NdT) sont la documentation officielle d'Internet. La plupart d'entre eux sont bien au-delà du niveau de commentaires, et définissent les protocoles Internet tels que TCP, FTP, Telnet et les nombreuses normes et protocoles mail.
+
+* RFC 821, Simple Mail Transfer Protocol (obsoleted by  RFC 2821)
+{{URL:http://www.ietf.org/rfc/rfc0821.txt}}
+
+* RFC 822, Standard for the Format of ARPA Internet Text Messages (obsoleted by
+RFC 2822) {{URL:http://www.ietf.org/rfc/rfc0822.txt}}
+
+* RFC 931, Authentication Server.
+{{URL:http://www.ietf.org/rfc/rfc0931.txt}}
+
+* RFC 974, Mail Routing and the Domain System.
+{{URL:http://www.ietf.org/rfc/rfc0974.txt}}
+
+* RFC 1123, Requirements for Internet Hosts -- Application and
+Support. {{URL:http://www.ietf.org/rfc/rfc1123.txt}}
+
+* RFC 1413, Identification Protocol.
+{{URL:http://www.ietf.org/rfc/rfc1413.txt}}
+
+* RFC 1423, Privacy Enhancement for Internet Electronic Mail: Part III:
+Algorithms, Modes, and Identifiers. {{URL:http://www.ietf.org/rfc/rfc1423.txt}}
+
+* RFC 1651, SMTP Service Extensions.
+{{URL:http://www.ietf.org/rfc/rfc1651.txt}}
+
+* RFC 1652, SMTP Service Extension for 8bit-MIMEtransport.
+{{URL:http://www.ietf.org/rfc/rfc1652.txt}}
+
+* RFC 1806, Content disposition.  header.
+{{URL:http://www.ietf.org/rfc/rfc1806.txt}}
+
+* RFC 1854, SMTP Service Extension for Command Pipelining.
+{{URL:http://www.ietf.org/rfc/rfc1854.txt}}
+
+* RFC 1891, SMTP Service Extension for Delivery Status
+Notifications. {{URL:http://www.ietf.org/rfc/rfc1891.txt}}
+
+* RFC 1892, The Multipart/Report Content Type for the Reporting of
+Mail System Administrative Messages.
+{{URL:http://www.ietf.org/rfc/rfc1892.txt}}
+
+* RFC 1893, Enhanced mail system status codes.
+{{URL:http://www.ietf.org/rfc/rfc1893.txt}}
+
+* RFC 1894, An Extensible Message Format for Delivery Status
+Notifications. {{URL:http://www.ietf.org/rfc/rfc1894.txt}} 
+
+* RFC 1939, Post Office Protocol - Version 3.
+{{URL:http://www.ietf.org/rfc/rfc1939.txt}}
+
+* RFC 1985, SMTP Service Extension for Remote Message Queue Starting
+(ETRN). {{URL:http://www.ietf.org/rfc/rfc1985.txt}}
+
+* RFC 1991, PGP Message Exchange Formats.
+{{URL:http://www.ietf.org/rfc/rfc1991.txt}}
+
+* RFC 2015, MIME Security with Pretty Good Privacy.  (PGP).
+{{URL:http://www.ietf.org/rfc/rfc2015.txt}}
+
+* RFC 2045, MIME Internet message bodies.
+{{URL:http://www.ietf.org/rfc/rfc2045.txt}}
+
+* RFC 2046, MIME Media Types.
+{{URL:http://www.ietf.org/rfc/rfc2046.txt}}
+
+* RFC 2047, MIME Headers. {{URL:http://www.ietf.org/rfc/rfc2047.txt}}
+
+* RFC 2048, MIME Registration Procedures.
+{{URL:http://www.ietf.org/rfc/rfc2048.txt}}
+
+* RFC 2049, MIME Conformance Criteria.
+{{URL:http://www.ietf.org/rfc/rfc2049.txt}}
+
+* RFC 2142, Mailbox names for common services.
+{{URL:http://www.ietf.org/rfc/rfc2142.txt}}
+
+* RFC 2183, Content Disposition header.
+{{URL:http://www.ietf.org/rfc/rfc2183.txt}}
+
+* RFC 2821, Simple Mail Transfer Protocol.
+{{URL:http://www.ietf.org/rfc/rfc2821.txt}}
+
+* RFC 2822, Internet Message Format
+{{URL:http://www.ietf.org/rfc/rfc2822.txt}}
+
+Une liste complète des RFC relatifs aux mail est disponible depuis l'Internet Mail Consortium à {{URL:http://www.imc.org/mail-standards.html}}.
+
+A1[id="architecture-apdx"]Architecture
+
+A2[id="modular"]Architecture système modulaire
+
+Les MTA Internet font une grande variété de tâches. Les conceptions d'antan tels que I<Sendmail> ou I<smail> sont monolithiques. En d'autres termes, ils sont un programme gros et complexe qui "change de casquette" : il met une casquette pour être un serveur SMTP, une autre pour être un client SMTP, une autre pour injecter un message localement, une autre pour gérer la file d'attente, etc.
+
+I<qmail> est I<modulaire>. Chacune de ces fonctions est faite par un programme séparé. Le résultat est que les programmes sont plus petits, plus simples, et moins sujets à contenir un bug de fonctionnalité ou de sécurité. Pour augmenter encore la sécurité, les modules de I<qmail> tournent avec différents privilèges, et ils ne se font pas "confiance" : ils ne supposent jamais que les autres modules ne font que ce qu'ils sont supposés faire.
+
+Les modules de base sont :
+
+!block table
+Modules				Fonction
+F<qmail-smtpd>			accepte/rejette les messages via SMTP
+F<qmail-inject>			injecte les messages localement
+F<qmail-rspawn>/F<qmail-remote>	gère les livraisons distantes
+F<qmail-lspawn>/F<qmail-local>	gère les livraisons locales
+F<qmail-send>			gère la liste d'attente
+F<qmail-clean>			nettoie la liste d'attente
+!endblock
+
+Il y a aussi des mauvais cotés à l'approche modulaire. Contrairement au MTA monolithique, les interactions entre les modules sont bien définies, et les modules n'échangent que le minimum d'informations nécessaires entre eux. C'est généralement une bonne chose, mais parfois, ça rend les choses difficiles à faire. Par exemple, l'argument "-v" de F<sendmail> force I<Sendmail> à imprimer une trace de ses actions sur la sortie standard pour débugger. Comme un binaire F<sendmail> gère l'injection, la mise en file d'attente, la gestion des alias, la gestion des fichiers F<.forward>, et le transfert distant via SMTP, il peut facilement tracer la livraison complète jusqu'à ce que le message soit livré. La fonctionnalité équivalente dans I<qmail> n'existe pas, et nécessiterait des modifications de code substantielles et une complexité supplémentaire pour implémenter le passage de l'argument "debug" d'un module à l'autre.
+
+A2[id="file-structure"]Structure de fichier
+
+F</var/qmail> est la racine de la structure de fichier de I<qmail>. Ceci peut être modifié quand I<qmail> est construit, mais il vaut mieux le laisser tel quel de façon à ce que les autres administrateurs sachent où trouver les choses. Si vous voulez réellement déplacer une partie ou l'ensemble de l'arbre I<qmail>, il vaut mieux le faire en utilisant des liens symboliques. Voir la sous-section {{CMD[jump="#create-dirs"]Créer les dossiez}} de la section Installation pour les détails.
+
+Les principaux sous-dossiers sont :
+
+!block table
+Répertoire	Contenu
+F<alias>	Les fichiers F<.qmail> pour les alias systèmes
+F<bin>		Les binaires programme et les scripts
+F<boot>		Les scripts de démarrage
+F<control>	Les fichiers de configuration
+F<doc>		La documentation (sauf les pages man)
+F<man>		Les pages man
+F<queue>	La file d'attente des messages non envoyés
+F<users>	Les fichiers base de données des F<qmail-users>
+!endblock
+
+A2[id="queue-structure"]Structure de la file d'attente
+
+Le fichier F<INTERNALS> dans le dossier de construction décrit les détails de la file d'attente plus complètement. Ceci est une vue d'ensemble de la structure de la file d'attente.
+
+!block table
+Sous_repertoire	Contenu
+F<bounce>	Erreurs de livraison permanentes
+F<info*>	Adresses des expéditeurs des enveloppes
+F<intd>		Enveloppes en cours de construction par F<qmail-queue>
+F<local*>	Adresses de destinataires locaux des enveloppes
+F<lock>		Fichiers de blocage (lock, NdT)
+F<mess*>	Fichiers de message
+F<pid>		Utilisé par F<qmail-queue> pour avoir un numéro i-node
+F<remote*>	Adresse de destinataires distants des enveloppes
+F<todo>		Enveloppes complètes
+!endblock
+
+Note :  Les répertoires notés avec un "*" contiennent une série de sous-répertoires I<découpés> nommés "0", "1", ..., jusqu'à (I<conf-split> - 1), où I<conf-split> est un paramètre de configuration au moment de la compilation contenu dans le fichier F<conf-split> dans le répertoire de construction. Il est à 23 par défaut. L'intérêt de découper ces répertoires est de réduire le nombre de fichiers dans un répertoire unique sur les serveurs très chargés. I<conf-split> doit être un nombre premier.
+
+Les fichiers dans les répertoires F<mess> sont nommés d'après leur numéro i-node. Ceci veut dire que vous ne pouvez pas les déplacer manuellement en utilisant les utilitaires UNIX standards tels que F<mv>, F<dump>/F<restore>, et F<tar>. Il y a quelques utilitaires créés par des utilisateurs contributeurs sur {{URL:http://www.qmail.org/}} qui vont renommer les fichiers de la file d'attente correctement.
+
+Note : B<Il n'est pas prudent de modifier les fichiers de la file d'attente pendant que I<qmail> tourne>. Si vous voulez modifier la file d'attente, stoppez I<qmail> d'abord, jouez avec la file d'attente I<soigneusement>, puis relancez I<qmail>.
+
+A2[id="pictures"]Images
+
+Il y a une série de fichiers dans F</var/qmail/doc> avec des noms commençant par F<PIC>. Ce sont des "images" texte de diverses situations que I<qmail> gère. Elles montrent le flux de contrôle au travers divers modules, et sont très utiles pour débugger et créer des configurations complexes.
+
+!block table
+Nom_du_fichier		Scénario
+F<PIC.local2alias>	Un message injecté localement et livré à un alias local
+F<PIC.local2ext>	Un message injecté localement et livré à une adresse étendue
+F<PIC.local2local>	Un message injecté localement et livré à un utilisateur local
+F<PIC.local2rem>	Un message injecté localement et livré à une adresse distante
+F<PIC.local2virt>	Un message injecté localement et livré à une adresse d'un domaine virtuel local
+F<PIC.nullclient>	Un message injecté à un client null (smtproutes, NdT)
+F<PIC.relaybad>		Une tentative échouée d'utiliser l'hôte local comme relais
+F<PIC.relaygood>	Une tentative réussie d'utiliser l'hôte local comme relais
+F<PIC.rem2local>	Un message reçu via SMTP pour un utilisateur local
+!endblock
+
+Ces fichiers sont aussi disponibles en ligne depuis :
+
+* {{URL:http://www.qmail.org/man/index.html}}
+
+Si vous voulez de I<vraies> images de I<qmail>, allez voir les "images globales de I<qmail>" (big I<qmail> picture, NdT) de Andre Opperman sur {{URL:http://www.nrg4u.com/}}.
+
+A1[id="IAQ"]Questions rarement posées
+
+Voici des questions qu'on ne peut pas qualifier de I<fréquemment> posées, mais qui sont importantes et difficiles à répondre.
+
+A2[id="retry-schedule"]Avec quelle fréquence I<qmail> essaye d'envoyer un message reporté ?
+
+Chaque message a son propre agenda de tentatives. Plus un message reste longtemps non livrable, moins I<qmail> essaye de l'envoyer. L'agenda de tentatives n'est pas configurable. Le tableau suivant montre l'agenda de tentatives pour un message qui est n'est pas livrable à un destinataire distant jusqu'à ce qu'il rebondisse (bounce, NdT). Les messages locaux utilisent un agenda similaire, mais plus fréquent.
+
+!block table; colaligns="CRR"
+Tentative de livraison	Secondes	J-HH:MM:SS
+1			0		0-00:00:00
+2			400		0-00:06:40
+3			1600		0-00:26:40
+4			3600		0-01:00:00
+5			6400		0-01:46:40
+6			10000		0-02:46:40
+7			14400		0-04:00:00
+8			19600		0-05:26:40
+9			25600		0-07:06:40
+10			32400		0-09:00:00
+11			40000		0-11:06:40
+12			48400		0-13:26:40
+13			57600		0-16:00:00
+14			67600		0-18:46:40
+15			78400		0-21:46:40
+16			90000		1-01:00:00
+17			102400		1-04:26:40
+18			115600		1-08:06:40
+19			129600		1-12:00:00
+20			144400		1-16:06:40
+21			160000		1-20:26:40
+22			176400		2-01:00:00
+23			193600		2-05:46:40
+24			211600		2-10:46:40
+25			230400		2-16:00:00
+26			250000		2-21:26:40
+27			270400		3-03:06:40
+28			291600		3-09:00:00
+29			313600		3-15:06:40
+30			336400		3-21:26:40
+31			360000		4-04:00:00
+32			384400		4-10:46:40
+33			409600		4-17:46:40
+34			435600		5-01:00:00
+35			462400		5-08:26:40
+36			490000		5-16:06:40
+37			518400		6-00:00:00
+38			547600		6-08:06:40
+39			577600		6-16:26:40
+40			608400		7-01:00:00
+!endblock
+
+A2[id="dns-problem"]Pourquoi ne puis-je pas envoyer un mail à un site important avec beaucoup d'entrées MX ?
+
+Si vous avez :
+
+>deferral: CNAME_lookup_failed_temporarily._(#4.4.3)/
+
+Le problème peut être que I<qmail> ne peut pas gérer les grosses réponses de serveurs de noms de domaine. Pour régler ce problème, installez {{CMD[jump="#djbdns"]djbdns}}. Voir {{CMD[jump="#dns-patches"]Correctifs}} dans Sections avancées.
+
+On peut aussi se demander pourquoi certains n'on pas de problèmes pour atteindre de tels systèmes. Basiquement, selon de la synchronisation et de l'ordre des requêtes faites à votre serveur de noms local, la taille de la réponse pour une requête F<ANY> sur "aol.com" peut être supérieure à la limite de 512 octets d'un paquet UDP, ou pas.
+
+"Ou pas" est probablement ce qui va se passer si les entrées A et MX mettent trop de temps à répondre, mais pas les entrées NS. Comme les serveurs .COM mettent un TTL (Time To Live, Temps à Vivre, NdT) à 2 jours pour ces dernières, mais que AOL met un TTL à 1 heure pour leurs entrées, ceci se produira souvent sur des serveurs de noms moins occupés. Les serveurs de nom occupés auront probablement ces entrées dans leur cache à n'importe quel moment, frustrant une tentative d'un I<qmail> non-corrigé de vérifier les entrées CNAME.
+
+Un meilleur test est d'envoyer un mail à nosuchuser@large-mx.ckdhr.com ; si votre file d'attente se vide et que vous recevez un message de rebond (bounce message, NdT) de la part de ckdhr.com, votre MTA peut envoyer des mails aux hôtes dont la liste des entrées MX excède 512 octets. (En utilisant un RRset unique, avec un seul TTL, qui excède 512 octets, le problème peut être vu sans jouer sur la synchronisation et l'ordre des autres requêtes.)
+
+A2[id="queue_extra"]Qu'est-ce que F<QUEUE_EXTRA> ?
+
+F<QUEUE_EXTRA> est une variable de configuration fixée à la compilation qui spécifie un destinataire additionnel qui sera ajouté à chaque livraison. Ceci est utilisé principalement pour journaliser (to log, NdT). Par exemple, la FAQ décrit comment utiliser F<QUEUE_EXTRA> pour garder des copies de tous les messages envoyés ou reçus.
+
+Pour utiliser F<QUEUE_EXTRA>, éditez F<extra.h> en spécifiant le destinataire additionnel avec le format F<"TI<destinataire>\0">, et la taille de la chaîne F<QUEUE_EXTRA> dans F<QUEUE_EXTRALEN> (le "\0" compte pour un caractère). Par exemple :
+
+!block example
+    #define QUEUE_EXTRA "Tlog\0"
+    #define QUEUE_EXTRALEN 5
+!endblock
+
+Coupez I<qmail> s'il tourne. Si vous avez installé le script F<qmailctl> de la section Installation, vous pouvez le faire comme ceci :
+
+>    qmailctl stop
+
+Si vous n'avez pas le script F<qmailctl>, vous devrez utiliser votre script de démarrage/extinction ou envoyer à F<qmail-send> un signal F<TERM>.
+
+Ensuite, reconstruisez I<qmail> en utilisant :
+
+>    make setup check
+
+Valuez F<~alias/.qmail-log> à ce que vous voulez pour journaliser. Par exemple, si vous voulez journaliser les Message-ID :
+
+>    | awk '/^$/ { exit } /^[mM][eE][sS][sS][aA][gG][eE]-/ { print }'
+
+Finalement, relancez I<qmail>.
+
+A1[id="error-messages"]Messages d'erreur
+
+Les messages d'erreur de I<qmail> et ce qu'ils veulent dire.
+
+Voir le {{CMD[jump="#rfcs"]RFC 1893}} pour une explication sur les codes d'erreurs entre parenthèse.
+
+I<Cet appendice est incomplet.>
+
+A1[id="gotchas"]Problèmes usuels
+
+Ces problèmes usuels (gotchas, NdT) posent fréquemment des soucis aux novices de I<qmail>.
+
+A2[id="root-delivery"]I<qmail> ne délivre pas le courrier au super-utlisateur.
+
+Pour éviter que F<qmail-local> ne lance des commandes en tant qu'utilisateur privilégié, I<qmail> ignore tous les utilisateurs dont le UID est 0. Ceci est documenté dans la page man de F<qmail-getpw>.
+
+Ceci ne veut pas dire que I<qmail> ne livrera pas à F<root>, ceci veut juste dire qu'une telle livraison doit être gérée par un utilisateur non privilégié. Typiquement, il faut créer un alias pour F<root> en valuant F<~alias/.qmail-root>.
+
+A2[id="home-dir-ownership"]I<qmail> ne délivre pas le courrier aux utilisateurs qui n'ont pas la propriété de leur répertoire personnel.
+
+Une autre fonctionnalité de sécurité, et simplement bonne en usage courant. Ceci est documenté dans la page man de F<qmail-getpw>.
+
+A2[id="uppercase-usernames"]I<qmail> ne délivre pas le courrier aux utilisateurs dont l'identifiant contient des majuscules.
+
+I<qmail> convertit toute la "partie locale" -- tout ce qui est à gauche du "@" dans l'adresse, en minuscule. La page man ne parle pas de ça, mais le code le fait. Le fait que I<qmail> ignore les utilisateurs avec des majuscules est documenté dans la page man F<qmail-getpw>.
+
+A2[id="dots-in-extensions"]I<qmail> remplace les points (.) dans les adresses par deux points (:).
+
+Une autre fonctionnalité de sécurité. Le but est d'empêcher les adresses étendues de remonter dans l'arborescence des fichiers en utilisant "..". En les remplaçant par des ":", I<qmail> assure que tous les fichiers F<.qmail> d'un utilisateur se trouvent dans son répertoire personnel. Documenté dans la page man de F<qmail-local>.
+
+A2[id="uppercase-in-extensions"]I<qmail> remplace les majuscules par des minuscules dans les adresses.
+
+Ceci est un autre résultat du fait que I<qmail> convertie en minuscule toute la partie locale des adresses. Documenté dans la page man de F<qmail-local>.
+
+A2[id="etc-hosts"]I<qmail> n'utilise pas F</etc/hosts>.
+
+I<qmail> n'utilise B<jamais> F</etc/hosts> pour déterminer l'adresse IP associée à un nom d'hôte. Si vous utilisez des noms dans les fichiers de contrôle, I<qmail> doit accéder au serveur de noms.
+
+Il I<est> possible de faire tourner I<qmail> sur des systèmes qui n'ont pas d'accès à un serveur de noms, par contre. Les hôtes dans les fichiers de contrôle peuvent être désignés par leur adresse IP en les encadrant de crochets ([]), par exemple :
+
+>    [10.1.2.219]
+
+en fait, les crochets ne sont pas toujours I<nécessaires> -- mais c'est une bonne idée de les utiliser dans tous les cas.
+
+A2[id="no-smtp-logging"]I<qmail> n'enregistre pas l'activité SMTP.
+
+Pour un certain nombre de raisons, I<qmail> n'enregistre pas les connexions SMTP, les rejets, les commandes invalides, ou valides. F<tcpserver> peut être utilisé pour journaliser (to log, NdT) ces connexions, et F<recordio> peut être utilisé pour enregistrer le dialogue SMTP complet. F<recordio> est une partie du paquet I<{{CMD[jump="#ucspi-tcp"]ucspi-tcp}}>. La procédure est documentée dans la FAQ à {{URL:http://cr.yp.to/qmail/faq/servers.html#recordio}}.
+
+A2[id="deferral-notices"]I<qmail> ne génère pas de notification de report de livraison.
+
+Si I<Sendmail> est incapable de livrer un message en quelques heures, typiquement quatre, il envoie une notice de report de livraison à l'expéditeur. Ces notifications ressemblent à des messages de rebond (bounce messages, NdT), mais n'indiquent pas encore que la livraison a échoué.
+
+I<qmail> n'envoie pas de telles alertes. Un message non livrable ne sera retourné à l'expéditeur qu'après qu'il ait passé tout son temps de vie ({{CMD[jump="#queuelifetime"]F<queuelifetime>}}, NdT) dans la file d'attente.
+
+A2[id="trigger"]I<qmail> est lent si F</var/qmail/queue/lock/trigger> n'est plus là/n'a pas les bonnes permissions/est un fichier régulier.
+
+F<qmail-queue> et F<qmail-send> communiquent via un canal nommé (named pipe, NdT) appelé F</var/qmail/queue/lock/trigger>. Si ce canal est abîmé, F<qmail-send> ne remarque pas les nouveaux messages pendant une demi-heure environ.
+
+Le meilleur moyen de vérifier qu'il est bien en place et de lancer un "make check" depuis le répertoire de source. Si ça n'est pas possible, assurez-vous qu'il ressemble à ça :
+
+!block example
+# ls -l /var/qmail/queue/lock/trigger 
+prw--w--w-   1 qmails   qmail           0 Jul  5 21:25 /var/qmail/queue/lock/trigger
+!endblock
+
+Faites particulièrement attention au "p" au début de la ligne (qui dit qu'il s'agit d'un canal nommé), au mode (particulièrement l'accès en écriture), et le propriétaire/groupe.
+
+A2[id="smtp-slow"]Les résolutions DNS ou IDENT peuvent rendre SMTP lent.
+
+Si F<qmail-smtpd> est lent à répondre aux connexions, le problème est probablement dû à la recherche DNS inversée (DNS reverse lookups, NdT) ou la recherche IDENT. Si vous lancez F<qmail-smtpd> avec F<tcpserver>, enlevez les options "-h", "-p" et "-r" et ajoutez "-H", "-P", "-R" et "-l I<nom_d_hote>".
+
+Voir la documentation de F<tcpserver> à {{URL:http://cr.yp.to/ucspi-tcp/tcpserver.html}} pour une explication sur ces options.
+
+A2[id="cr"]Les retours à la ligne (Carriage Return/Linefeed, CRLF, NdT) ne marchent pas.
+
+F<qmail-inject> et d'autres méchanismes d'injection tels que F<sendmail> locale ne marchent pas correctement quand les messages sont injectés avec des retours à la ligne (Carriage Return/Linefeed, CRLF, NdT) au style DOS. Contrairement à I<Sendmail>, I<qmail> demande que les messages injectés localement utilisent les retours chariots UNIX (juste le CR). C'est un problème commun avec les scripts PHP.
+
+A2[id="log-block"]F<qmail-send> ou F<tcpserver> ne marche plus si les journaux sont sauvegardés.
+
+Si vous journalisez (log, NdT) avec un service de journal contrôlé (avec supervise, NdT), comme décrit dans la section 2, et que le service de journalisation échoue pour n'importe quelle raison : disque plein, coquille dans le script F<run>, erreur de configuration du repertoire de journal, etc., le canal va se remplir, et causer le blocage du service, ou attendre. Résolvez le problème (voir la section {{CMD[jump="#troubleshooting"]Dépannage}}) et tout devrait revenir à la normale.
+
+
+A2[id="smtp-rejection"]F<qmail-smtpd> ne valide pas la partie locale d'une adresse.
+
+Si F<exemple.com> est listé dans F<control/rcpthost>, les mails destinés à F<I<n_importe_qui>@exemple.com> seront acceptés lors de la session SMTP. Si F<I<n_importe_qui>> n'est pas un utilisateur valide ou un alias, I<qmail> va envoyer un message de rebond (bounce, NdT) à l'adresse d'expéditeur de l'enveloppe.
+
+Quelques tests de relayage simplets pensent que si un message est accepté, il sera livré. C'est faux. Si quelqu'un dit que votre sustème est un relais ouvert, demandez à voir une copie du message relayé par votre système -- avec les entêtes complets, particulièrement les champs Received -- et comparez les avec vos fichiers de journal (logs, NdT).
+
+A1[id="lwq-faq"]Foire Aux Questions à propos de U<[[DOC_TITLE]]>
+
+A2[id="lwq-version"]Quelle est la version de U<[[DOC_TITLE]]> ?
+
+C'est LWQ (Life With qmail, NdT) version 2003-01-23.
+
+A2[id="lwq-copyright"]A qui appartient U<[[DOC_TITLE]]> ?
+
+U<[[DOC_TITLE]]> est sous le copyright de David E. Sill 1999-2003.
+
+{{URL:http://Web.InfoAve.Net/~dsill/dave.html}}
+
+A2[id="lwq-license"]Quelle est la licence de U<[[DOC_TITLE]]> ?
+
+U<[[DOC_TITLE]]> est sous la protection de OpenContent License, version 1.0. Voir {{URL:http://www.opencontent.org/opl.shtml}} pour la licence complète. Basiquement, vous pouvez copier, redistribuer ou modifier U<[[DOC_TITLE]]>. Ces versions modifiées, si redistribuées, sont aussi sous la protection de la licence OpenContent License.
+
+A2[id="lwq-announce-list"]Comment puis-je être informé de la sortie de nouvelles versions de LWQ ?
+
+Joignez la liste de diffusion F<lwq-announce> en envoyant un message à {{EMAIL:lwq-announce-subscribe@sws1.ctd.ornl.gov}}.
+
+A2[id="lwq-list"]Où les contributeurs et fans de LWQ peuvent en discuter ?
+
+Joignez la liste de diffusion F<lwq> en envoyant un message à {{EMAIL:lwq-subscribe@sws1.ctd.ornl.gov}}.
+
+A2[id="lwq-translations"]Est-ce que U<[[DOC_TITLE]]> a été traduit dans ma langue ?
+
+Peut-être. LWQ a été traduit en quelques langues. Voir {{URL:http://lifewithqmail.org/trans.html}}  pour plus d'informations sur les traductions de LWQ.
+
+A2[id="lwq-formats"]Est-ce que U<[[DOC_TITLE]]> est disponible en format PostScript, PDF, texte, ou quelque autre format que HTML ?
+
+Oui, des formats alternatifs peuvent être trouvés sur {{URL:http://lifewithqmail.org/}}.
+
+A2[id="lwq-warranty"]J'ai utilisé U<[[DOC_TITLE]]> et ça a planté mon système/formaté mon disque dur/déteint mes cheveux en gris/tué mon chien/etc.
+
+Je suis désolé. Vraiment désolé. Mais U<[[DOC_TITLE]]> est sans garantie. Voir la licence OpenContent License mentionnée au-dessus. Je n'ai pas été payé pour écrire LWQ. J'ai juste voulu contribuer avec quelque chose d'utile à la communauté I<qmail>.
+
+En fait, ça n'est pas une FAQ. En fait, j'espère qu'il s'agit d'une NAQ (Never Asked Question, questions jamais posées, NdT)
+
+A2[id="contributions"]Comment puis-je contribuer à LWQ ?
+
+Envoyez s'il vous plait des corrections, suggestions, plaintes, etc. à {{EMAIL:lwq@sill.org}}.
+
+Si vous voulez apporter une plus grande contribution, telle qu'une nouvelle sous-section ou une appendice, c'est génial ! Vérifiez juste avec moi avant, pour être sûr que le sujet est quelque chose que je veux couvrir dans LWQ et que personne ne travaille déjà dessus.
+
+Si vous voulez donner de l'argent, c'est aussi toujours bienvenue. :-) Contactez-moi pour nous arranger, ou utilisez le système de paiement électronique PayPal. En utilisant PayPal, vous pouvez "envoyer" de l'argent électronique à l'adresse mail F<paypal@dave.sill.org> en montants aussi petits que 0,01 $ sans frais pour vous ni pour moi -- même si vous utilisez une carte de crédit. Je peux gagner un bonus de parrainage si vous vous inscrivez avec ce lien : {{URL:https://secure.paypal.com/refer/pal=paypal%40dave.sill.org}}.
+
+Une autre façon de contribuer à LWQ sans frais pour vous et d'acheter sur Amazon.com en utilisant ce lien : {{URL:http://www.amazon.com/exec/obidos/redirect-home/davesill}}.
+
+!block inline
+<a href="http://www.opencontent.org/"><img src="http://www.opencontent.org/takeone.gif" border=0 alt="Take One!"></a>
+!endblock

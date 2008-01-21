@@ -1,0 +1,3254 @@
+  큐메일과 삶
+
+  Life with qmail (줄여서: lwq)
+  Dave Sill
+  16 November 1999
+   윤주영 YOON, Joo-Yung
+  20 March 2000
+
+  지금까지 MTA로는 sendmail이 거의 독보위치이고, 사실상의 표준입니다만,
+  덩치가 매우 크고, 단일프로그램이며, 설치, 설정이 어렵습니다.  큐메일은
+  모듈구성방식이고, 설치와 설정이 쉬우며, 특히 보안에 많은 강점을 지니고
+  있습니다.  큐메일과 삶은 원제가 Life with qmail이고, 이메일 MTA중
+  하나인 qmail을 설치하고 운영하는 방법을 설명합니다.  큐메일에는 여러
+  사람이 공헌한 모듈이 매우 많지만, 꼭 필요한 프로그램들만 설명하므로
+  큐메일을 시작하는 분들께는 편하고 쉬운 안내서입니다.
+  ______________________________________________________________________
+
+  목차
+
+  1. 소개
+     1.1 대상독자
+     1.2 큐메일이란?
+     1.3 qmail의 장점?
+        1.3.1 안전성
+        1.3.2 성능
+        1.3.3 신뢰성
+        1.3.4 간편성
+     1.4 경력
+     1.5 특징
+        1.5.1 설치
+        1.5.2 안전
+        1.5.3 메세지구조
+        1.5.4 SMTP 서비스
+        1.5.5 큐관리
+        1.5.6 되돌리기 (Bounces)
+        1.5.7 도메인으로 라우팅하기
+        1.5.8 SMTP 전달
+        1.5.9 포워딩과 멜링리스트
+        1.5.10 로컬전달
+        1.5.11 POP3 서비스
+     1.6 관련 팩키지
+     1.7 구성
+     1.8 면허
+     1.9 여타 MTA와 비교
+     1.10 문서
+        1.10.1 man page
+        1.10.2 Docs
+        1.10.3 FAQ
+        1.10.4 책
+        1.10.5 멜링리스트 고문서
+        1.10.6 기타 웹사이트
+     1.11 지원
+        1.11.1 멜링리스트
+           1.11.1.1 큐메일
+           1.11.1.2 qmailannounce
+           1.11.1.3 serialmail
+           1.11.1.4 ezmlm
+        1.11.2 상담역
+     1.12 Y2K
+
+  2. 설치
+     2.1 설치 논의
+        2.1.1 바이너리 대 소스코드
+        2.1.2 Tarball과 운영체제별 페키지
+     2.2 준비
+     2.3 시스템 필요사항
+     2.4 소스를 받으십시오.
+     2.5 소스를 컴파일하세요.
+        2.5.1 컴파일환경을 검증하세요.
+        2.5.2 배포판을 풉니다.
+        2.5.3 디렉토리를 만듭니다.
+        2.5.4 사용자와 그룹을 만듭니다.
+        2.5.5 컴파일을 하세요.
+     2.6 ucspi-tcp를 설치합니다.
+     2.7 daemontools를 설치합니다.
+     2.8 큐메일을 가동합니다.
+        2.8.1 /var/qmail/rc
+        2.8.2 시스템 기동 파일
+        2.8.3 기존에 설치된 MTA를 멈추고 무력하게 합니다.
+        2.8.4 시스템앨리어스를 만듭니다.
+        2.8.5 큐메일을 가동합니다.
+     2.9 설치를 시험합니다.
+
+  3. 설정
+     3.1 설정파일
+     3.2 릴레이
+        3.2.1 소개서
+        3.2.2 릴레이 금지
+        3.2.3 릴레이선택을 허용하기
+     3.3 다중 호스트네임
+     3.4 버츄얼도메인
+     3.5 앨리어스
+     3.6 qmail-users
+        3.6.1 간단한 할당
+        3.6.2 와일드카드 할당
+        3.6.3 qmail-user 프로그램들
+
+  4. 사용법
+     4.1 .qmail파일
+        4.1.1 프로그램전달
+        4.1.2 mbox 전달
+        4.1.3 maildir 전달
+        4.1.4 포워드 전달
+        4.1.5 연장주소
+     4.2 메세지 보내기
+        4.2.1 SMTP
+        4.2.2 /var/qmail/bin/sendmail
+        4.2.3 qmail-inject
+     4.3 환경변수
+
+  5. 고급토픽
+     5.1 procmail
+     5.2 POP 그리고 IMAP 서버
+        5.2.1 qmail-pop3d
+           5.2.1.1 qmail-pop3d의 구조
+           5.2.1.2 qmail-pop3d의 설치
+        5.2.2 qpopper
+        5.2.3 Cyrus
+        5.2.4 imap-maildir
+     5.3 POP와 IMAP 클라이언트
+        5.3.1 fetchmail
+     5.4 다중 RCPT 대 단일 RCPT 전달
+     5.5 VERP
+     5.6 문제해결
+        5.6.1 과정
+        5.6.2 로그
+           5.6.2.1 splogger
+           5.6.2.2 cyclog
+           5.6.2.3 록메세지
+     5.7 대형 서버
+        5.7.1 Scalable parallelism
+     5.8 Sendmail에서 큐메일로 옮기기
+     5.9 멜링리스트매니저 (Mailing List Managers: MLM's)
+        5.9.1 ezmlm
+        5.9.2 메이저도모
+     5.10 패치
+        5.10.1 DNS
+           5.10.1.1 패킷버퍼사이즈를 65536까지 밀어올리기
+           5.10.1.2 Christopher K. Davis의 패치 (AURL CDATA http://www.ckdhr.com/ckd/qmail-103.patchANAME CDATA (URL)URL)
+        5.10.2 qmail-ldap
+     5.11 QMTP (Quick Mail Transfer Protocol)
+
+  6. 부록
+     6.1 사례
+     6.2 관련 패키지
+        6.2.1 dot-forward
+        6.2.2 fastforward
+        6.2.3 ucspi-tcp
+        6.2.4 daemontools
+        6.2.5 qmailanalog
+        6.2.6 rblsmtpd
+        6.2.7 AID CDATA serial(LABEL)LABEL serialmail
+        6.2.8 mess822
+        6.2.9 ezmlm
+        6.2.10 safecat
+        6.2.11 maildrop
+     6.3 인터넷멜의 동작방법
+        6.3.1 메세지가 A지점에서 B지점으로 가는 방법
+        6.3.2 더많은정보
+           6.3.2.1 인터넷 RFC들
+     6.4 구조 AID CDATA architecture(LABEL)LABEL
+        6.4.1 모듈시스템구조
+        6.4.2 파일구조
+        6.4.3 큐구조
+        6.4.4 사진
+     6.5 어쩌다 한번씩 묻는 질문들 AID CDATA iFAQ(LABEL)LABEL
+        6.5.1 큐메일은 지연메세지를 어느 정도 자주 보냅니까?
+        6.5.2 저는 MX가 많은 대형사이트에 매일을 보내지 못하는데 왜그렇죠?
+        6.5.3 QUEUE_EXTRA?
+     6.6 에러메세지
+     6.7 의외의 실수
+        6.7.1 큐메일은 수퍼유저에게 멜을 전달하지 않습니다.
+        6.7.2 큐메일은 홈디렉토리가 없는 사용자에게 멜을 전달하지 않습니다.
+        6.7.3 큐메일은 사용자이름에 대문자를 쓰는 사용자에게 멜을 전달하지 않습니다.
+        6.7.4 큐메일은 홈디렉토리에 그룹이나 기타사용자에게 쓰기를 허락하는 사용자에게 멜을 전달하지 않습니다.
+        6.7.5 큐메일은 확장주소의 점(.)을 콜론(:)으로 바꿉니다.
+        6.7.6 큐메일은 확장주소의 대문자를 소문자로 바꿉니다.
+        6.7.7 큐메일은 /etc/hosts를 사용하지 않습니다.
+        6.7.8 큐메일은 SMTP활동을 록하지 않습니다.
+        6.7.9 큐메일은 지연통지를 만들지 않습니다.
+        6.7.10 큐메일은 /var/qmail/queue/lock/trigger가 틀린접근권한이거나 보통파일이면 늦어집니다.
+     6.8 lwq에 대한 FAQ
+        6.8.1 lwq의 소유자는?
+        6.8.2 lwq의 라이센스는?
+        6.8.3 lwq의 새판을 구할 수 있다는 것은 어떻게 통지받을 수 있습니까?
+        6.8.4 lwq공헌자와 팬은 어디서 이야기할 수 있습니까?
+        6.8.5 lwq는 다른 언어로 번역되었습니까?
+        6.8.6 lwq는 HTML이외에 포스트스크립트, PDF, 평범한글, 또는 다른형태로도 구할 수 있습니까?
+        6.8.7 lwq를 사용했더니, 시스템파괴, 하드디스크삭제, 백발을 했습니다.
+
+  ______________________________________________________________________
+
+  1.  소개
+
+  1.1.  대상독자
+
+  「큐메일과 삶」 (Life with qmail, 이하 lwq라고 줄여서 부름)은 여유PC에
+  Linux를 이제막 설치한 일반 아마추어 (신참자)부터 경험 많은 시스템
+  관리자 또는 메일 서버 관리자에 이르기까지 큐메일을 운영하고자 하는
+  누구든지 그 대상입니다.
+
+  큐메일에 대한 풍부한 정보가 다양한 소스에 있습니다. 어떤것은
+  신참자들을 대상으로 하고, 어떠것은 독자가 경험있다고 여깁니다.  lwq는
+  틈새들좀 메우고, 독자가 다음의 기술들만 있다고 여기는 방법으로 이러한
+  정보를 붙여서 단일소스로 만들고자 합니다.
+
+  o  유닉스에서 파일과 디렉토리를 다루기
+
+  o  웹브라우저나 FTP 클라이언트를 움직이기
+
+  o  지시를 따르기
+
+  1.2.  큐메일이란?
+
+  큐메일은 유닉스류 운영체제의 인터넷 Mail Transfer Agent (MTA)입니다.
+  대부분의 UNIX운영체제가 제공하고 있는 Sendmail시스템을 대체합니다.
+  Simple Mail Transfer Protocol (SMTP)을 이용해서 다른 시스템의 MTA와
+  메세지를 교환합니다.
+
+  --------------------------------------------------------------
+  유의점: 바른이름은 Qmail이 아니고 qmail입니다.
+  --------------------------------------------------------------
+
+  1.3.  qmail의 장점?
+
+  당신의 운영체제도 Sendmail이라는 MTA를 제공하고 있으리라고 여기므로,
+  당신이 이문서를 읽고 계신다면, 당신은 아마 더 좋은 것을 찾고 있다고
+  생각합니다. 큐메일이 다른 vendor가 제공하는 MTA보다 더 좋은 이유는
+  다음과 같습니다.
+
+  1.3.1.  안전성
+
+  안전성이 높도록 설계되었습니다.  Sendmail의 안전성은 오랫동안 심각한
+  문제였습니다.  Sendmail이 처음 만들어졌을때는 Net계가 훨씬 더
+  우호있었습니다. 누구나 서로 알았고, 안전성을 제고하려고 설계하거나
+  코딩할 필요가 없었습니다. 오늘날 인터넷은 넷웍서버에게는 너무나 적들이
+  많은 환경입니다. Sendmail을 만든 Eric Allman께서도 많은 보안을
+  하셨지만, 진짜로 안전하게 만들려면 다시 설계하는 수 밖에 없었습니다.
+
+  1.3.2.  성능
+
+  멜보내기를 병행처리합니다. (20개가 default입니다.)
+
+  1.3.3.  신뢰성
+
+  한번 받은 메세지는 결코 놓치지 않습니다. 새 멜복스형태도 제공하는데,
+  NFS에서 locking하지 않고도 잘 작동합니다.
+
+  1.3.4.  간편성
+
+  다른 동급의 MTA보다 작습니다.
+
+  ------------------------------------------------------------------------------------
+  유의점: 공식 홈페지인 <url url="http://pobox.com/~djb/qmail.html">에 장점을 더 넓게
+          올려놓았습니다.
+  ------------------------------------------------------------------------------------
+
+  1.4.  경력
+
+  큐메일은 지금 시카고의 일리노잇대학에 수학교수로 계시는 Dan Bernstein
+  (DJB)께서 만드셨습니다 (홈페지:  <http://pobox.com/~djb/djb.html>).
+  번스타인박사께서는 암호분야에서의 업적과, 미국정부를 상대로
+  암호화소스코드공개에 대한 소송으로도 잘 알려지셨습니다. 소송에
+  대해서는 <http://www.news.com/News/Item/0,4,36217,00.html?owv>를
+  참조하십시오.
+
+  큐메일의 시초공개판은 1996년 1월 24일에 나온 0.70 베타판입니다.
+  시초가마판은 1996년 8월 1일의 0.90입니다.
+
+  일반판으로 처음 처음나온것은 1997년 2월 20일의 1.0입니다.  지금의
+  버전인 1.03은 1998년 6월 15일에 나왔습니다.
+
+  1.5.  특징
+
+  큐메일홈페지 <http://pobox.com/~djb/qmail.html>에 큐메일특징을
+  종합해놓았습니다. 이번 단락은 그것을 많이 참고합니다.
+
+  1.5.1.  설치
+
+  o  당신의 유닉스기종에 자동적응하므로 이식 (porting)할 필요가
+     없습니다.
+
+  o  호스트별 자동설정
+
+  o  빠르게 설치되므로 결정할 사항이 많지 않습니다.
+
+  1.5.2.  안전
+
+  o  주소, 파일, 프로그램 등을 서로 깨끗하게 떼어놓았습니다.
+
+  o  setuid 코드를 최소화했습니다.
+
+  o  룻(root) 코드를 최소화했습니다.
+
+  o  Five-way trust partitioning--심도 있는 안전
+
+  o  one-way 메세지 단편들, 또는 메세지내용전체 등을 골라서 할 수
+     있습니다. (``드문질문부록''에 있는 QUEUE_EXTRA는 무엇인가?를
+     보십시오.)
+
+  1.5.3.  메세지구조
+
+  o  RFC 822과 RFC 1123을 따릅니다.
+
+  o  address group을 전부 지원합니다.
+
+  o  구식 주소리스트를 RFC 822 형식으로 자동변환합니다.
+
+  o  지금의 sendmail user agent와 호환하기 위해서 sendmail 명령을
+     지원합니다.
+
+  o  header줄길이의 한계는 메모리가 허용하는 데까지입니다.
+
+  o  host masquerading (defaulthost를 보십시오.)
+
+  o  user masquerading (MAILUSER와 MAILHOST를 보십시오.)
+
+  o  Mail-Followup-To를 자동생성합니다. (QMAILMFTFILE을 보십시오.)
+
+  1.5.4.  SMTP 서비스
+
+  o  RFC 821, RFC 1123, RFC 1651, RFC 1652, RFC 1854 등의 준수
+
+  o  8-bit도 장애무
+
+  o  RFC 931/1413/ident/TAP callbak등으로 스팸멜과 위조자 등의 추적방조
+
+  o  relay 통제기능으로 외부의 권한이 없는 중계저지
+
+  o  relay 통제와 alias간의 불간섭
+
+  o  local IP주소 자동인식
+
+  o  버퍼별 timeout
+
+  o  hop counting
+
+  o  병렬처리 한도 (ucspi-tcp를 이용)
+
+  o  (ucspi-tcp를 이용해서) 악용자들로부터의 접속거부
+
+  o  권한인정된 client에 대한 중계와 메세지 재작성
+
+  o  (rblsmtpd를 통한) RBL/ORBS지원 선택
+
+  1.5.5.  큐관리
+
+  o  큐에 더해진 메세지의 즉각처리
+
+  o  병렬처리한계
+
+  o  큐디렉토리의 분열로 비대한 큐의 속도저하 방지
+
+  o  2차방정식에 의한 재시도 스케쥴로 오래된 메세지의 처리회수 저하
+     (``드문질문부록''를 보세요)
+
+  o  메세지 재시도의 독립 스케쥴
+
+  o  자동 안전 큐하기로 시스템이 무너져도 멜을 잃지 않음
+
+  o  수신자별 자동 첵포인트하기
+
+  o  자동 큐청소
+
+  o  큐보기 (qmail-qread를 보세요)
+
+  o  (qmailanalog를 이용한) 자세한 전달통계
+
+  1.5.6.  되돌리기 (Bounces)
+
+  o  기계와 사람이 읽을 수 있는 QSBMF 되돌림 메세지
+
+  o  언어에 상관없는 RFC 1893 에러코드인 HCMSSC 지원
+
+  o  이중 되돌림으로 postmaster에게도 보냄
+
+  1.5.7.  도메인으로 라우팅하기
+
+  o  로컬호스트에 대해서는 여러 이름이 가능함 (로컬을 참조하세요.)
+
+  o  여러 버추얼도메인 (버추얼도메인을 보세요.)
+
+  o  도메인 와일드카드 (버추얼도메인을 보세요.)
+
+  o  설정가능한 "percent hack" 지원 (percenthack을 보세요.)
+
+  o  UUCP hook
+
+  1.5.8.  SMTP 전달
+
+  o  RFC 821, RFC 974, RFC 1123을 따름
+
+  o  8빗을 처리
+
+  o  다운된 호스트를 자동 backoff
+
+  o  smarthost, localnet, mailertable등의 인공지능 라우팅 (smtproutes를
+     보세요.)
+
+  o  버퍼별 타임아웃
+
+  o  SLIP/PPP에 가장 알맞은 (serialmail을 통한) 수동 SMTP 큐
+
+  o  (serialmail을 통한) autoTURN
+
+  1.5.9.  포워딩과 멜링리스트
+
+  o  sendmal의 .forward를 (dot-forward를 이용해서) 따름
+
+  o  (fastforward를 통한) hashed forwarding 데이터베이스
+
+  o  sendmail의 /etc/aliases를 (fastforward를 이용해서) 따름
+
+  o  어드레스 와일드카드 (.qmail-default를 보세요.)
+
+  o  바운스와 휴가메세지를 자동전환하는 멜링리스트소유자
+
+  o  멜링리스트바운스를 위한 자동 수신자 인식인 VERP
+
+  o  Delivered-To의 룹을 자동차단을 호스트간에도 지원
+
+  1.5.10.  로컬전달
+
+  o  어드레스계층을 사용자가 통제하므로 fred는 fred-anything mbox 전달을
+     통제함
+
+  o  믿을수있는 NFS 전달 (maildir를 보세요.)
+
+  o  procmail 등 사용자가 통제하는 프로그램 전달 (qmail-command를
+     보세요)
+
+  o  새멜통지 선택 (qbiff를 보세요)
+
+  o  NRUDT 반송 증표의 선택 (qreceipt를 보세요.)
+
+  o  조건 필터링 (condredirect와 bouncesaying을 보세요.)
+
+  1.5.11.  POP3 서비스
+
+  o  RFC 1939를 따름
+
+  o  UIDL 지원
+
+  o  TOP 지원
+
+  o  APOP hook
+
+  o  (checkpassword를 이용해서) 패스워드검사의 모듈화
+
+  1.6.  관련 팩키지
+
+  큐메일에서 한 툴은 단일의 잘 정의된 함수로 작동하고, 복합함수는 여러
+  간단한 툴들을 파입라인으로 연결하여 만들어야 한다는 유닉스의
+  전통철학을 따릅니다. 다른 방법으로는 더욱더 복합된 툴들을 만들어서
+  간단한 툴들의 많은 기능을 재구성하는 것입니다.
+
+  그렇다면, 여러분은 큐메일 하나로 모든것을 다하기를 바랄지도
+  모르겠지만, 큐메일이 모든 것을 혼자하지 않는다는 것은 놀라운 일이
+  아닙니다. 이제, 큐메일을 위해 만든 가장 인기있는 add-on들중 몇개가
+  여기에 있습니다.
+
+  o  dot-forward: sendmail의 .forward 파일 호환 앳온
+
+  o  fastforward: sendmail의 alias 데이터베이스 호환 앳온
+
+  o  ucspi-tcp  : inetd 대체
+
+  o  daemontools: 데몬과 그 로그를 관리하는 툴집합
+
+  o  qmailanalog: 큐메일 로그파일 분석툴집합
+
+  o  rblsmtpd   : anti-spam 툴
+
+  o  serialmail : 저속넷웍상의 mailing을 위한 툴
+
+  o  mess822    : 인터넷멜메세지의 해석기 툴
+
+  o  ezmlm      : 큐메일을 위한 멜링리스트 관리자
+
+  1.7.  구성
+
+  ``구조부록''에 큐메일의 기능구조와 실제구조를 다루었습니다. 한마디로,
+  큐메일은 서로다른 일을 하는 프로그램(모듈)들로 이어져 있습니다.
+
+  1.8.  면허
+
+  큐메일의 복사권리는 저자인 Dan Bernstein에 있고, 사용자권리진술로
+  배포하지 않습니다.  <http://pobox.com/~djb/softwarelaw.html>에 보시면,
+  미국 복사권리법에서 당신의 권리라고 저자가 생각하는것을
+  적어놓았습니다.  <http://pobox.com/~djb/qmail/dist.html>에서 그는
+  큐메일의 소스코드의 배포권리를 허가했습니다. 바이너리배포는 그곳과
+  <http://pobox.com/~djb/qmail/var-qmail.html>에 설명된대로 하면
+  용인됩니다만, 현재 누구도 실제로 하지않고 있습니다.
+  쉽게 예기해서 당신은 어떤 목적이든지 큐메일을 사용할 수 있고, 고치지
+  않은 큐메일소스코드배포판과 var-qmail 바이너리 배포판을 다시배포할 수
+  있고, 큐메일에 대한 패치를 배포할 수 있습니다. 수정된 큐메일소스코드나
+  비 var-qmail바이너리배포판을 배포할 수 없습니다.
+
+  1.9.  여타 MTA와 비교
+
+  이 주제로 책을 쓸 수도 있지만, 읽기에 지루할 것입니다. 가장 많이 쓰는
+  유닉스 MTA들 몇개를 큐메일과 간단히 비교했습니다.
+
+  MTA       성숙     안전    특징      성능        Sendmail성   모듈화
+  qmail     중간     높음    높음      높음        add-on       되있슴
+  Sendmail  높음     낮음    높음      낮음        없슴         안됨
+  Postfix   낮음     높음    중간      높음        맞음         되있슴
+  exim      medium  low     high      medium      yes          no exim
+  중간     낮음    높음      중간        맞음         안됨
+
+  Sendmail성이란 해당 MTA가 여러면에서 Sendmail같아서, .forward 파일이나
+  /etc/aliases나 /var/spool/mail 등의 사용을 Sendmail에서 다른 MTA로
+  전환할 때 사용자들이 고려할 점이 없도록 하는 것입니다.
+
+  Cameron Laird가
+  <http://starbase.neosoft.com/~claird/comp.mail.misc/MTA_comparison.html>에
+  이것들과 다른 무료, 유료 MTA를 비교한 웹페지를 만들었습니다.
+
+  1.10.  문서
+
+  1.10.1.  man page
+
+  큐메일배포판은 man page를 완비했습니다. 설치하면 /var/qmail/man에
+  놓입니다. MANPATH환경변수에 그 디렉토리를 추가하시기 바랍니다.
+
+  그러면, "man qmail항목"이라고 하시면 해당 man page를 보여줍니다.
+
+  다음의 주소에 HTML형식으로 온라인상에서도 man page를 참고하실 수
+  있습니다.
+
+  ---------------------------------------------------------------------------------------
+  유의점: 큐메일의 man page에는 정보가 있지만, 함축되고 학술형식으로
+  썼으므로 꼼꼼하게 읽으셔야 합니다. 한부를 인쇄하여 쭉 읽으셔서 무엇이
+  어디에 있는지 파악해놓아야 편합니다. 여러 장이지만 정보가 되풀이되지
+  않으므로, 어디에 무엇이 있는지 알지 못하면 찾기에 힘듭니다.
+  ---------------------------------------------------------------------------------------
+
+  1.10.2.  Docs
+
+  큐메일 배포판은 /var/qmail/doc에 설치하는 다음의 서류들을 제공합니다.
+
+  o  FAQ     : Frequently Asked Questions (답과 함께)
+
+  o  INSTALL*: 설치문서
+
+  o  PIC.*   : 큐메일의 핵심기능방법을 설명. 더 이상의 설명은 부록의
+     ``구조항목''을 보십시오.
+  o  다양한 기타 설치관련 문서
+
+  다음의 주소에서 온라인으로 참고하실 수 있습니다.
+
+  o  <http://www.qmail.org/man/index.html>
+
+  1.10.3.  FAQ
+
+  다음에 공식 FAQ가 두개 있습니다.
+
+  o  /var/qmail/doc/FAQ: 일반 텍스트판,
+
+  o  <http://pobox.com/~djb/qmail/faq.html>: web FAQ
+
+  web FAQ가 더 충실합니다.
+
+  1.10.4.  책
+
+  John Levine과 Russel Nelson이 O'Reilly & Associates
+  <http://www.oreilly.com>에서 큐메일책을 썼는데, 금년말에 구입 가능할
+  것입니다.  Russel과 John은 qmail 멜링리스트에 자주 기고하시고,
+  큐메일에 관한 지식과 능력을 통해서 큐메일을 효과있고 품위있게
+  의사소통하는 것을 보여주셨습니다. O'Reilly는 컴퓨팅관련출판에서 명성이
+  탁월합니다. 이 책은 의심의 여지없이 큐메일의 "bible"이 될겁니다.
+
+  1.10.5.  멜링리스트 고문서
+
+  Dan Bernstein이 유지하는 큐메일의 이메일 멜링리스트는 귀중한
+  정보소스입니다. 멜링리스트메세지의 고문서는 다음에 보관됩니다.
+
+  o  <http://www.ornl.gov/cts/archives/mailing-lists/qmail/>
+
+  그 고문서에 대한 서치엔진은 다음에 있습니다.
+
+  o  <http://www-archive.ornl.gov:8000/>
+
+  기타 web 고문서는 다음에서 얻을 수 있습니다.
+
+  o  <http://www.egroups.com/list/djb-qmail/?refstop=1 >
+
+  o  <http://msgs.securepoint.com/qmail/>
+
+  큐메일에 관한 대부분의 질문은 먼저 멜링리스트 고문서를 뒤지면 답을
+  얻을 수 있습니다.
+
+  1.10.6.  기타 웹사이트
+
+  o  <http://pobox.com/~djb/qmail.html>: 큐메일 공식 홈페지
+
+  o  <http://www.qmail.org>: 큐메일 비공식 홈페지로서 add-on과 패치에
+     관한 정보와 다른 사이트에 있는 좋은 큐메일 웹페지에 대한 링크가
+     많습니다.
+
+  1.11.  지원
+
+  1.11.1.  멜링리스트
+
+  다음의 멜링리스트는 cr.yp.to에 있습니다. 스패머가 이메일주소를 걷지
+  못하게 하려고 완전하고 유효한 주소와 "mailto" URL을 쓰지 않습니다.
+
+  멜링리스트는 ezmlm으로 관리하는데, 주소별로 고유기능을 담당합니다.
+
+  o  listname@list.cr.yp.to: 메세지송부주소로서 이리로 메세지를 보내시면
+     모든 가입자에게 보내집니다. 가입/가입해제 신청을 이리로 하지면
+     안되는데, 그러면 가입(해제)가 되지도 않을 뿐만 아니라, 가입자들을
+     성가시게 하기 때문입니다.
+
+  o  listname-help@list.cr.yp.to: "help"주소입니다. 명령주소와
+     일반사용정보를 보내드립니다.
+
+  o  listname-subscribe: 빈 메세지를 이리로 보내면 가입됩니다.
+
+  o  listname-unsubscribe: 빈 메세지를 이리로 보내면 가입해제됩니다.
+
+  예를 들면 joe@example.com와 같이 가입(해제)주소를 적으시려면 다음의
+  주소로 메세지를 보내십시오.
+
+  o  listname-subscribe-joe=example.com@list.cr.yp.to
+
+  1.11.1.1.  큐메일
+
+  주요 큐메일 멜링리스트. serialmail을 빼고는 큐메일에 관련된 모든것에
+  관한 토론과 질문과 대답.  질문을 보내시기 전에 FAQ를 읽으시고,
+  멜링리스트 고문서를 뒤지시기 바랍니다. 질문을 하실때에는 다른 사람이
+  답해줄 수 있도록 다음과 같은 충분한 내역을 포함하시기 바랍니다.
+
+  o  무엇을 하셨습니까? 설정을 어떻게 하셨습니까? 무엇이 중요한 지
+     모르시면 qmail-showctl명령의 결과물을 포함하십시오. 무엇을 얻으려
+     하셨습니까? 무슨 행동을 하셨습니까?
+
+  o  무엇이 일어나길 바라셨습니까? 무슨 결과를 얻으려고 하셨습니까? 읽는
+     분이 추측해서 알것이라고는 생각지 마십시오.
+
+  o  무슨일이 일어났습니까? 실제 결과를 설명하십시오. 로그파일을 잘라서
+     포함하시고, 메세지사본을 헤더와 함께 포함하십시오.
+
+  1.11.1.2.  qmailannounce
+
+  새로운 발행은 여기에 공표됩니다. 가입신청주소는 없고, 읽기전용입니다.
+
+  1.11.1.3.  serialmail
+
+  serialmail 패케지관련 토론입니다.
+
+  1.11.1.4.  ezmlm
+
+  ezmlm 멜링리스트 관리에 대한 토론입니다.
+
+  1.11.2.  상담역
+
+  <http://www.qmail.org/top.html#paidsup>를 보시면 상용 지원
+  제공자명단이 있습니다.
+
+  1.12.  Y2K
+
+  큐메일은 Y2K문제가 없습니다.  <http://www.qmail.org/qmaily2k.html>를
+  보십시오.
+
+  2.  설치
+
+  큐메일을 설치하는 것을 설명합니다. 경험있는 시스템애드민은
+  소스배포판에 있는 INSTALL의 지시사항을 따라서 큐메일을 설치할 수
+  있습니다. INSTALL지시사항은 공식 설치지시사항입니다. 그것은 본문서인
+  lwq의 지시사항보다 복잡하고, 읽는 사람이 경험있는 시스템애드민과
+  멜애드민이라고 여깁니다.
+
+  -----------------------------------------------------------------------------
+  유의점: 다음의 지시사항을 읽으신다면 전체항목을 읽어서 전체과정을 익히시기
+          바랍니다.
+  -----------------------------------------------------------------------------
+
+  2.1.  설치 논의
+
+  2.1.1.  바이너리 대 소스코드
+
+  미리컴파일된 배포판관련 라이센싱제약때문에, 큐메일은 보통
+  소스코드배포판으로 설치합니다.
+
+  소스코드와 바이너리를 구분하시기 어렵다면, 집으로 피지를 배달한다고
+  가정하십시오. 바이너리버전피자는 즉시 먹을 수 있게 배달됩니다.
+  소스코드피자는 밀가루, 효모, 치즈, 토핑, 그리고 요리방법 등을 포함한
+  장비일체로 배달됩니다. 소스코드설치는 일을 좀더 많이 해야 하지만,
+  지시사항을 철저하게 따르면, 그 결과는 같거나 더 좋습니다. 직접 만들어
+  먹는 피자는 더 신선하고, 좋아하는 토핑을 맞춰먹을 수 있으며, 자신이
+  만든 피자에 대해, 그것이 어떻게 만들어졌는 지에 대해 더 많이 알게
+  됩니다.
+
+  2.1.2.  Tarball과 운영체제별 페키지
+
+  소스코드설치를 자동으로 하는 방법을 제공하는 운영체제도 있습니다.
+  피자로 다시 비유하자면, 단추만 누르면 피자가 저절로 구워지도록 재료와
+  지시사항을 패키지하는 것입니다.
+  훌륭하지 않습니까?
+
+  실제로는 그렇게 좋지만은 아닌 방법입니다. 패키지로 묶기가 매우 힘들고,
+  생각대로 움직이지 않을 수가 있습니다. 또한 그것도 소프트웨어이므로,
+  다른것들처럼, 벅이 있을 수도 있습니다. 벅이 없더라도, 그 편리함은 그
+  만한 대가를 치루게 됩니다. 스스로 만들어보는 피자의 이점인 자신의
+  기호에 맞춰서 토핑을 조정하고, 피자가 어떻게 만들어지고, 어떻게
+  작용하는 지 등을 잃게 됩니다.
+
+  큐메일이 피자라면, 스스로 컴파일해볼 수도 있을지 모릅니다. 그런데,
+  피자가 아닙니다. 복잡한 시스템이 되어놔서 잘 운영하려면 설치자와
+  유지자는 잘 이해해야 합니다. 자동설치 큐메일이 수동설치판보다
+  설치하기에 쉽습니다만, 수동설치판이 설정하고 문제점을 해결하는 데
+  쉽습니다. 시스템에 큐메일을 한번만 설치하면 되지만, 때때로
+  재설정해야할 수도 있고, 생각대로 멜이 흐르지 않는 이유를 파악해야 할
+  수도 있습니다.
+
+  이래서, 저는 큐메일을 RedHat이나 기타 자동설치번들이 아닌 소스크드
+  tarball로 설치하시기를 권고합니다.
+
+  2.2.  준비
+
+  큐메일을 시스템에 설치하기 전에, 큐메일설치를 처음으로 한다면, 몇가지
+  고려사항이 있습니다.
+
+  o  가능하면 큐메일을 연습시스템에 설치하십시오. 이래야 중요멜을 잃지
+     않고, 또는 사용자들에게 멜서비스를 단절하지 않고도 실수해볼 기회가
+     생깁니다.
+
+  o  여분시스템이 없거나 시스템에 이미 sendmail이나 smail이나 기타 MTA
+     등을 운영하여 멜이 처리되고 있어도, 기존서비스와 충돌하지 않으면서
+     큐메일의 대부분을 시험할 수 있습니다.
+
+  o  다른 MTA를 큐메일로 대체할 때, 큐메일의 경험이 많더라도, 계획을
+     세워야 좋습니다.
+
+  2.3.  시스템 필요사항
+
+  큐메일은 대부분의 유닉스와 유닉스류 시스템에 설치되고 운영됩니다만
+  몇가지 필요사항이 있습니다.
+
+  o  컴파일동안 컴파일부분에 약 10메가바잇의 여유공간. 컴파일후
+     옵젝트파일을 제거하면 4메가만 남습니다.
+
+  o  컴파일러, 시스템헤더파일, 그리고 라입러리 등을 포함하는 완전한 C
+     개발시스템. 컴파일지시사항은 필요한 부분이 있으면 알려줍니다.
+
+  o  바이너리, 문서, 그리고 설정 등의 파일에 대해 2-3메가바잇.
+
+  o  큐에 대한 충분한 디스크공간. 소규모 단일사용자 시스템은
+     2-3메가바잇만 있으면 됩니다. 대용량 서버는 2-3 기가바잇이 있어야
+     될지도 모릅니다.
+
+  o  호환 운영 시스템. 대부분의 유닉스종은 됩니다. 소스트리의 README를
+     보면 호환판의 리스트가 있습니다.
+  o  DNS로의 접근을 강력히 권장합니다. 그렇지 않으면 큐메일은
+     smtproutes의 config 파일에 설정된 원격시스템으로만 보냅니다.
+
+  o  적절한 넷웍 연결. 큐메일은 잘 연결된 시스템에 대해 설계되어서 28.8k
+     다이얼업에서 멜링리스트를 사용하고 싶지 않을지도 모릅니다. 큐메일을
+     연결이 나쁜 시스템에서 사용할 수 있도록 하려고 serialmail 패키지가
+     설계되었습니다. 더 많은 정보는 관련패키지 부록의 ``시리얼항목''을
+     보시면 됩니다.
+
+  2.4.  소스를 받으십시오.
+
+  오우케이, 이제 큐메일을 설치할 수 있도록 필요사항에 맞는 시스템을
+  준비하셨군요. 첫번째 단계는 큐메일과 다른 애드온의 소스코드를
+  다운로드하는 것입니다. 큐메일은 당연히 필요하고요, ucspi-tcp와
+  daemontools도 필요할 것입니다.
+
+  o  qmail,  <ftp://koobera.math.uic.edu/www/software/qmail-1.03.tar.gz>
+
+  o  ucspi-tcp,  <http://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz>
+
+  o  daemontools,
+     <ftp://koobera.math.uic.edu/www/daemontools/daemontools-0.61.tar.gz>
+
+  웹브라우저나 FTP 클라이언트를 이용해서 이 파일들을 가져오세요.
+
+  2.5.  소스를 컴파일하세요.
+
+  2.5.1.  컴파일환경을 검증하세요.
+
+  첫번째 할일은 프로그램을 컴파일하기에 필요한 툴을 갖추었는 지의
+  확인입니다. 이것을 결정하는 것은 사용중인 유닉스종류에 따릅니다.
+  말씀드릴 수 있는 가장 쉬운 방법은, 보장되지는 않지만, 해보는 겁니다.
+
+  -----------------------------------------------------------------------------
+  유의점: 이것들중 하나라도 통과하면, 다음 항목으로 넘어가셔도 됩니다.
+  -----------------------------------------------------------------------------
+
+      명령행프롬트에서, cc라 쓰고, 엔터를 누르세요:
+        $ cc cc: No input files specified $
+
+      답이 비슷하게 나오면, C 컴파일러가 경로에 있는 것입니다. 그렇지
+        않더라도, 설치되어
+        있지 않다는 것은 아닙니다. 설치되어 있을 지 모르지만, 경로에
+        포함되어 있지 않을 수도 있습니다. 물론, 설치되어 있지 않을 수도
+        있습니다. 이렇게 해보세요.  "
+
+     o  /usr/bin/cc
+
+     o  /usr/bin/gcc
+
+     o  /usr/local/bin/cc
+
+     o  /usr/local/bin/gcc
+
+     o  /usr/ccs/bin/cc
+
+      소용이 없으면, 플랫폼 특성에 맞는 방법으로 하셔야 합니다.
+        프롬트에서 다음 중 하나를 하시는데, 사용중인 OS에 따르셔야
+        합니다.
+
+     o  Red Hat Linux: rpm -qa | grep gcc or rpm -qa | grep egcs
+
+     o  FreeBSD: GCC가 디폴트로 포함됩니다.
+
+  이번 항목에서는 큐메일을 실제로 컴파일하는 단계를 거칩니다.
+  오려붙이기가 간편하지만, 그렇게 필요하지는 않습니다.
+
+  2.5.2.  배포판을 풉니다.
+
+  여기까지 오셨으면, 이미 C 컴파일러와 tarball을 준비하신 겁니다. 타볼을
+  작업하실 디렉토리로 복사하거나 옮기세요. /usr/local/src가 좋은데, 이
+  경우에는 /usr/local/src/qmail를 세 패케지 모두에 사용할 수 있습니다.
+
+           mkdir -p /usr/local/src/qmail
+           mv *.tar.gz /usr/local/src/qmail
+
+  /usr/local/src/qmail에 세 패케지가 전부 있으므로, 그것들을 푸십시오.
+  룻이 아니라면 여기에서는 룻이 되셔야 합니다. 프롬트에서 다음과 같이
+  하세요:
+
+          su -
+          cd /usr/local/src/qmail
+          gunzip qmail-1.03.tar.gz
+          tar xvf qmail-1.03.tar
+          gunzip ucspi-tcp-0.84.tar.gz
+          tar xvf ucspi-tcp-0.84.tar
+          gunzip daemontools-0.61.tar.gz
+          tar xvf daemontools-0.61.tar
+          rm *.tar    # 여유공간이 없을 때 하는 선택사항
+
+  qmail-1.03, ucspi-tcp-0.84, daemontools-0.61 등의 섭디렉토리가
+  생깁니다. qmail-1.03 디렉토리로 가시면 시작하겠습니다.
+
+    cd qmail-1.03
+
+  2.5.3.  디렉토리를 만듭니다.
+
+  필요한 섭디렉토리는 큐메일 설치 프로그램이 만들므로, 큐메일
+  홈디렉토리만 만들어 주면 됩니다.
+
+    mkdir /var/qmail
+
+  그러면 다음 항목으로 갑니다.
+
+  ------------------------------------------------------------------------------
+  유의점: 큐메일파일들을 /var가 아닌 다른 곳에 놓고 싶으시면, /var/qmail디렉토리에
+          그곳을 가리키는 심볼릭 링크를 만드시면 됩니다.
+
+          예를 들면, 다음과 같이 하시면 됩니다.
+
+          mkdir /var/qmail
+          ln -s /usr/man /var/qmail/man
+          mkdir /etc/qmail
+          ln -s /etc/qmail /var/qmail/control
+          ln -s /usr/sbin /var/qmail/bin
+  --------------------------------------------------------------------------------
+
+  2.5.4.  사용자와 그룹을 만듭니다.
+
+  필요한 사용자와 그룹을 만드는 가장 쉬운 방법은 작은 스크립트를
+  만들어서 하는 것입니다. 소스디렉토리에 INSTALL.ids 파일이 있습니다.
+  거기에는 여러 프랫폼에 해당하는 명령행이 있는데, 그 파일을 다른
+  이름으로 복사해서 편집하면 빠르고 쉽습니다.
+
+     cp INSTALL.ids IDS
+
+  좋아하시는 에디터로 필요한 행을 빼고 다 지웁니다. 예를 들면, 편집후에
+  FreeBSD에 대한 IDS는 다음과 같습니다.
+
+          pw groupadd nofiles
+          pw useradd alias -g nofiles -d /var/qmail/alias -s /nonexistent
+          pw useradd qmaild -g nofiles -d /var/qmail -s /nonexistent
+          pw useradd qmaill -g nofiles -d /var/qmail -s /nonexistent
+          pw useradd qmailp -g nofiles -d /var/qmail -s /nonexistent
+          pw groupadd qmail
+          pw useradd qmailq -g qmail -d /var/qmail -s /nonexistent
+          pw useradd qmailr -g qmail -d /var/qmail -s /nonexistent
+     pw useradd qmails -g qmail -d /var/qmail -s /nonexistent
+
+  실행하려면, chmod를 써서 실행파일로 만드시거나 sh로 실행하십시오.
+
+      첫번째 방법:
+
+          chmod 700 IDS
+          ./IDS
+
+      두번째 방법:
+
+          /bin/sh IDS
+
+  스크립트의 실행이 완료되어 사용자와 그룹이 생기면 다음항목으로 갑니다.
+
+  그러나, INSTALL.ids에 해당 시스템이 없으면 어쩝니까? 수동으로 그것들을
+  만들어야 합니다. 좋아하는 에디터를 사용해서 /etc/group을 편집하세요.
+  다음 두 줄을 그 파일끝에 첨가하십시오.
+
+    qmail:*:2107:
+    nofiles:*:2108:
+
+  -------------------------------------------------------------------------
+  유의점: 2107과 2108이 사용중인 것이 아님을 확인하셔야 합니다.
+  -------------------------------------------------------------------------
+
+  다음으로는, vipw를 이용해서 다음 줄들을 그 파일의 끝에 붙이십시오.
+  (대부분의 시스템에 vipw가 있지만, 없으면 에디터로 /etc/passwd를
+  편집합니다.)
+
+          alias:*:7790:2108::/var/qmail/alias:/bin/true
+          qmaild:*:7791:2108::/var/qmail:/bin/true
+          qmaill:*:7792:2108::/var/qmail:/bin/true
+          qmailp:*:7793:2108::/var/qmail:/bin/true
+          qmailq:*:7794:2107::/var/qmail:/bin/true
+          qmailr:*:7795:2107::/var/qmail:/bin/true
+          qmails:*:7796:2107::/var/qmail:/bin/true
+
+  ------------------------------------------------------------------------------------
+  유의점: 7790-7796이 사용중이지 않는다는 것과 2107과 2108이 위에서 만든 그룹아이디와
+          같다는 것을 확인하십시오.
+  ------------------------------------------------------------------------------------
+
+  이런 것들을 해당파일의 끝에만 첨가해야 하는 것은 아니지만, 그래야
+  설명하기가 제일 쉽습니다.
+
+  다음 항목으로 가실 준비가 되셨군요.
+
+  2.5.5.  컴파일을 하세요.
+
+  이제 큐메일을 컴파일하실 준비가 되었습니다.
+
+  디렉토리가 PATH환경변수에 있지 않으면 conf-cc와 conf-ld를
+  편집하십시오. 컴파일러가 gcc이고, PATH에 있다고 하면, conf-cc와 conf-
+  ld를 가볍게 편집하고, cc를 gcc로 바꾸십시오.
+
+  그렇게 하셨으면 명령행 프롬트에 다음과 같이 하세요.
+
+    make setup check
+
+  컴파일이 끝나면, 설치후설정을 하셔야 합니다. 이 일을 쉽게 해주는
+  스크립트가 두어개 있습니다.
+
+  DNS가 제대로 설정되었다면, 다음 스크립트를 실행하기만 하면 됩니다.
+
+    ./config
+
+  어떤 이유로 config가 DNS에서 hostname을 찾지 못하면, config-fast
+  script를 실행하셔야 합니다.
+
+    ./config-fast 호스트네임.완전.경로
+
+  예를 들면, 도메인이 example.com이고, 당신컴퓨터의 호스트네임이
+  dolphin이라면, config-fast를 다음과 같이 실행합니다.
+
+    ./config-fast dolphin.example.com
+
+  큐메일이 시스템에 설치되어서 가동될 준비가 되었습니다! 다음항목은
+  큐메일을 가동하고 시험하는 단계를 안내합니다.
+
+  2.6.  ucspi-tcp를 설치합니다.
+
+  먼저번에 qmail, ucpsi-tcp, daemontools 타볼을 풀었습니다. 예제에서
+  그것들을 /usr/local/src/qmail에 풀었습니다. 자 ucpsi-tcp디렉토리로
+  옮깁시다.
+
+    cd /usr/local/src/qmail/ucspi-tcp-0.84
+
+  똑같이 해줍니다.
+
+  그런뒤에 다음과 같이 하십시오.
+
+    make
+    make setup check
+
+  2.7.  daemontools를 설치합니다.
+
+  daemontools 컴파일디렉토리로 이통합니다.
+
+    cd /usr/local/src/qmail/daemontools-0.61
+
+  또 한번, conf-cc와 conf-ld를 qmail과 ucspi-tcp 컴파일시 고쳤으면, 이
+  디렉토리에서도 똑같이 합니다.
+
+  그리고 다음과 같이 합니다.
+
+    make
+    make setup check
+
+  2.8.  큐메일을 가동합니다.
+
+  2.8.1.  /var/qmail/rc
+
+  /var/qmail/boot디렉토리에는 여러가지 설정에 대한 본보기 큐메일 붓
+  스크립트가 있습니다. /var/spool/mail 대 $HOME/Mailbox, procmail 또는
+  dot-forward를 이용하기, 그리고 이것들의 다양한 결합. 한번 부담없이
+  검토해보시기 바랍니다. 우리는 설치를 위해서 다음을 이용하겠습니다.:
+
+      #!/bin/sh
+
+      # Using stdout for logging
+      # Using control/defaultdelivery from qmail-local to deliver messages by default
+
+      exec env - PATH="/var/qmail/bin:$PATH" \
+      qmail-start "`cat /var/qmail/control/defaultdelivery`"
+
+  에디터로 위의 내용을 /var/qmail/rc로 만드시고, 다음과 같이 명령합니다.
+
+    chmod 755 /var/qmail/rc
+    mkdir /var/log/qmail
+
+  이쯤에서, .qmail파일이 전달하지 못하는 메세지들에 대한 기본전달모드를
+  결정해야 합니다. 다음의 테이블에 몇가지 공통선택이 간략히 예시되어
+  있습니다.
+
+   Mailbox
+   format     Name       Location        defaultdelivery  Comments
+
+   mbox       Mailbox    $HOME           ./Mailbox        most common, works
+                                                               with most MUA's
+
+   maildir    Maildir    $HOME           ./Maildir/       more reliable, less
+                                                               MUA support
+
+   mbox        username  /var/spool/mail See INSTALL.vsm  traditional UNIX
+                                                               mailbox
+
+  정보를 더 원하시면 INSTALL.mbox, INSTALL.maildir, INSTALL.vsm 등을
+  보십시오.
+
+  기본 멜복스 형태를 고르시려면, 위의 테이블의 defaultdelivery 값을
+  /var/qmail/control/defaultdelivery에 적어넣으십시오.  예) 표준 큐메일
+  Mailbox 전달을 선택하시려면 다음과 같이 합니다.
+
+     echo ./Mailbox >/var/qmail/control/defaultdelivery
+
+  ----------------------------------------------------------------------------------
+  유의점: defaultdelivery는 표준 큐메일 통제 파일이 아닙니다. 위의 /var/qmail/rc파일의
+          특징입니다.
+  ----------------------------------------------------------------------------------
+
+  2.8.2.  시스템 기동 파일
+
+  /var/qmail/rc 스크립트를 수동으로 실행하셔야 하면, 큐메일은
+  부분가동합니다. 그러나, 우리는 큐메일이 시스템이 부팅할때마다 자동으로
+  가동하기를 원하고, 시스템이 정지할 때는 깨끗하게 꺼지기를 원합니다.
+
+  이것은 startup/shutdown스크립트를 다음과 같이 작성하면 됩니다.
+
+   #!/bin/sh
+
+   PATH=/var/qmail/bin:/usr/local/bin:/usr/bin:/bin
+   export PATH
+
+   case "$1" in
+     start)
+       echo -n "Starting qmail: svscan"
+       cd /var/qmail/supervise
+       env - PATH="$PATH" svscan &
+       echo $! > /var/run/svscan.pid
+       echo "."
+       ;;
+     stop)
+       echo -n "Stopping qmail: svscan"
+       kill `cat /var/run/svscan.pid`
+       echo -n " qmail"
+       svc -dx /var/qmail/supervise/*
+       echo -n " logging"
+       svc -dx /var/qmail/supervise/*/log
+       echo "."
+       ;;
+     stat)
+       cd /var/qmail/supervise
+       svstat * */log
+       ;;
+     doqueue|alrm)
+       echo "Sending ALRM signal to qmail-send."
+       svc -a /var/qmail/supervise/qmail-send
+       ;;
+     queue)
+       qmail-qstat
+       qmail-qread
+       ;;
+     reload|hup)
+       echo "Sending HUP signal to qmail-send."
+       svc -h /var/qmail/supervise/qmail-send
+       ;;
+     pause)
+       echo "Pausing qmail-send"
+       svc -p /var/qmail/supervise/qmail-send
+       echo "Pausing qmail-smtpd"
+       svc -p /var/qmail/supervise/qmail-smtpd
+       ;;
+     cont)
+       echo "Continuing qmail-send"
+       svc -c /var/qmail/supervise/qmail-send
+       echo "Continuing qmail-smtpd"
+       svc -c /var/qmail/supervise/qmail-smtpd
+       ;;
+     restart)
+       echo "Restarting qmail:"
+       echo "* Stopping qmail-smtpd."
+       svc -d /var/qmail/supervise/qmail-smtpd
+       echo "* Sending qmail-send SIGTERM and restarting."
+       svc -t /var/qmail/supervise/qmail-send
+       echo "* Restarting qmail-smtpd."
+       svc -u /var/qmail/supervise/qmail-smtpd
+       ;;
+     cdb)
+       tcprules /etc/tcp.smtp.cdb /etc/tcp.smtp.tmp < /etc/tcp.smtp
+       chmod 644 /etc/tcp.smtp*
+       echo "Reloaded /etc/tcp.smtp."
+       ;;
+     help)
+       cat <<HELP
+      stop -- stops mail service (smtp connections refused, nothing goes out)
+     start -- starts mail service (smtp connection accepted, mail can go out)
+     pause -- temporarily stops mail service (connections accepted, nothing leaves)
+      cont -- continues paused mail service
+      stat -- displays status of mail service
+       cdb -- rebuild the tcpserver cdb file for smtp
+   restart -- stops and restarts smtp, sends qmail-send a TERM & restarts it
+   doqueue -- sends qmail-send ALRM, scheduling queued messages for delivery
+    reload -- sends qmail-send HUP, rereading locals and virtualdomains
+     queue -- shows status of queue
+      alrm -- same as doqueue
+       hup -- same as reload
+   HELP
+       ;;
+     *)
+       echo "Usage: $0 {start|stop|restart|doqueue|reload|stat|pause|cont|cdb|queue|help}"
+       exit 1
+       ;;
+   esac
+
+   exit 0
+
+  이 스크립트는  <http://Web.InfoAve.net/~dsill/qmail-script-
+  dt61.txt>에서도 구할 수 있습니다.
+
+  -------------------------------------------------------------------------------------
+  유의점: 시스템이 재부팅한다음에 큐메일이 곧 없어지면, 스크립트의 "start"항목에 있는
+          env 명령을 nohup으로 덧붙입니다.
+
+          예)
+          nohup env - PATH="$PATH" svscan &
+  -------------------------------------------------------------------------------------
+
+  에디터로 스크립트를 만들거나 웹브라우저로 다운로드해서 시스템의
+  init.d디렉토리에 설치하시는데, 다음과 같은 장소가 됩니다.
+
+  o  /etc/init.d
+
+  o  /sbin/init.d
+
+  o  /etc/rc.d/init.d
+
+  스크립트를 qmail이라고 이름붙이십시오. 스크립트를 몇개의 rc디렉토리에
+  링크시키셔야 합니다. 이 데렉토리들은 rcN.d같이 되어있는데, N은 적용
+  runlevel입니다. 기동디렉토리 구조가 복잡해서 본 문서에는 다루지
+  않습니다. 그러니 간단한 지시사항이 맘에 차지 않으시면 시스템문서를
+  참조하십시오. rc 디렉토리는 다음중 하나일 겁니다.
+
+  o  /etc
+
+  o  /sbin
+
+  o  /etc/rc.d
+
+  링크를 만드시는데, 다음과 같이 하십시오. RCDIR를 시스템의 rc
+  디렉토리의 장소로 바꾸십시오.
+
+      ln -s ../init.d/qmail RCDIR/rc0.d/K30qmail
+           ln -s ../init.d/qmail RCDIR/rc1.d/K30qmail
+           ln -s ../init.d/qmail RCDIR/rc2.d/S80qmail
+           ln -s ../init.d/qmail RCDIR/rc4.d/S80qmail
+           ln -s ../init.d/qmail RCDIR/rc5.d/S80qmail
+           ln -s ../init.d/qmail RCDIR/rc6.d/K80qmail
+
+  --------------------------------------------------------------------------------------
+  유의점: 전단계의 숫자는 매우 시스템에 의존합니다. 그렇지만 다소 유연합니다.
+          Sendmail이 현재 설치되어 있으면, "find RCDIR -name "*sendmail" -print" 명령을
+          실행하면 시스템에 적용할 수 있는 숫자를 알려줍니다.
+  --------------------------------------------------------------------------------------
+
+  이제 큐메일서비스를 위해 감독디렉토리를 만드십시오.
+
+           mkdir -p /var/qmail/supervise/qmail-send/log
+           mkdir -p /var/qmail/supervise/qmail-smtpd/log
+           chmod +t /var/qmail/supervise/qmail-send
+           chmod +t /var/qmail/supervise/qmail-smtpd
+
+  /var/qmail/supervise/qmail-send/run파일을 만드십시오.
+
+  #!/bin/sh
+  exec /var/qmail/rc
+
+  /var/qmail/supervise/qmail-send/log/run파일을 만드십시오.
+
+  #!/bin/sh
+  exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t /var/log/qmail
+
+  /var/qmail/supervise/qmail-smtpd/run파일을 만드십시오.
+
+  #!/bin/sh
+  QMAILDUID=`id -u qmaild`
+  NOFILESGID=`id -g qmaild`
+  exec /usr/local/bin/softlimit -m 2000000 \
+      /usr/local/bin/tcpserver -v -p -x /etc/tcp.smtp.cdb \
+          -u $QMAILDUID -g $NOFILESGID 0 smtp /var/qmail/bin/qmail-smtpd 2>&1
+
+  /var/qmail/supervise/qmail-smtpd/log/run파일을 만드십시오.
+
+  #!/bin/sh
+  exec /usr/local/bin/setuidgid qmaill /usr/local/bin/multilog t /var/log/qmail/smtpd
+
+  run파일들에 실행가능을 부여합니다.
+
+          chmod 755 /var/qmail/supervise/qmail-send/run
+          chmod 755 /var/qmail/supervise/qmail-send/log/run
+          chmod 755 /var/qmail/supervise/qmail-smtpd/run
+          chmod 755 /var/qmail/supervise/qmail-smtpd/log/run
+
+  그런 다음에, 로그디렉토리를 만듭니다.
+
+    mkdir -p /var/log/qmail/smtpd
+    chown qmaill /var/log/qmail /var/log/qmail/smtpd
+
+  기동스크립트에 실행권한을 부여하고, 실행경로에 있는 디렉토리로
+  링크합니다.
+
+     # substitute the correct location of your rc dir on the next two lines
+          chmod 755 /etc/init.d/qmail
+          ln -s /etc/init.d/qmail /usr/local/sbin
+
+  로컬호스트가 SMTP를 통해서 멜을 삽입 (inject)하도록 합니다.
+
+     echo '127.:allow,RELAYCLIENT=""' >>/etc/tcp.smtp
+          /usr/local/sbin/qmail cdb
+
+  2.8.3.  기존에 설치된 MTA를 멈추고 무력하게 합니다.
+
+  큐메일과 현존하는 MTA, 대개 Sendmail, 두개를 사용할 수도 있지만,
+  그렇게 하지 않을 것을 강력히 권고합니다. 그리고, 솔직히 말해서, 이
+  글을 읽고 계신다면, 그게 무엇을 뜻하는 지 모르실 겁니다. :-)
+
+  현존 MTA가 Sendmail이라면, init.d 스크립트를 stop인수를 주어 실행하여
+  멈출 수 있습니다. 예) 다음 중 하나가 유효할 겁니다.
+
+    /etc/init.d/sendmail stop
+    /sbin/init.d/sendmail stop
+    /etc/rc.d/init.d/sendmail stop
+
+  init.d/sendmail 스크립트를 찾을 수 없다면, "ps -ef|grep sendmail" 또는
+  "ps waux|grep sendmail"을 사용해서 sendmail의 PID를 알아낸 뒤에,
+  다음과 같이 해서 멈춥니다.
+
+    kill PID-of-sendmail
+
+  MTA가 Sendmail이 아니면, 해당문서에서 바른 멈춤 절차를 참고하십시오.
+
+  시스템에서 기존의 MTA를 완전히 제거하는 것도 고려해볼 만합니다. 적어도
+  init.d 스크립트를 무력하게 하면 시스템이 재부팅할 때 다시는 가동하지
+  않습니다.
+
+  레드햇리눅스에서는 다음과 같이 해서 Sendmail을 제거합니다.
+
+    rpm -e --nodeps sendmail
+
+  끝으로, 기존의 /usr/lib/sendmail을 큐메일판으로 바꿉니다.
+
+    mv /usr/lib/sendmail /usr/lib/sendmail.old                  # 에러를 무시하세요
+    mv /usr/sbin/sendmail /usr/sbin/sendmail.old                # 에러를 무시하세요
+    chmod 0 /usr/lib/sendmail.old /usr/sbin/sendmail.old        # 에러를 무시하세요
+    ln -s /var/qmail/bin/sendmail /usr/lib
+    ln -s /var/qmail/bin/sendmail /usr/sbin
+
+  이제는 큐메일가동이 가깝습니다. 끝단계는 시스템앨리어스를 두어개
+  만드는 것입니다.
+
+  2.8.4.  시스템앨리어스를 만듭니다.
+
+  모든 큐메일설치에서는 시스템앨리어스를 세개 만들어야 합니다.
+
+  앨리어스            목적
+  postmaster          RFC 821 요구사항이며, 멜애드민 (당신)을 가리킵니다.
+  mailer-daemon       바운스멜에 대한 사실상의 표준수취인
+  root                특권계정에서 온 멜을 시스템애드민에게 보낸다.
+
+  이 앨리어스들을 만들려면, 그것들 하나하나가 어디에 놓여져야 하는 지
+  (로컬사용자, 또는 원격주소) 결정하고, .qmail파일을 만들어서 갖다놓으면
+  됩니다. 예를 들어, 로컬사용자 dave는 시스템과 멜의 애드민이라고 하면
+  다음과 같이 합니다.
+
+    echo dave > /var/qmail/alias/.qmail-root
+    echo dave > /var/qmail/alias/.qmail-postmaster
+    ln -s .qmail-postmaster > /var/qmail/alias/.qmail-mailer-daemon
+    chmod 644 /var/qmail/alias/.qmail-root /var/qmail/alias/.qmail-postmaster
+
+  2.8.5.  큐메일을 가동합니다.
+
+  마지막으로, 큐메일을 가동합니다.
+
+    /usr/local/sbin/qmail start
+
+  2.9.  설치를 시험합니다.
+
+  큐메일이 지금쯤 운행하고 있을겁니다. TEST.deliver, TEST.receive에 있는
+  지시사항을 따르시면 제대로 작동하고 있는 지 검사할 수 있습니다. 이들
+  지시사항을 이용하면, 로그는 splogger가 아닌 accustamp와 cyclog가
+  만든다는 것을 알아두십시오.
+
+  3.  설정
+
+  권장 소스타볼 방법이나, 자동컴파일 패케지로부터 큐메일을
+  설치하셨습니다. 이번 항목에는 멜애드민이나 시스템애드민이 자기가
+  원하는 대로 큐메일을 운영하기 위해 큐메일을 설정하는 데 필요한 정보가
+  있습니다.
+
+  3.1.  설정파일
+
+  모든 큐메일 시스템설정파일은  alias에 있는 .qmail파일을 빼고는 모두
+  /var/qmail/control에 놓여져 있습니다. qmail-control 맨페지에는 다음과
+  같은 테이블이 있습니다.
+
+  Control           Default         Used by       Purpose
+
+  badmailfrom       none            qmail-smtpd   blacklisted From addresses
+
+  bouncefrom        MAILER-DAEMON   qmail-send    username of bounce sender
+
+  bouncehost        me              qmail-send    hostname of bounce sender
+
+  concurrencylocal  10              qmail-send    max simultaneous local
+                                                  deliveries
+
+  concurrencyremote 20              qmail-send    max simultaneous remote
+                                                  deliveries
+
+  defaultdomain     me              qmail-inject  default domain name
+
+  defaulthost       me              qmail-inject  default host name
+
+  databytes         0               qmail-smtpd   max number of bytes in
+                                                  message (0=no limit)
+
+  doublebouncehost  me              qmail-send    host name of double bounce
+                                                  sender
+
+  doublebounceto    postmaster      qmail-send    user to receive double
+                                                  bounces
+
+  envnoathost       me              qmail-send    default domain for
+                                                  addresses without "@"
+
+  helohost          me              qmail-remote  host name used in SMTP
+                                                  HELO command
+  idhost            me              qmail-inject  host name for Message-ID's
+
+  localiphost       me              qmail-smtpd   name substituted for local
+                                                  IP address
+
+  locals            me              qmail-send    domains that we deliver
+                                                  locally
+
+  me                FQDN of system  various       default for many control
+                                                  files
+
+  morercpthosts     none            qmail-smtpd   secondary rcpthosts
+                                                  database
+
+  percenthack       none            qmail-send    domains that can use
+                                                  "%"-style relaying
+
+  plusdomain        me              qmail-inject  domain substituted for
+                                                  trailing "+"
+
+  qmqpservers       none            qmail-qmqpc   IP addresses of QMQP
+                                                  servers
+
+  queuelifetime     604800          qmail-send    seconds a message can
+                                                  remain in queue
+
+  rcpthosts         none            qmail-smtpd   domains that we accept
+                                                  mail for
+  smtpgreeting      me              qmail-smtpd   SMTP greeting message
+  smtproutes        none            qmail-remote  artificial SMTP routes
+
+  timeoutconnect    60              qmail-remote  how long, in seconds, to
+                                                  wait for SMTP connection
+
+  timeoutremote     1200            qmail-remote  how long, in seconds, to
+                                                  wait for remote server
+
+  timeoutsmtpd      1200            qmail-smtpd   how long, in seconds, to
+                                                  wait for SMTP client
+  virtualdomains    none            qmail-send    virtual domains and users
+
+  특정 컨트롤 파일에 대해 정보를 더 원하시면, "Used by"밑에 열거된
+  모듈에 해당하는 맨페지를 참조하십시오.
+
+  3.2.  릴레이
+
+  3.2.1.  소개서
+
+  릴레이는 무엇일까요? MTA가 SMTP를 통해서 메세지를 받아들이지만,
+  로컬주소 또는 로컬송신자가 아닐때를 말합니다.
+
+  스팸이전시대에는 MTA가 공개릴레이로 설정되는 것이 보통이었습니다.
+  송신자/수신자가 누구든 지 멜을 수용하는 무차별서버였습니다.
+
+  요즘의 MTA는 대개 릴레이를 금지하거나, 일정한 믿을만한 사용자나
+  시스템에게만 릴레이를 허용하고 있습니다.
+
+  3.2.2.  릴레이 금지
+
+  공식 큐메일설치지시사항을 따르면 릴레이는 기본이 안되게 되어있습니다.
+  이것은 locals와 virtualdomains에 있는 도메인 네임들에 있는 도메인
+  네임들을 /var/qmail/control/rcpthosts파일에 적기 때문입니다.
+  rcpthosts통제파일이름은 SMTP RCPT (수신자) 명령어에서 유래합니다. SMTP
+  세션에서 RCPT는 메세지수신인의 주소를 밝히는 데 씁니다. 그러면
+  rcpthosts는 RCPT 주소에 나타나는 유효한 호스트네임을 리스트합니다.
+
+  3.2.3.  릴레이선택을 허용하기
+
+  대부분의 단일사용자와 소규모 서버는 릴레이를 완전히 금지할 수 있지만,
+  분산된 사용자 공동체를 지원하려면 사용자에게만은 릴레이용으로 서버를
+  이용하게 할 수 있는 방법이 필요합니다. 이것은 qmail-smtpd에게
+  rcpthosts 파일을 무시하도록 tcpserver를 써서 RELAYCLIENT환경변수를
+  정하면 됩니다.
+
+  본문서의 설치지시사항을 따르면, 릴레이선택은 기본입니다.
+  클라이언트에게 릴레이접근권한을 주려면 /etc/tcp.smtp에 다음을
+  첨가하십시오.
+
+    IP address of client:allow,RELAYCLIENT=""
+
+  그리고나서 SMTP 접근권한 데이터베이스를 재컴파일하십시오.
+
+    tcprules /etc/tcp.smtp.cdb /etc/tcp.smtp.tmp < /etc/tcp.smtp
+    chmod 644 /etc/tcp.smtp*
+
+  공식설치지시사항을 따랐다면, Chris Johnson이 큐메일이 특정호스트에게만
+  릴레이를 허용하도록 설정하는 방법을 적으셨으니
+  <http://www.palomine.net/qmail/selectiverelay.html>를 참고하도록
+  하십시오.
+
+  3.3.  다중 호스트네임
+
+  호스트가 한 이름이상으로 알려지면, 예를 들어서 user@host1.example을
+  user@example.com이나 user@mail.example.com 등으로 적을 수 있다면,
+  큐메일에 이런 내용을 알려서 어떤 주소로 내부에서 전달할 지,
+  원격시스템에서 어떤 메세지를 받을 즈 등을 알게 합니다.
+
+  그렇게 하려면, 통제파일 두 개에 모든 이름을 첨가하기만 하면 됩니다.
+
+  o  rcpthosts: qmail-smtpd에게 이들 호스트로 주소를 가진 멜을
+     받아들이게 합니다.
+
+  o  locals: qmail-send에게 이들 호스트의 주소는 내부에서 전달되게
+     합니다.
+
+  3.4.  버츄얼도메인
+
+  버츄얼도메인은 전항목에서 말씀드린 다중호스트네임과 비슷합니다만,
+  몇가지 중요한 차이점이 있습니다. 첫째로, example.net에
+  virtual.example.com이라는 버츄얼도메인이 있다면, joe@example.net에게
+  보낸 메세지는 대개 joe@virturl.example.com으로 보낸 메제지와 같은
+  멜복스에서 끝나지 않습니다. 버추얼도메인에 대한 이름은 별개입니다.
+
+  큐메일에서 버츄얼도메인은 virtualdomains파일에 설정되는데,
+  다음형식으로 하나 또는 그 이상을 적습니다.
+
+  큐메일은 user@domain을 prepend-user@domain으로 변환하고, 그 결과를
+  도메인이 로컬인 것처럼 취급합니다. user@부분은 선택입니다. 생략하면,
+  모든 @domain주소와 일치합니다.
+
+  위의 example씨나리오를 다시 보면, example.net의 멜애드민이
+  john사용자의 애드민 통제하에 virtual.example.com이라는 버츄얼도메인을
+  만들기 위해서는 다음과 같이 virtualdomains에 써넣어야 합니다.
+
+    virtual.example.com:john
+
+  joe@virtual.example.com로 들어오는 메세지는 john-
+  joe@virtual.example.com으로 써지고, 내부에서 전달됩니다. john이 어떻게
+  버츄얼도메인을 관리하는 지 .qmail항목의 주소연장 부항목을 보시기
+  바랍니다.
+
+  다중호스트네임과 같이 모든 버츄얼도메인은 rcpthosts에 리스트되어서
+  qmail-smtpd가 그곳으로 주소된 메세지들을 받아들이게 합니다. 그렇지만,
+  다중호스트네임과 틀린점은 버츄얼도메인을 locals에 첨가해서는 안됩니다
+
+  --------------------------------------------------------------------------------
+  유의점: DNS와 MX기록은 버츄얼도메인으로 가는 메세지를 적절한 멜서버로 돌리도록
+          설치되어야 합니다. 이것은 네임서버애드민이 할일이고, 본 가이드의 범위를
+          벗어납니다.
+  --------------------------------------------------------------------------------
+
+  3.5.  앨리어스
+
+  큐메일의 표준 앨리어스기술은 큐메일의 로컬전달기술이 자연히 발전한
+  것입니다.  qmail-local은 localpart@host을 주소로 하는 메세지를
+  localpart라는 이름의 로컬사용자에게 전달하려고 합니다. 맞는 사용자가
+  없으면 메세지는 전체 큐메일시스템에서 /var/qmail/alias가 홈디렉토리인
+  pseudo-user 앨리어스 사용자에게 전달됩니다.
+
+  예를 들어 메세지를 tom사용자에게 회송하는 info@example.com앨리어스를
+  만들고자 한다고 합시다. example.com에서 룻사용자로서 다음과 같이
+  합니다.
+
+    echo tom > /var/qmail/alias/.qmail-info
+
+  .qmail항목과 주소연장부항목에서 어떤 앨리어스가 있는 지 정하는
+  .qmail파일을 어떻게 만들고, 전달되는 메세지로 무엇을 해야 하는 지
+  설명합니다.
+
+  큐메일에서 앨리어스가 실행되는 방식때문에 앨리어스가 정당한 사용자
+  전달을 무시할 수는 없다는 것을 유의하십시오.
+
+  fastforward패케지에는 Sendmail의 앨리어스 데이터베이스와 호환하는
+  단일파일에 다중앨리어스를 적는 대체가능 앨리어스기술이 있습니다.
+
+  다음 항목인 qmail-users에서 앨리어스를 실행할 수 있는 다른 기술을
+  설명합니다.
+
+  3.6.  qmail-users
+
+  qmail-users는 사용자에게 주소를 할당하는 시스템입니다. 설정파일들이
+  /var/qmail/users에 놓입니다. 할당파일은 할당테이블입니다. simple과
+  wildcard 등 두 종류의 할당이 있습니다.
+
+  --------------------------------------------------------------------------------
+  유의점: assign은 한 줄에 할당들을 갖는데, 다음줄에 마침표를 적어줍니다. assign을
+          수동으로 만드시면 마침표줄을 잊지 마십시오.
+  ---------------------------------------------------------------------------------
+
+  3.6.1.  간단한 할당
+
+  간단한 할당은 다음과 같습니다.
+
+  =address:user:uid:gid:directory:dash:extension:
+
+  address로 받은 메세지는 user사용자로 작동하는데, 특정 uid와 gid로
+  하며, directory/.qmaildashextension파일에 메세지를 어떻게 전달해야
+  하는 지를 규정한다는 뜻입니다.
+
+  3.6.2.  와일드카드 할당
+
+  와일드카드 할당은 다음과 같습니다.
+
+  +prefix:user:uid:gid:directory:dash:prepend:
+
+  prefix형식의 주소로 수신된 메세지는 user사용자로 작동하는데, 특정
+  uid와 gid로 하며, directory/.qmaildashprepend파일에 메세지를 어떻게
+  전달해야 하는 지를 규정한다는 뜻입니다.
+
+  3.6.3.  qmail-user 프로그램들
+
+  qmail-user에는 도우미 프로그램이 두 개 있는데, qmail-newu와 qmail-
+  pw2u입니다.
+
+  qmail-newu는 assign파일을 처리해서 /var/qmail/users에 cdb라는
+  contstant 데이터베이스(CDB)파일을 만듦니다. CDB는 바이너리 형식이라서
+  할당이 수천개라도 qmail-lspawn으로 매우 빨리 접근합니다.
+
+  qmail-pw2u는 시스템사용자데이터베이스인 /etc/passwd를 assign에 적합한
+  할당으로 변환합니다. qmail-pw2u는 변환규칙을 고치는 파일 몇개를
+  사용합니다.
+
+  o  include: 포함할 사용자
+
+  o  exclude: 제외할 사용자
+
+  o  mailnames: 사용자에 대한 대체 mailnames
+
+  o  subusers: 사용자가 처리하는 가외주소로서 .qmail확장은
+     선택사항입니다.
+
+  o  append: 여러가지 할당
+
+  ---------------------------------------------------------------------------------
+  유의점: qmail-pw2u를 사용하면, 사용자를 추가, 삭제하거나 UID나 GID를 바꿀 때마다
+          qmail-pw2u와 qmail-newu를 재가동하셔야 합니다.
+  ---------------------------------------------------------------------------------
+
+  4.  사용법
+
+  이 항목에서는 보통사용자가 큐메일을 사용하는 법을 다룹니다.
+  큐메일시스템에서 멜을 읽거나 보낸다면, 여기에서 어떻게 큐메일을
+  이용하는 지를 알게 될겁니다.
+  4.1.  .qmail파일
+
+  사용자멜의 전달은 대개 .qmail파일이 통제하는데, 이것들은 사용자
+  홈디렉토리에 .qmail로 시작하는 이름으로 되어있습니다. dot-
+  qmail맨페지에 .qmail파일 사용법을 설명해 놓았습니다.
+
+  .qmail파일에는 전달지시사항이 한 줄에 하나씩 들어있습니다. 줄의
+  처음문자는 전달방법을 결정합니다.
+
+   문자               전달형태                  값
+   #                  없슴 (코멘트)             무시
+   |                  프로그램                  셸이 실행할 명령어
+   / 또는 .           mbox (마지막글자가        mbox 경로 (/나 .를 포함)
+                      /이 아니면)
+   / 또는 .           maildir (마지막           mbox 경로 (/나 .를 포함)
+                      글자가 /이면)
+   &                  포워드                    메세지를 포워드할 주소
+   글자 또는 숫자     포워드                    메세지를 포워드할 주소
+                                                (첫글자를 포함)
+
+  4.1.1.  프로그램전달
+
+  프로그램전달지시를 만나면 큐메일은 셸(/bin/sh)을 가동해서 명령을
+  실행하는데, 들어오는 메세지를 복사해서 명령에 표준입력으로 넣습니다.
+  qmail-command맨페지에 이 절차를 자세히 설명해 놓았습니다.
+
+  프로그램전달은 매우 강력하고 매우 넓은 기능을 구현할 수 있는데,
+  메세지필터링, 메세지에 자동으로 답하기, procmail 등 제3자 전달자를
+  통해 전달하는 것등입니다.
+
+  예)
+
+    |preline /usr/ucb/vacation djb
+
+  이렇게 하면 큐메일은 preline을 가동해서 /usr/ucb/vacation과 djb를
+  인수로 주고, 메세지복사본을 표준입력으로 제공합니다.
+
+  4.1.2.  mbox 전달
+
+  Mbox는 큐메일 용어로서 표준 유닉스 멜복스 형태인데, 다중메세지를
+  단일파일에 저장하고, 메세지에는 "From "줄이 머리에 있습니다. 이 줄은
+  헤더필드같이 보이지만 아닙니다. 이것은 다만 전달자가 첨가해서 멜을
+  읽는 사람이 해당메세지가 시작하는 곳을 알게하는 것뿐입니다.
+
+  예:
+    ./Mailbox
+
+  이렇게 하면 "From "줄을 앞에 붙여서 $HOME/Mailbox에 추가합니다. 단일
+  메세지를 보유한 간단한 mbox멜복스는 다음과 같습니다.
+
+    From user1@example.net Thu May 13 18:34:50 1999
+    Received: (qmail 1287205 invoked from network); 13 May 1999 18:34:49 -0000
+    From: user1@example.net
+    To: user2@example.com
+    Subject: hey
+
+    What's up?
+
+  첫줄은 큐메일이 전달하면서 첨가한 것입니다.
+
+  4.1.3.  maildir 전달
+
+  "Maildir"는 Dan Bernstein이 만든 멜복스형태로서 mbox형태의 결점을
+  말해줍니다. maildir멜복스에는 디렉토리로서 섭디렉토리가 세개 있는데,
+  new, cur, tmp 등입니다. maildir멜복스에 있는 각 메세지는 상태에 따라
+  부디렉토리중 하나에 별개파일로 되어있는데, new는 읽지 않은 메세지가,
+  cur는 읽은 메세지가, tmp는 전달중인 메세지가 들어 있습니다.
+  maildir맨페지에 maildir형식에 대해 자세히 설명하였습니다.
+
+  maildir의 이점중 하나는 다른 전달자가 동시에 업데이트하는 것을
+  막기위해 하는 록킹을 사용하지 않아도 확실하다는 겁니다. 이것은
+  maildir멜복스는 NFS를 마운트한 파일시스템에 안전하게 사용할 수 있다는
+  것을 뜻합니다.
+
+  예:
+    ./Maildir/
+
+  이것은 메세지를 maildir형태의 멜복스인 $HOME/Maildir에 저장합니다.
+
+  ------------------------------------------------------------------------------
+  유의점: maildir멜복스는 큐메일과 같이 제공하는 maildirmake프로그램으로 만듭니다.
+
+          예) maildirmake ~/Maildir
+  ------------------------------------------------------------------------------
+
+  4.1.4.  포워드 전달
+
+  포워드전달은 명시주소로 메세지를 다시보냅니다. .qmail파일에 명시한
+  주소는 완전자격이어야 하며, 커멘트필드와 여백이 없어야 합니다.
+
+  다음은 틀렸습니다.
+
+    &<user@example.com>
+    & user@example.com
+    &Joe User <user@example.com>
+    &user
+
+  다음과 같이 해야합니다.
+
+    &user@example.com
+    user@example.com
+
+  그러면 메세지사본을 user@example.com로 보냅니다.
+
+  4.1.5.  연장주소
+
+  큐메일에서는 사용자통제 연장주소를 지원합니다.  기본주소인
+  username@hostname.domain외에 사용자는 username-
+  extension@hostname.domain으로 멜을 받을 수 있습니다.  우리는 지금
+  로컬시스템에서 일어나는 행동을 고려하고 있으므로, 앞으로 이번
+  항목에서는 "@hostname.domain"부분은 적지 않기로 합니다.
+
+  username-extension에 대한 전달지시사항은  username/.qmail-extension에
+  있습니다.
+
+  예를 들면, dave-lwq@sparge.example.com은 sparge호스트에 있는
+   dave/.qmail-lwq가 통제합니다.
+
+  연장은 복수필드로 될 수 있습니다. 예를 들면 dave-list-qmail인데,
+   dave/.qmail-list-qmail이 통제합니다.  이번 예에서 dave-list-qmail은
+  큐메일 멜링리스트에 가입했고,  dave/.qmail-list-qmail은 리스트메세지를
+  별도의 멜복스에 파일보관합니다.
+
+  .qmail파일들은 -default를 와일드카드로 씁니다.  그래서 dave-list-
+  qmail은  /.qmail-list-default로도 처리할 수 있습니다. 이렇게 하면 모든
+  dave-list-whatever주소들을 다루는데 있어서 .qmail파일은 하나만 있어도
+  족합니다.  그러나 dave-list는  dave/.qmail-list-default가 통제하지
+  못하는데, list다음에 "-"이 없기 때문임을 유의하십시오.
+
+  큐메일은 찾는 것중에서 제일 가까운 것을 씁니다. 예를 들어서, dave-
+  list-qmail의 주소로 메세지가 왔다면, 다음과 같이 찾은 것중에서
+  첫번째것을 씁니다.
+
+  o
+
+  o
+
+  o
+
+  일치하는 .qmail파일이 없으면 전달은 실패하고 메세지는 보낸이에게
+  되돌려집니다.
+
+  4.2.  메세지 보내기
+
+  멜사용자는 메세지를 보내는 데 있어서 MTA를 보통 직접 사용하지
+  않습니다. 대체로 Mail User Agent (MUA)인 pine이나 mutt 등을 써서
+  메세지를 작성하고 보내는데, MUA는 MTA를 호출해서 메세지를 전달합니다.
+  MTA로 메세지를 건네주는 처리과정을 injection이라고 합니다.
+
+  대부분의 MTA로 메세지를 inject하는 방법에는 두 가지가 있습니다.
+  Simple Mail Transfer Protocol (SMTP)과 이 목적으로 MTA가 제공하는
+  프로그램을 이용하는 것입니다.
+
+  4.2.1.  SMTP
+
+  MUA는 로컬호스트나 지정한 멜서버에 있는 표준 SMTP포트인 25번 포트로
+  TCP 연결을 엽니다.  그 다음, MUA와 MTA는 다음과 같이 끝나는 대화중
+  하나를 합니다.
+
+  o  the message being transfered to the MTA, 또는
+
+  o  a error status being returned to the MUA
+
+  SMTP에는 인증장치가 없으므로 메세지를 보내는데 유저네임이나 패스워드가
+  필요없습니다.  그렇지만 많은 MTA는 로컬사용자가 보내거나 받는 것같지
+  않은 메세지를 거절합니다. 제대로된 메세지가 reject되면 릴레이제한이 그
+  원인일 경우가 제일 많습니다.  릴레이설정에 대한 정보는 릴레이항목을
+  보십시오.
+
+  4.2.2.  /var/qmail/bin/sendmail
+
+  오랜 세월동안 Sendmail이 유닉스 MTA였습니다.  어느 곳에나 그것이
+  있었기에 많은 프로그래머들은 의례 그것이 MTA라고 여겼습니다.  그 결과,
+  Sendmail의 로컬 인젝션 장치가 로컬멜인젝션에 대한 표준 Application
+  Programmer's Interface (API)가 되었습니다.  큐메일과 기타 비Sendmail
+  MTA는 sendmail프로그램을 공급해서 로컬인젝션에 대해서 진짜 Sendmail의
+  sendmail가 똑깥이 작동하도록 합니다.
+
+  큐메일의 sendmail은 보통 /var/qmail/bin/sendmail에 있는데, 대개
+  큐메일시스템에서 Sendmail의 sendmail을 대체합니다.  흔히
+  sendmail프로그램은 다음에 있습니다.
+
+  o  /usr/lib/sendmail
+
+  o  /usr/sbin/sendmail
+
+  큐메일시스템에서 "ls -l path-to-sendmail"하면 sendmail이
+  /var/qmail/bin/sendmail로 심볼릭링크되어있슴을 보여줍니다.
+
+    $ ls -l /usr/lib/sendmail
+      lrwxrwxrwx   1 root     root           29 Feb 19 11:04 /usr/lib/sendmail \
+              -> /var/qmail/bin/sendmail
+
+  4.2.3.  qmail-inject
+
+  sendmail API외에 큐메일에는 qmail-inject라는 자체 인젝션프로그램이
+  있습니다.  사실 sendmail은 qmail-inject의 wrapper입니다.
+
+  API이지만 sendmail은 매우 널리 쓰이므로 더 나은 듯합니다.  qmail-
+  inject가 제공하는 큐메일 API는 큐메일을 설치한 시스템이서만
+  작동하지만, sendmail 인터페스는 거의 어디에나 있습니다.
+
+  예를 들면, joe@example.com에게 빈 메세지를 보내려면 다음과 같이 합니다.
+
+    echo To: joe@example.com | /var/qmail/bin/qmail-inject
+
+  4.3.  환경변수
+
+  큐메일프로그램이 환경변수를 정하거나 사용하기도 합니다.  다음의
+  테이블에 변수를 열거하고 사용법을 적었습니다.
+
+   변수명             해당 맨페지    설정    사용목적
+
+   DATABYTES          qmail-smtpd    used    Overrides control/databytes
+                                             Portion of address matching
+   DEFAULT            qmail-command  set     "-default" in a .qmail file
+                                             name.
+   DTLINE             qmail-command  set     Delivered-To header field
+   EXT                qmail-command  set     The address extension
+
+   EXT2               qmail-command  set     Portion of EXT following first
+                                             dash
+
+   EXT3               qmail-command  set     Portion of EXT following second
+                                             dash
+
+   EXT4               qmail-command  set     Portion of EXT following third
+                                             dash
+   HOME               qmail-command  set     The user's home directory
+
+   HOST               qmail-command  set     The domain part of the recipient
+                                             address
+
+   HOST2              qmail-command  set     Portion of HOST preceding last
+                                             dot.
+
+   HOST3              qmail-command  set     Portion of HOST preceding
+                                             second-to-last dot
+
+   HOST4              qmail-command  set     Portion of HOST preceding
+                                             third-to-last dot
+
+   LOCAL              qmail-command  set     The local part of the recipient
+                                             address
+
+   LOGNAME            qmail-inject   used    User name in From header field
+                                             (4)
+
+   MAILHOST           qmail-inject   used    Host name in From header field
+                                             (2)
+
+   MAILNAME           qmail-inject   used    Personal name in From header
+                                             field (2)
+
+   MAILUSER           qmail-inject   used    User name in From header field
+                                             (2)
+
+   NAME               qmail-inject   used    Personal name in From header
+                                             field (3)
+
+   NEWSENDER          qmail-command  set     Forwarding sender address (see
+                                             "man dot-qmail")
+   QMAILDEFAULTDOMAIN qmail-inject   used    Overrides control/defaultdomain
+   QMAILDEFAULTHOST   qmail-inject   used    Overrides control/defaulthost
+
+   QMAILHOST          qmail-inject   used    Host name in From header field
+                                             (1)
+   QMAILIDHOST        qmail-inject   used    Overrides control/idhost
+
+   QMAILINJECT        qmail-inject   used    Specify various options (see
+                                             next table)
+                                             File containing list of mailing
+   QMAILMFTFILE       qmail-inject   used    list addresses for
+                                             Mail-Followup-To generation
+
+   QMAILNAME          qmail-inject   used    Personal name in From header
+                                             field (1)
+   QMAILPLUSDOMAIN    qmail-inject   used    Overrides control/plusdomain
+
+   QMAILSHOST         qmail-inject   used    Host name in envelope sender
+                                             address
+
+   QMAILSUSER         qmail-inject   used    User name in envelope sender
+                                             address
+
+   QMAILUSER          qmail-inject   used    User name in From header field
+                                             (1)
+   RECIPIENT          qmail-command  set     Envelope recipient address
+                                             Ignore control/rcpthosts and
+   RELAYCLIENT        qmail-smtpd    used    append value to recipient
+                                             address
+   RPLINE             qmail-command  set     Return-Path header field
+   SENDER             qmail-command  set     Envelope sender address
+   UFLINE             qmail-command  set     UUCP-style "From " line
+   USER               qmail-command  set     The current user
+
+   USER               qmail-inject   used    User name in From header field
+                                             (3)
+                     QMAILINJECT Flags
+
+   Letter Purpose
+   c      Use address-comment style for the From field
+   s      Do not look at any incoming Return-Path field
+   f      Delete any incoming From field
+   i      Delete any incoming Message-ID field
+   r      Use a per-recipient VERP
+   m      Use a per-message VERP
+
+  5.  고급토픽
+
+  5.1.  procmail
+
+  procmail은 많이 쓰는 Message Delivery Agent (MDA)이다. MDA가 하는 일은
+  특정 사용자나 멜복스에 대한 메세지를 MTA로부터 받아서 사용자의
+  요구대로 전달하는 것입니다.  procmail은 다양한 헤더필드내용이나
+  메세지본문에 따라서 메세지를 필터하는테 쓰이기도 합니다.  예를 들면,
+  특정인이 보낸 메세지를 그 사람의 멜복스에만 전달하도록 할 수 있습니다.
+
+  procmail을 큐메일과 함께 운영하는 방법이 두 가지 있습니다.  첫째는,
+  procmail은 보통 /var/spool/mail에 있는 mbox멜복스로 전달하도록
+  컴파일됩니다.  procmail을 다시 컴파일해서 $HOME를 기본으로 하도록
+  하거나, 사용자들에게 알려서 procmail이 mobx를 기본위치로 하지 않도록
+  합니다.  $HOME전달에 대해 패치하지 않으면, 임시파일에 대해서
+  procmail은 여전히 /var/spool/mail을 씁니다.
+
+  문제가 하나 더 있는데, qmail-command와 procmail에는 어떤 엑싯코드가
+  무엇을 말하는 지에 대한 공통이해가 없습니다.  procmail은 표준 유닉스
+  엑싯코드를 쓰는데, 0은 성공, 그외는 실패이며, 실패의 원인은
+  /usr/include/sys/errno.h에 정의되어 있습니다.  qmail-command에서는
+  0이외의 일정한 숫자로 영구에러를 일러주고, 그 이외는 임시로
+  간주합니다.  qmail-command에 대한 엑싯코드를 해석하기 위해서 소규모의
+  셸스크립트 wrapper를 만들 수도 있습니다.  이런 wrapper는
+  큐메일멜링리스트에 부처졌고, 다음주소의 문서보관에서 얻을 수 있습니다.
+  <http://www.ornl.gov/its/archives/mailing-
+  lists/qmail/1998/04/msg00487.html>
+
+  또한 procmail은 maildir형식의 멜복스로 직접 전달하지 않습니다.
+  procmail에서 maildir로 직접전달하는 패치를 얻을 수 있습니다.  (
+  <http://www.qmail.org/top.html#maildir>를 보십시오.)  다른 방법에는
+  특정 maildir로 향하는 표준입력으로 메세지를 작성하는 프로그램인
+  safecat입니다.  사용자는 safe가 메세지를 파일처리하도록 procmail 비법
+  (전달지시사항)을 적을 수 있습니다.  procmail을 아예 씨즈 말고
+  maildrop을 사용할 수 도 있습니다.
+
+  끝으로 procmail은 메세지를 받을 때 mbox형식으로 인식합니다.  대개
+  큐메일프로그램의 전달에는 진짜 멜메세지만 포함하지 "From "줄이
+  없습니다.  preline명령어를 써서 procmail이 인식하는 메세지형식으로
+  만들 수 있습니다.
+
+  예를 들면, dave사용자가 procmail로 멜을 처리하고 싶다고 합시다.
+  시스애드민이 procmail을 기본으로 $HOME로 전달하도록 컴파일했고,
+  /usr/local/bin/qmail-procmail이라는 엑싯코드 wrapper를 제공한다고 할
+  때, .qmail파일은 다음과 같습니다.
+
+  |/var/qmail/bin/preline /usr/local/bin/qmail-procmail dave
+
+  5.2.  POP 그리고 IMAP 서버
+
+  큐메일은 POP서버와 qmail-pop3d를 포함하지만, 큐메일설치과정으로
+  설정하거나 설치하지는 않습니다.  다른 POP나 IMAP 등의 서버를 얻을 수
+  있으면 그것들을 사용해도 되지만, 대부분이 Sendmail용으로
+  만들어졌으므로 큐메일과 함께 쓰려면 손을 봐야 합니다.
+
+  5.2.1.  qmail-pop3d
+
+  qmail-pop3d는 큐메일이 포함하는 POP서버입니다.  매우 좋은 POP서버로서
+  여러 큐메일사이트가 사용합니다.  모듈기능이고, 대체인증모듈을 통해
+  복합인증구성을 지원합니다.
+
+  --------e----------------------------------------------------------------------------
+  유의점: qmail-pop3d는 maildir형태의 멜복스만 지원하므로, 로컬 사용자들이 POP서버에
+          로긴해서 MUA를 운영한다면 모두들 maildir를 지원해야 합니다.  사용자들이 POP를
+          통해서 멜을 읽는다면 서버의 멜복스형태는 문제가 되지 않습니다.
+  -------------------------------------------------------------------------------------
+
+  5.2.1.1.  qmail-pop3d의 구조
+
+  다음의 세모듈로 구성합니다.
+
+  o  qmail-popup    :  사용자명과 암호를 받습니다.
+
+  o  checkpassword  :  사용자명과 암호를 인증합니다.
+
+  o  qmail-pop3d    :  POP데몬입니다.
+
+  으례 qmail-popup은 POP3포트인 110번 포트를 듣는 inetd나 tcpserver로
+  움직입니다.  연결을 하면 사용자명과 암호를 대라고 합니다.  그리고서는
+  checkpassword를 불러서 사용자명과 암호를 검증하고 맞다면 qmail-pop3d를
+  부릅니다.
+  5.2.1.2.  qmail-pop3d의 설치
+
+  1. 큐메일을 완전히 설치하고 시험사십시오.  모든 사용자가 POP가능한
+     멜복스를 갖게하려면 defaultdelivery를 ./Maildir/로 설정하세요.
+     설치항목에 있는 qmail스크립트로 설치하셨다면,
+     control/defaultdelivery에서 설정할 수 있습니다.  그렇지 않다면,
+     qmail-start명령행에서 /var/qmail/rc일 것입니다.
+
+  2. <http://www.qmail.org/top.html#checkpassword> 에서 checkpassword
+     프로그램을 받으십시오.  이러저러하게 꾸민 것이 필요없으면
+     <http://pobox.com/~djb/checkpwd.html>에 있는 표준 checkpassword가
+     좋습니다.
+
+  3. 지시사항을 따라서 checkpassword를 컴파일하고 설치하십시오.
+     /bin/checkpassword로 설치하셔야 합니다.
+
+  4. 조금 사용하는 POP서버라면 /etc/inetd.conf에 다음을 더하십시오.
+
+       pop3   stream  tcp     nowait  root    /var/qmail/bin/qmail-popup qmail-popup \
+                   hostname.domain /bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir
+
+  --------------------------------------------------------------------------------------
+  유의점: 어떤 시스템들, 그중에서도 레드햇리눅스,는 POP3포트를 "pop3"로 부르지
+          않습니다.  /etc/services에서 110번 포트 서비스의 이름을 확인하십시오.  또한
+          inetd 맨페지를 확인하셔서 기재사항을 형식에 맞추십시오.  잘 보셔야 하는 것이,
+          어떤 inetd에는 프로그램(본 예제에서는 qmail-popup)에 대한 첫번째 인수가 그
+          프로그램의 이름이어야 합니다.  다른 inetd들에게는 "사실상의" 인수만 있으면
+          됩니다.
+  --------------------------------------------------------------------------------------
+
+  1. "kill -HUP PID of inetd"를 실행하시어 inetd가 /etc/inetd.conf를
+     다시 읽도록 합니다.
+
+  2. 많이 사용하는 서비스에 대해서는 그것보다 tcpserver를 사용하십시오.
+
+  tctpserver를 쓰려면 다음사항을 큐메일 (inetd.conf가 아니고)
+  기동스크립트에 더하십시오.
+
+    tcpserver -v -R 0 pop3 /var/qmail/bin/qmail-popup FQDN \
+        /bin/checkpassword /var/qmail/bin/qmail-pop3d Maildir 2>&1 | \
+        /var/qmail/bin/splogger pop3d &
+
+  여기에서 pop3는 /etc/services에 기재된 POP3서비스의 이름이고, FQDN은
+  지금 설치하시는 POP서버의 완전도메인명으로서, 예를 들면
+  pop.example.net입니다.
+
+  5.2.2.  qpopper
+
+  mbox형 멜복스와 동작하는 POP데몬이 필요하면 Qualcomm의 qpopper을
+  쓰십시오.  Vince Vielhaber는
+  <http://www.qmail.org/qpopper2.53.patch.tar.gz>에 사용자홈디렉토리의
+  멜복스와 동작하는 패치를 갖고 있습니다.  qpopper는
+  <http://www.eudora.com/freeware/qpop.html>에서 구할 수 있습니다.
+
+  5.2.3.  Cyrus
+
+  Jason van Zyl이 qmail/Cyrus 하우투를 썼습니다.
+  <http://www.compusense.com/qmail-cyrus/>를 보십시오.
+
+  LDAP를 Cyrus에 결합하는 정보가  <http://www.linc-dev.com/auth.html>에
+  있습니다.
+
+  5.2.4.  imap-maildir
+
+  David R. Harris가 Washington대학의 IMAP서버에 대한 maildir지원을
+  추가하는 패치를 정리했으며 설치과정을 문서화했습니다.
+  <http://www.davideous.com/imap-maildir/>를 보십시오.
+
+  5.3.  POP와 IMAP 클라이언트
+
+  5.3.1.  fetchmail
+
+  POP나 IMAP 등의 서버에서 멜을 꺼내서 로컬에 재삽입하는 프로그램입니다.
+  큐메일에서 멜을 꺼내는 데 문제가 없지만, 큐메일클라이언트에서 잘
+  동작하게 하는 두세가지 기술이 있습니다.
+
+  큐메일시스템상의 사용자를 위한 .fetchmailrc샘플은 다음과 같습니다.
+
+    poll mail.example.net proto pop3 nodns
+        user dsill with password flubgart is dave here
+        fetchall forcecr to * here
+
+  이렇게 하면 fetchmail은 mail.example.net을 POP3를 통해서 접속하고,
+  dsill 사용자, flubgart암호로 로긴해서, 메세지를 모두 꺼낸다음에
+  dave@localhost로 전달합니다.  forcecr은 각줄에 carriage return을
+  붙여서 로컬시스템에 메세지를 SMTP를 통해서 삽입합니다.  큐메일에게는
+  이것이 필요합니다.
+
+  ----------------------------------------------------------------------------------
+  유의점: fetchmail은 확실하지 않습니다.  (포맷에러로 바운스를 일으키거나 SMTP서버가
+          동작중이지 않는 등) 이유야 어쨌든 재삽입이 실패하면 메세지가 없어집니다.
+  -----------------------------------------------------------------------------------
+
+  5.4.  다중 RCPT 대 단일 RCPT 전달
+
+  예를 들어서, 당신이 MTA이고, 한 사용자가 hostx.example.com의
+  세사람에게 메세지를 보낸다고 합시다.  이것을 하는데 몇가지 방법이
+  있습니다.
+
+  1. hostx에 SMTP접속을 열고, 첫번째 사용자에게 메세지사본을 보내고,
+     두번째 사용자에게 사본을 보내고, 세번째 사용자에게 사본을 보낸
+     다음에 접속을 닫습니다.
+
+  2. 세 과정을 시작해서 매과정이 hostx에 SMTP접속을 열고 한 사용자에게
+     메세지사본을 보낸 다음에 접속을 닫습니다.
+
+  3. hostx에 SMTP접속을 열고 세사용자 모두의 주소를 단 메세지사본 한개를
+     보낸 다음에 접속을 닫습니다.
+
+  첫번째 방법은 세번째 방법보다 분명히 뒤집니다.  메세지가 작더라도
+  적어도 그만큼 시간이 걸립니다.  그리고 메세지가 크다면 더 오래 걸리고,
+  게다가 넷웍대역을 쓸것입니다.
+
+  그러니 그것은 뺍시다.
+
+  두번째와 세번째 방법은 좀더 재미있습니다.
+
+  세번째 방법은 hostx에 접속을 단 한번 열고서 메세지 사본을 단 하나만
+  보냅니다.  넷웍대역을 효율사용하는 데 도움이 됩니다.
+
+  두번째 방법은 여러번 접속해서 메세지사본을 여러개 보냅니다.
+  넷웍대역을 "낭비"하지만 SMTP프로토콜의 성질때문에 세번째 방법보다
+  왕복지연이 더 적고, 더 빠릅니다.  게다가 세번째 방법보다 더 간단하므로
+  MTA를 더 수월하게 작성할 수 있습니다.  그리고 끝으로, 각 수신인이
+  그만의 메세지사본을 받으므로 MTA가 VERP를 구현할 수 있습니다.
+  (다음항목을 보십시오.)
+
+  큐메일은 언제나 두번째 방법 (단일 RCPT)을 사용합니다.  세번째방법
+  (복수 RCPT)를 구현하는 패치는 없습니다.  그것은 많은 작업을 하여야
+  합니다.
+
+  단일 RCPT 전달이 복수 RCPT 전달보다 넷웍대역을 더많이 사용하지만, 그
+  차이는 종종 과장되었습니다.  메세지 대부분은 기껏해야 두세 수신인에게
+  보내지는데다가 그들은 보통 서로 다른 호스트에 있기때문에, 복수
+  RCPT전달은 얻는게 아무것도 없습니다.  복수 RCPT전달이 유효할 수 있는
+  멜링리스트서버에서조차 이익가능성은 적은데, SMTP는 대부분의 연결에
+  걸쳐서 넷웍대역의 조금만 쓰고, HTTP가 엄청나게 많이 쓰기 때문입니다.
+
+  예를 들어 상향연결의 10퍼센트가 SMTP 대역으로 가고, 그중 25퍼센트를
+  복수 RCPT를 사용해서 줄여 봐야 SMTP 대역은 7.5%로 될 뿐입니다.
+
+  5.5.  VERP
+
+  메세지를 전달할 수 없으면, MTA는 Envelope Return Path (ERP)로
+  바운스메세지를 돌려보내야 한다고 결정합니다.  바운스 메세지에는
+  수신인주소, 메세지부전달사유, 그리고 문제가 임시인지 오래갈 지 등을
+  포함해야 합니다.  그렇지만 많은 MTA가 제대로 하지 않습니다.  그것들은
+  바운스를 From 헤더필드에 있는 주소로 보내기도 하지만, 수신인을
+  파악하지 못하기조차 합니다.
+
+  사용자대사용자 메세지의 대부분에서 이런 문제들은 그렇게 나쁘지
+  않습니다.  대개는 바운스시각과 그 내용에 기초해서 사태를 이해할 수
+  있습니다.  멜링리스트에서는 잘못된 바운스문제가 더 심각합니다.
+  가입자들은 새주소로 멜을 옮기고 포워딩합니다.  새주소에 전달문제가
+  생기기 시작했는데, 바운스메세지에는 오직 새주소만 포함되어 있다면 어느
+  가입자의 멜이 바운스되는 지 알 수 없습니다.
+
+  Dan Bernstein은 VERP (Variable Envelope Return Path)라 불리는 굉장한
+  것을 제안했습니다.  VERP를 사용하면, 각 가입자는 고유리턴경로를
+  갖습니다.  이렇게 해야 바운스 처리기가 문제가입자를 식별하도록 할 수
+  있습니다.
+
+  예를 들어서, 대개의 비 VERP 멜링리스트에는 리턴주소가 listname-
+  owner@domain의 형식으로 됩니다.  VERP 멜링리스트에서는 리턴주소가
+  listname-owner-subscriber=sdomain@ldomain으로 되는데, 가입자주소
+  subscriber@sdomein이 "소유자"와 "@"사이에 묻혀있습니다.  (가입자주소의
+  "@"는 "="로 대체됩니다.)
+
+  ezmlm리스트매니저는 바운스를 자동으로 처리하기 위해서 VERP를 씁니다.
+  가입자에세 빠뜨린 메세지리스트의 임시전달문제를 알려줘서 보관문서에서
+  꺼낼 수 있게 합니다.
+
+  Russell Nelson이 큐메일에서의 메이저도모를 위한 바운스메니저를 썼지만,
+  더이상 유지하지 않습니다.
+  <http://www.qmail.org/bounceman-0.4.sha>에서 구할 수 있습니다.
+
+  5.6.  문제해결
+
+  5.6.1.  과정
+
+  제대로 작동하고 완전하지만 최소한의 큐메일설치는 다음의 네과정이면
+  됩니다.
+
+  o  qmail-sned  : qmails사용자로서 운행
+
+  o  qmail-clean : qmailq사용자로서 운행
+
+  o  qmail-rspawn: qmailr사용자로서 운행
+
+  o  qmail-lspawn: root사용자로서 운행
+
+  사용중인 유닉스기종에 따라서 다음명령중 하나로 이 과정들을, 어쩌면
+  몇개 더, 나열할 수 있습니다.
+
+    ps -ef | grep qmail
+    ps waux | grep qmail
+
+  예를 들면 다음과 같습니다.
+
+  [dave@sparge dave]$ ps waux|grep qmail
+  dave      2222  0.0  0.8   836   348  p4 S    10:25   0:00 grep qmail
+  qmaild     351  0.0  1.0   840   400  ?  S N  12:43   0:00 /usr/local/bin/tcpserver -v -x /
+  qmaild    2220  0.0  1.0   844   420  ?  S N  10:25   0:00 /usr/local/bin/tcpserver -v -x /
+  qmaill     365  0.0  0.8   748   344  ?  S N  12:43   0:00 splogger qmail
+  qmailq     368  0.0  0.7   736   292  ?  S N  12:43   0:00 qmail-clean
+  qmailr     367  0.0  0.6   732   272  ?  S N  12:43   0:00 qmail-rspawn
+  qmails     350  0.0  0.8   776   336  ?  S N  12:43   0:00 qmail-send
+  root       340  0.0  0.6   724   252  ?  S N  12:43   0:00 /usr/local/sbin/supervise /var/s
+  root       341  0.0  0.6   724   252  ?  S N  12:43   0:00 /usr/local/sbin/supervise /var/s
+  root       366  0.0  0.7   736   276  ?  S N  12:43   0:00 qmail-lspawn ./Mailbox
+  [dave@sparge dave]$
+
+  위의 예에서와 같이 supervise하에서 qmail이나 qmail-smtpd를 실행하면 그
+  과정들도 볼 수 있습니다.  tcpserver하에서 qmail-smtpd를 실행하면, 부모
+  tcpserver와 각 활성 입력 SMTP 접속에 대한 추가 tcpserver 과정도 볼 수
+  있습니다.
+
+  로깅을 처리하기 위해 splogger (또는 cyclog)을 사용하면,
+  qmaill사용자로서 운행하는 splogger (또는 cyclog)과정을 갖습니다.
+
+  게다가 큐메일이 로컬이나 원격 메세지전달로 바쁘면 관계되는
+  로컬수만큼의 qmail-local과정과 관계되는 원격수만큼의 qmail-
+  remote과정을 볼 수 있습니다.
+
+  5.6.2.  로그
+
+  5.6.2.1.  splogger
+
+  메세지에 시간찍기하기 위해서 syslog의 로깅시스템을 사용해서 syslog
+  데몬으로 보냅니다.  syslog은 /etc/syslog.conf에서 설정합니다.
+  syslog로 보내는 메세지는 장치와 우선순위가 있습니다.
+  /etc/syslog.conf의 기재사항은 장치와 우선순위에 따라서 필터해서
+  메세지를 원하는 로그파일, 원격로그호스트, 또는  콘솔에 보냅니다.
+  splogger는 기본으로 멜장치에 로그하므로, syslog.conf파일에서 "mail"을
+  grep하면 큐메일의 로그메세지처리를 볼 수 있습니다.
+
+  대개 다음장소에 위치합니다.
+
+  o  /var/log/syslog
+
+  o  /var/adm/SYSLOG
+
+  o  /var/log/maillog
+
+  대개의 syslog 로그기재사항은 다음과 같습니다.
+
+  Jun  3 11:35:23 sparge qmail: 928424123.963558 delivery 153: success: did_1+0+0/
+
+  "Jun 3 11:35:23" is the syslog timestamp.
+
+  "sparge" is the name of the system that sent the message.
+
+  "qmail:" is the tag splogger places on all qmail log entries.
+
+  "928424123.963558" is an optional TAI timestamp (see next section).
+
+  "delivery 153: success: did_1+0+0/" is the log message itself.
+
+  5.6.2.2.  cyclog
+
+  daemontools 패케지의 일부로서 특정한 디렉토리내의 파일에 메세지를
+  로그합니다.  syslog와는 달리 기재사항을 시간찍기하지 않습니다.
+  daemontools패케지의 accustamp를 사용하면 됩니다.
+
+  로그디렉토리는 cyclog명령행에 명시하므로 큐메일기동스크립트를
+  살펴보시면 찾을 수 있습니다.
+  로그디렉토리내의 파일수와 각파일의 최대크기는 cyclog 옵션으로
+  정합니다.  로그파일명은 파일을 시작한 시간의 TAI (Temps Atomique
+  International) 시간찍기입니다.  daemontools의 tailocal명령은 TAI
+  시간찍기를 사람이 읽을 수 있는 로컬 시간찍기로 변환합니다.
+
+  보통의 cyclog 록기재사항은 다음과 같습니다.
+
+  928424123.963558 delivery 153: success: did_1+0+0/
+
+  "928424123.963558" is the optional, but recommended, TAI timestamp.
+  "delivery 153: success: did_1+0+0/" is the log message itself.
+
+  5.6.2.3.  록메세지
+
+  로컬시스템에서 원격시스템으로 보내는 메세지에 대한 록은 다음과
+  같습니다.
+
+  1 928427555.143178 new msg 94030
+  2 928427555.145873 info msg 94030: bytes 189 from <dave@sparge.sill> qp 2594 uid 500
+  3 928427555.210992 starting delivery 158: msg 94030 to remote lwq@w3.to
+  4 928427555.213816 status: local 0/10 remote 1/20
+  5 928427572.640642 delivery 158: success: 209.85.127.177_accepted_message.
+    /Remote_host_said:_250_CAA01516_Message_accepted_for_delivery/
+  6 928427572.643845 status: local 0/10 remote 0/20
+  7 928427572.644381 end msg 94030
+
+  제1번줄은 큐메일이 새메제지를 받았음을 나타내고, 큐아이디는
+  94030입니다.  큐아이디는 메세지를 담는 큐파일인
+  /var/qmail/queue/mess/NN/파일의 아이노드번호입니다.  큐아이디는
+  메세지가 큐에 있는 동안은 고유합니다.
+
+  제2번줄은 메세지가 dave@sparge.sill에서 왔고 189바잇이라고 알려줍니다.
+
+  제3번줄은 qmail-remote가 메세지를 lwq@w3.to로 전달하려고 기동한다고
+  알려주며, 아이디 158을 전달에 부여합니다.
+
+  제4번줄은 로컬전달은 0개, 리못전달은 1개가 계류중이라고 알려줍니다.
+
+  제5번줄은 158번 전달이 성공으로 끝났고, 원격서버의 반응을 되돌리는데,
+  때때로 원격멜애드민이 전달을 추적하는데 유용한 정보를 포함합니다.
+  이번경우에서 "CAA01516"은 원격시스템의 전달아이딥니다.
+
+  제6번줄은 로컬전달 0개, 원격전달 0개가 계류중이라고, 즉 전달을
+  끝마쳤다고, 알려줍니다.
+
+  제7번줄은 메세지를 완전히 전달하고 큐에서 지웠다고 알려줍니다.
+  여기에서 큐아이디인 94030은 다른 전달에 또 사용할 수 있습니다.
+
+  5.7.  대형 서버
+
+  qmail-ldap도 보십시오.
+
+  5.7.1.  Scalable parallelism
+
+  사용자디렉토리를 저장하려면 빠른 NFS넷웍파일서버를 사용하십시오.
+  파일서버상의 maildir멜복스에 전달하는 복합 동등선호 SMTP서버를
+  설치하십시오.
+
+  5.8.  Sendmail에서 큐메일로 옮기기
+
+  먼저, Dan Berstein의 Sendmail->qmail페지를
+  <http://pobox.com/~djb/qmail/sendmail.html>에서 보시기 바랍니다.
+
+  5.9.  멜링리스트매니저 (Mailing List Managers: MLM's)
+
+  멜링리스트소유자가 멜링리스트를 운영하는 것을 돕는 시스템입니다.  하는
+  일은 두 가지입니다.  가입자들의 리스트를 관리하고, 가입자들에게
+  메세지를 재송부하는 일입니다.
+
+  유닉스멜링리스트매니저 대부분이 (또는 전부가) 큐메일과 작동할 수
+  있습니다.
+
+  5.9.1.  ezmlm
+
+  큐메일의 저자인 Dan Bernstein이 작성했습니다.  큐메일과 사용하도록
+  썼으며, 큐메일의 몇몇 특징에 의존합니다.  가장 두드러진 점은
+  바운스메세지를 안정하게 처리하도록 VERP를 사용합니다.  MLM중에서
+  ezmlm이 다소 독특한 점은 중앙 MLM주소로 보내진 명령을 처리하지 않고,
+  리스트의 이름에 덧붙입니다.  예) "foo@list.example.net"에 가입하려면
+  "foo-subscribe@list.example.net"으로 메세지를 보냅니다.
+
+  더 알고 싶으시면 비공식웹사이트이고, 매우 많은 특징을 포함하는 아주
+  훌륭한 애드온인 ezmlm-idx의 공식홈페지인  <http://www.ezmlm.org>를
+  보십시오.
+
+  5.9.2.  메이저도모
+
+  가장 많이 보급된 유닉스 MLM입니다.  두세가지만 고치면 큐메일과 멋지게
+  작용합니다.  Russ Allbery가 큐메일/메이저도모에 관한 FAQ를 썼는데,
+  <http://www.eyrie.org/~eagle/faqs/mjqmail.html>에서 구할 수 있습니다.
+
+  5.10.  패치
+
+  큐메일에 대한 여러 소스코드패치를 구할 수 있습니다.  패치를
+  설치하려면, 다운로드하고, 큐메일소스트리로 가서 패치명령을 씁니다.
+
+    cd /usr/local/src/qmail/qmail-1.03
+    patch -p0 < /tmp/patchfile
+
+  큐메일을 멈춰야 하는데, qmail-send를 끝내거나, 설치항목에 있는
+  큐메일스크립트를 설치하셨다면 다음과 같이 합니다.
+
+    /usr/local/sbin/qmail stop
+
+  그리고나서 다시 컴파일하고 바이너리를 설치합니다.
+
+    make setup check
+
+  5.10.1.  DNS
+
+  예로부터 DNS응답은 512바잇으로 제한되었다.  몇몇 대형사이트들,
+  그중에서도 America Online,은 MX응답을 더 길게해서 되돌리기
+  시작했습니다.  큐메일과 기타 많은 프로그램들은 매우 큰결과를 되돌리는
+  Domain Name Server (DNS)질의에는 문제가 있습니다.  큐메일에서는 이것을
+  해결하는데 두가지 방법이 있습니다.
+
+  5.10.1.1.  패킷버퍼사이즈를 65536까지 밀어올리기
+
+  회답이 절단빗셋과 돌아도면 라입러리코드내에서 TCP질의를 자동으로 하는
+  최근의 BIND resolver 라입러리와 동작합니다.  가장 간단한 해결이지만,
+  해당시스템의 페이징처리방법에 따라서 메모리낭비가 가장 클 수 있습니다.
+  dns.c의 PACKETSZ를 65536으로 바꾸고 큐메일을 다시 컴파일하면 됩니다.
+
+  5.10.1.2.  Christopher K. Davis의 패치 (urlnam
+  <http://www.ckdhr.com/ckd/qmail-103.patch>)
+
+  아무리 오래되었어도, 그리고 "버퍼에 놓이는 바잇수"라입러리버그를
+  피하려고 가드(guard)바잇을 사용하는 어떤 리졸버라입러리와도 동작하는
+  Chuck Foster의 패치를 개조한 것입니다.  필요한 크기로 하기보다는
+  (원래패치와 같이 응답이 기본 512바잇인 PACKETSZ보다 커야지만
+  재할당하지만) 65536으로 단 한번만 재할당하므로 Chuck의 패치보다
+  메모리효율에서는 떨어집니다.  재할당후에, TCP질의를, 리졸버라입러리가
+  하게하지 않고, (큐메일과 네임서버가 같은 기계 또는 로컬넷웍에 있으면
+  큰걱정이 아니지만, 그것들간 여분의 왕복을 피하면서) 강제로 합니다.
+
+  5.10.2.  qmail-ldap
+
+  Andre Oppermann 등의 이 패치는 Lightweight Directory Access Protocol
+  (LDAP)지원을 큐메일에 구현합니다.  LDAP는 넷웍전화책과 같습니다.
+  qmail-ldap를 사용하면 POP서버를 수천명의 사용자에게 편의를 제공할 수
+  있습니다.   <http://www.nrg4u.com/>를 보십시오.
+
+  5.11.  QMTP (Quick Mail Transfer Protocol)
+
+  Dan Bernstein이 설계한 SMTP대체프로토콜입니다.  해당 프로토콜은
+  <http://pobox.com/~djb/proto/qmtp.txt>에 정의되어 있습니다.  SMTP와
+  유사하지만, 더 간단하고, 더 빠르고, SMTP와는 호환되지 않습니다.
+  큐메일은 qmail-qmtp라는 QMTP서버를 포함하는데, qmail-smtp와 매우
+  흡사하게 동작합니다.  대개 209포트를 이용합니다.
+
+  큐메일은 QMTP클라이언트를 포함하지 않지만, serialmail패케지는 그것을
+  포함합니다.  maildir2qmtp는 maildir멜복스에 있는 메세지를 QMTP를
+  통해서 지정한 QMTP서버로 전달합니다.
+
+  SMTP에 대한 drop-in 대체품이 아니며, 아직까지는 인터넷상에서 많이
+  퍼지지 않았습니다.
+
+  6.  부록
+
+  6.1.  사례
+
+  먼저 이런 강력하고 멋들어진 시스템을 설계하고 쓴 Dan Bernstein에게
+  감사를 표시합니다.  3년간의 사용후에도 큐메일은 저를 감동하게 합니다.
+
+  큐메일멜링리스트의 회원들께도 감사하고자 합니다.  Russell Nelson은
+  가장 큰 도움과 인내와 지식과 재미를 공헌한 사람들 중 하나로 특별히
+  언급할 만 합니다.  큐메일공동체에 대한 그의 공헌은 오직 DJB에게만
+  뒤질뿐입니다.
+
+  본문서에 검토와 기여를 하신 모든 분들께도 사례를 드립니다.
+
+  o  Vince Vielhaber
+
+  o  Chris Green
+
+  o  Christopher K. Davis
+
+  o  Scott Schwartz
+
+  o  Fred Lindberg
+
+  o  Russell P. Sutherland
+
+  o  Alex Miller
+
+  o  Tim Hunter
+
+  o  Frank D. Cringle
+
+  o  Mahlon Smith
+
+  o  Rogerio Brito
+
+  마컵언어로서 HTML, 평범한 문서, 포스트스크립트, POD, 기타 형식문서
+  등을 만들어 냅니다.  그것으로 일이 많이 쉬었습니다.   더알고 싶으시면
+  <http://www.mincom.com/mtr/sdf/>를 보십시오.
+
+  6.2.  관련 패키지
+
+  6.2.1.  dot-forward
+
+  Sendmail은 dot forward라고 발음하는 .forward파일을 사용해서 사용자가
+  수신메세지의 전달을 통제하도록 합니다.  큐메일도 유사한 장치를 쓰는데,
+  .qmail파일입니다.  dot-forward패키지는 큐메일이 .forward파일을 사용할
+  수 있게 합니다.  .forward파일을 사용하는, Sendmail이나 여타 MTA를
+  운영하는 시스템은 사용해서 기존의 .forward파일을 .qmail에
+  상응하는것으로 변환하지 않기 위해서, 또는 단순히 큐메일로의 이행을
+  사용자들에게 덜 눈에 띄게 하기 위해서 dot-forward의 사용을 고려해야 할
+  지도 모릅니다.
+
+  작은 패케지이므로 설치하고 설정하는 데 쉽습니다.  해당 소스는
+  <ftp://koobera.math.uic.edu/www/software/dot-forward-0.71.tar.gz>에서
+  구할 수 있습니다.
+  Dan Bernstein이 썼고, 그는 관련홈페지를 <http://pobox.com/~djb/dot-
+  forward.html>에 관리합니다.
+
+  6.2.2.  fastforward
+
+  또다른 Sendmail호환 애드온입니다.  Sendmail은
+  중앙앨리어스데이터베이스를 대개 /etc/aliases라는 단일파일에
+  보관합니다.  큐메일은 /var/qmail/alias에 있는 일련의 dot-qmail파일들을
+  사용하는데, 한 파일에 한 앨리어스입니다.  큐메일로 옮기시는데 변환하고
+  싶지 않은 Sendmail형식의 앨리어스파일이 있으시면, fastforward가
+  큐메일에게 앨리어스파일을 있는 그대로 쓸 수 있게 해줍니다.
+
+  해당 소스는
+  <ftp://koobera.math.uic.edu/www/software/fastforward-0.51.tar.gz> 에서
+  구할 수 있습니다.
+
+  Dan Bernstein이 썼고, 그는  <http://pobox.com/~djb/fastforward.html>에
+  웹페지를 관리합니다.
+
+  6.2.3.  ucspi-tcp
+
+  큐메일의 SMTP서버는 스탠드얼론데몬으로 작동하지 않습니다.
+  도우미프로그램인 inetd, xinetd, 또는 tcpserver 등이 데몬으로
+  작동합니다.  SMTP포트인 25포트로 접속을 받으면 qmail-smtpd 사본을
+  실행합니다.
+
+  inetd는 표준넷웍서버인 "수퍼서버"입니다.  /etc/inetd를 설정해서 qmail-
+  smtpd를 작동할 수 있습니다만, ucspi-tcp패케지의 일부인 tcpserver가
+  권장툴입니다.  ucspi-tcp는 UNIX Client-Server Program Interface for
+  TCP의 두문자이고, ooks-pie tee see pee로 발음합니다.
+
+  tcpserver를 선호하는 이유는 다음과 같습니다.
+
+  o  서비스로의 동시접속수를 제한할 수 있습니다.  inetd는
+     접속률제한장치를 쓰므로 너무바쁜 서비스를 잠시 무력하게 할 수
+     있습니다.
+
+  o  특정 호스트에게 접근거부하도록 하거나, "로컬"호스트를 인식하고
+     신호를 부여해서 qmail-smtpd가 다르게 취급하도록 설정할 수 있습니다.
+
+  o  큐메일의 저자가 지원하는 유일한 서버입니다.
+
+  해당 소스는  <ftp://koobera.math.uic.edu/www/software/ucspi-
+  tcp-0.84.tar.gz> 에서 구하실 수 있습니다.
+
+  Dan Bernstein이 썼고,  <http://pobox.com/~djb/ucspi-tcp.html>에
+  웹페지를 운영합니다.
+
+  6.2.4.  daemontools
+
+  서비스를 통제하고 감시하는 유틸리티군을 담고 있습니다.  필수사항은
+  아닙니다만, 특히 바쁜시스템에게는 강력히 권장합니다.  포함하는
+  유틸리티들은 다음과 같습니다.
+
+  o  supervise: 서비스를 감시하고, 끝나면 다시 시작합니다.
+
+  o  svc: supervise와 통신해서 서비스를 멈추고, 쉬고, 다시시작하게
+     합니다.
+
+  o  cyclog: 서비스에 대한 로그를 유지하고, 설정한 크기이하로 유지할 수
+     있게 자동으로 교대시킵니다.
+
+  o  accustamp: 로그기재사항을 정확하게 시간찍기합니다.
+
+  o  usually, errorsto: 이상한 메세지에 대한 로그를 주시합니다.
+
+  o  setuser: 일반사용자의 UID와 GID로 수퍼유저의 프로그램을 돌립니다.
+
+  해당소스는  <http://cr.yp.to/daemontools/daemontools-0.61.tar.gz>에서
+  구하실수 있습니다.
+
+  Dan Bernstein이 썼고,  <http://cr.yp.to/daemontools.html>에 웹페지를
+  운영합니다.
+
+  6.2.5.  qmailanalog
+
+  큐메일의 로그파일을 처리하고 해당 시스템이 얼마나 그리고 어떤 일을
+  하고 있는 지 알리는 일련의 보고서를 만듭니다.  얼마나 많은 메세지를
+  주고 받았는 지, 얼마나 큰 지, 얼마나 빨리 처리되는 지 등에 대한 통계가
+  필요하면, qmailanalog가 바로 그것입니다.
+
+  보너스로 matchup프로그램은 큐메일의 매 전달당 복수로그행을 하나로
+  만드는데, 이미 익숙한 Sendmail로그와 다르지 않습니다.
+
+  해당소스는
+  <http://pobox.com/~djb/software/qmailanalog-0.70.tar.gz>에서 구하실 수
+  있습니다.
+
+  Dan Bernstein이 썼고,  <http://pobox.com/~djb/qmailanalog.html>에
+  웹페지를 운영합니다.
+
+  6.2.6.  rblsmtpd
+
+  스팸당해보지 않으셨다면 운이 좋았다고 생각하십시오.  이메일사용자들
+  대부분이 스팸이라고 알려진 원치않는 두툼한 이메일 (Unsolicited Bulk E-
+  mail: UBE)에 익숙합니다.  그것들 대부분 섹스사이트, 행운의 편지, 기타
+  신용사기 등에 대한 광고입니다.  1988년 정도 전까지의 예전에는
+  인터넷상의 MTA들 대부분은 개방중계, 즉 송신자도 수신자도 모두 로컬이
+  아니라도 누구든지 보내고 누구든지 받는 멜을 받아들였습니다.  스패머는
+  스팸을 전달하기 위해서 어느것이든 찾기만 하면 개방중계를 이용합니다.
+  그렇게 되면 행적을 덮어버리고, 반발을 "정직한" 중계사이트로 돌리게
+  되며, 그들은 CPU시간과 넷웍대역을 많이 아끼게 됩니다.
+
+  요즘 이런 개방중계는 심한 불량으로 인식되고, 몇몇 반스팸자경단그룹은
+  개방중계와 기타 저속한 스팸출처를 확인하는 장치를 만들어서 그들로부터
+  SMTP접속승락을 피할 수 있습니다.  Realtime Blackhole List (RBL), Open
+  Relay Behavior-modification System (ORBS), Dial-up User List (DUL)
+  등이 그것입니다.
+
+  o  <http://maps.vix.com/rbl/>
+
+  o  <http://www.orbs.org>
+
+  o  <http://maps.vix.com/dul/>
+
+  rblsmtpd는 RBL SMTP 데몬입니다.  tcpserver와 qmail-smtpd의 사이에
+  있으면서 이 리스트상에서 확인된 시스템으로부터의 접속을 거부합니다.
+
+  관련소스는  <http://pobox.com/~djb/software/rblsmtpd-0.70.tar.gz>에서
+  구할 수 있습니다.
+
+  Dan Bernstein이 썼고,  <http://pobox.com/~djb/rblsmtpd.html>에
+  웹페지를 유지합니다.
+
+  6.2.7.  serialmail
+
+  큐메일은 전시간, 고속접속의 시스템을 위해 설계되었습니다.
+  serialmail은 큐메일을 간헐적이고 저속도 접속에 더 잘 맞게 하는
+  툴군입니다.  그런 시스템상의 serialmail로 큐메일은 모든 원격멜을 단일
+  maildir로 전달하도록 설정됩니다.  serialmail의 maildir2smtp명령은
+  접속이 되었을 때 ISP의 멜허브로 maildir를 올리는 데 사용됩니다.  ISP가
+  QMTP (고급주제의 QMTP를 보십시오.)를 지원하면, maildir2qmtp도 쓸 수
+  있습니다.
+
+  serialmail은 접속의 ISP측에서 AutoTURN을 구현하는데 사용될 수 있는데,
+  클라이언트가 하는 SMTP접속은 서버가 접속을 클라이언트로 돌려서 서버에
+  큐된 메세지를 클라이언트로 보내도록 합니다.  이것은 ETRN SMTP기능과
+  유사합니다.
+
+  해당소스는
+  <http://pobox.com/~djb/software/serialmail-0.75.tar.gz>에서 구하실 수
+  있습니다.
+
+  Dan Bernstein이 썼고,  <http://pobox.com/~djb/serialmail.html>에
+  웹페지를 유지합니다.
+
+  6.2.8.  mess822
+
+  RFC 822를 따르는 메세지를 해석하는 응용제품군과 라입러리입니다.
+  응용제품은 다음과 같습니다.
+
+  o  ofmipd: 클라이언트로부터 메세지를 받아서 From필드를 데이터베이스에
+     기초해서 재작성하는 데몬
+
+  o  new-inject: 사용자통제하에 호스트네임을 재작성하는 것을 지원하는
+     qmail-inject대제품
+
+  o  iftocc: 메세지가 특정주소로 보내졌는 지를 검사하는 .qmail 유틸리티
+
+  o  822header, 822field, 822date, 822received: 메세지에서 정보를 추출
+
+  o  822print: 메세지를 예쁘게 프린트
+
+  해당 소스는  <http://pobox.com/~djb/software/mess822-0.58.tar.gz>에서
+  구하실 수 있습니다.
+
+  Dan Bernstein이 썼으며  <http://pobox.com/~djb/mess822.html>에
+  웹페지를 유지합니다.
+  6.2.9.  ezmlm
+
+  성능이 우수하고 사용하기 쉬운 큐메일용 멜링리스트매니저입니다.
+  LISTSERV나 Majordomo에 익숙하시다면 멜링리스트매니저가 무엇을 하는 지
+  아실겁니다.  큐메일에서의 멜링리스트에 대해 더 알고 싶으시면
+  고급주제의 멜링리스트매니저항목을 보십시오.
+
+  해당소스는  <http://pobox.com/~djb/software/ezmlm-0.53.tar.gz>에서
+  구하실 수 있습니다.
+
+  Dan Bernstein이 썼고,  <http://pobox.com/~djb/ezmlm.html>에
+  관련웹페지가 있습니다.
+
+  6.2.10.  safecat
+
+  파일을 maildir멜복스에 확실히 씁니다.  특별히 procmail 방법으로
+  메세지를 보관하는 데 유용합니다.  예를 들면, 다음방법은 메세지를 모두
+  Maildir에 보관합니다.
+
+  :0w
+  |safecat Maildir/tmp Maildir/new
+
+  Len Budney가 썼고,
+  <http://www.pobox.com/~lbudney/linux/software/safecat.html> 에
+  웹페지를 운영하고 있습니다.
+
+  6.2.11.  maildrop
+
+  procmail과 유사한 멜필터입니다.  (패치를 하지않은) procmail이 갖지
+  않은 특징 하나는 maildir멜복스를 지원한다는 것입니다.
+
+  Sam Varshavchik이 썼고,  <http://www.flounder.net/~mrsam/maildrop>에
+  웹페지를 운영합니다.
+
+  6.3.  인터넷멜의 동작방법
+
+  6.3.1.  메세지가 A지점에서 B지점으로 가는 방법
+
+  한호스트의 사용자가 다른 호스트의 사용자에게 메세지를 보내면,
+  무대뒤에서는 알아차리지 못하는 많은 일이 일어난다.
+
+  예를 들어 alice@alpha.example.com의 Alice가 bob@beta.examle.com의
+  Bob에게 메세지를 보낸다고 합시다.  다음과 같은 일이 벌어집니다.
+
+  Alice는 mutt이나 pine 등 자기의 Mail User Agent (MUA)로 메세지를
+  작성합니다.  To 필드에 수신인, Subject필드에 메세지의 제목을, 그리고
+  메세지본문을 적습니다.  다음과 같을 겁니다.
+
+      To: bob@beta
+      Subject: lunch
+
+      How about pizza?
+
+  1. 메세지가 맘에 들면 MUA에게 보내도록 합니다.
+
+  2. 여기서, MUA는 Date나 Message-Id 등과 같은 추가헤더필드를 덧붙이고,
+     (예를들어서 bob@beta를 "Bob <bob@beta.example.com>"로 바꿔서)
+     Alice가 넣은 값들을 고칩니다.  다음으로, MUA는 멜시스템에 메세지를
+     삽입합니다.  여기에는 두가지 방법이 있습니다.  메세지를 삽입하기
+     위해 멜시스템에서 제공하는 프로그램을 실행하거나, 로컬시스템 또는
+     원격멜서버상의 Simple Mail Transfer Protocol (SMTP)포트에 접속을
+     엽니다.  본 예제에서, 우리는 MUA가 로컬삽입프로그램을 사용해서
+     메세지를 MTA로 보낸다고 하겠습니다.  삽입과정의 자세한 내용은
+     MTA마다 다르지만, 유닉스시스템에서는 sendmail방식이 사실표준입니다.
+     이방식으로 MUA는 헤더와 본문을 공백줄로 분리해서 파일에 넣고,
+     sendmail프로그램으로 그 파일을 보냅니다.
+
+  3. 메세지가 구문이 올바르고 sendmail이 제대로 호출되어서 삽입을
+     성공했으면, 그 메세지는 이제 MTA의 책임입니다.  세부사항은 MTA마다
+     크게 다르지만, 대개 alpha의 MTA는 헤더를 검토해서 메세지를 어디로
+     보낼지 결정해서, beta에 SMTP접속을 열고, beta시스템의 MTA로
+     메세지를 전송합니다.  SMTP대화에서 메세지는 두 부분으로 나눠서
+     보내지게 되는데, 그 하나는 봉투로서 수신인 주소
+     (bob@beta.example.com)와 회신주소 (alice@alpha.example.com)를
+     명시하고, 다른 하나는 메세지 그 자체로서 헤더와 본문을 이룹니다.
+
+  4. beta 시스템에 bob이라는 사용자가 없어서 beta MTA가 메세지를
+     거부하면, alpha MTA는 회신주소인 alice@alpha로 바운스메세지를
+     보내서 문제를 알립니다.
+
+  5. beta MTA가 메세지를 수용하면, 수신인 주소를 보고서 그것이 로컬이나
+     원격시스템에 있는지 결정합니다.  본 예제에서는 로컬이므로 MTA는
+     메세지를 직접 전달하거나, /bin/mail이나 procmail 등과 같은 Mail
+     Delivery Agent (MDA)에게 건내줍니다.
+
+  6. Bob이 멜쿼타를 초과했기 때문에 전달이 안되면, beta MTA는 봉투의
+     회신주소인 alice@alpha로 바운스메세지를 보냅니다.
+
+  7. 전달이 잘되었으면, Bob의 MUA가 그 메세지를 읽어서 보여줄 때까지
+     그의 멜복스에 대기합니다.
+
+  6.3.2.  더많은정보
+
+  인터넷멜이 어떻게 작동하는 지에 대한 정보는 다음중 하나이상을
+  보십시오.
+
+  o  <http://pobox.com/~djb/im.html>: 큐메일의 저자에 의한 인터넷멜
+
+  o  <http://pobox.com/~djb/smtp.html>: 큐메일의 저자에 의한 SMTP
+
+  o  <http://pobox.com/~djb/immhf.html>: 큐메일의 저자에 의한
+     인터넷멜메세지 헤더포맷
+
+  6.3.2.1.  인터넷 RFC들
+
+  인터넷의 Requests for Comment (RFC's)는 인터넷의 공식문서입니다.
+  이것들 대부분은 비평단계를 훨씬 넘어서 TCP, FTP, Telnet 등의
+  인터넷프로토콜과 여러 다양한 멜표준과 프로토콜을 정의합니다.
+
+  o  RFC 821, Simple Mail Transfer Protocol.
+     <http://www.ietf.org/rfc/rfc0821.txt>
+
+  o  RFC 822, Standard for the Format of ARPA Internet Text Messages.
+     <http://www.ietf.org/rfc/rfc0822.txt>
+
+  o  RFC 931, Authentication Server.
+     <http://www.ietf.org/rfc/rfc0931.txt>
+
+  o  RFC 974, Mail Routing and the Domain System.
+     <http://www.ietf.org/rfc/rfc0974.txt>
+
+  o  RFC 1123, Requirements for Internet Hosts -- Application and
+     Support.  <http://www.ietf.org/rfc/rfc1123.txt>
+
+  o  RFC 1413, Identification Protocol.
+     <http://www.ietf.org/rfc/rfc1413.txt>
+
+  o  RFC 1423, Privacy Enhancement for Internet Electronic Mail: Part
+     III: Algorithms, Modes, and Identifiers.
+     <http://www.ietf.org/rfc/rfc1423.txt>
+
+  o  RFC 1651, SMTP Service Extensions.
+     <http://www.ietf.org/rfc/rfc1651.txt>
+
+  o  RFC 1652, SMTP Service Extension for 8bit-MIMEtransport.
+     <http://www.ietf.org/rfc/rfc1652.txt>
+
+  o  RFC 1806, Content disposition. header.
+     <http://www.ietf.org/rfc/rfc1806.txt>
+
+  o  RFC 1854, SMTP Service Extension for Command Pipelining.
+     <http://www.ietf.org/rfc/rfc1854.txt>
+
+  o  RFC 1891, SMTP Service Extension for Delivery Status Notifications.
+     <http://www.ietf.org/rfc/rfc1891.txt>
+
+  o  RFC 1892, The Multipart/Report Content Type for the Reporting of
+     Mail System Administrative Messages.
+     <http://www.ietf.org/rfc/rfc1892.txt>
+
+  o  RFC 1893, Enhanced mail system status codes.
+     <http://www.ietf.org/rfc/rfc1893.txt>
+
+  o  RFC 1894, An Extensible Message Format for Delivery Status
+     Notifications.  <http://www.ietf.org/rfc/rfc1894.txt>
+
+  o  RFC 1939, Post Office Protocol - Version 3.
+     <http://www.ietf.org/rfc/rfc1939.txt>
+
+  o  RFC 1985, SMTP Service Extension for Remote Message Queue Starting
+     (ETRN).  <http://www.ietf.org/rfc/rfc1985.txt>
+
+  o  RFC 1991, PGP Message Exchange Formats.
+     <http://www.ietf.org/rfc/rfc1991.txt>
+
+  o  RFC 2015, MIME Security with Pretty Good Privacy. (PGP).
+     <http://www.ietf.org/rfc/rfc2015.txt>
+
+  o  RFC 2045, MIME Internet message bodies.
+     <http://www.ietf.org/rfc/rfc2045.txt>
+
+  o  RFC 2046, MIME Media Types.  <http://www.ietf.org/rfc/rfc2046.txt>
+
+  o  RFC 2047, MIME Headers.  <http://www.ietf.org/rfc/rfc2047.txt>
+
+  o  RFC 2048, MIME Registration Procedures.
+     <http://www.ietf.org/rfc/rfc2048.txt>
+
+  o  RFC 2049, MIME Conformance Criteria.
+     <http://www.ietf.org/rfc/rfc2049.txt>
+
+  o  RFC 2142, Mailbox names for common services.
+     <http://www.ietf.org/rfc/rfc2142.txt>
+
+  o  RFC 2183, Content Disposition header.
+     <http://www.ietf.org/rfc/rfc2183.txt>
+
+  6.4.  구조
+
+  6.4.1.  모듈시스템구조
+
+  인터넷 MTA는 다양한 일을 합니다.  Sendmail과 smail 등의 초기 디자인은
+  단일구성체입니다.  다른 말로, 하나의 커다란 복합으로서 '모자를
+  바꿔쓰는' 식인데, SMTP서버가 되려고 한 모자를 쓰고, SMTP클라이언트가
+  되려고 다른 모자를 쓰고, 또 메세지를 로컬로 삽입하려고 다른 모자를
+  쓰고, 큐를 관리하려고 다른 모자를 씁니다.
+
+  큐메일은 모듈방식입니다.  위의 각 기능들을 별개의 프로그램으로
+  수행합니다.  따라서, 프로그램들은 훨씬 더작고, 더간단하며, 기능이나
+  보안의 벅이 더 적습니다.  보안을 더 강화하기 위해서, 큐메일모듈은
+  상이한 특권으로 운행하고, 서로 "기대"하지 않기 때문에, 다른 모듈이 늘
+  하던대로 하리라고 추정하지 않습니다.
+
+  핵심모듈들입니다.
+
+  모듈                          기능
+  qmail-smtpd                   SMTP를 통한 메세지의 수용과 거절
+  qmail-inject                  메세지의 로컬삽입
+  qmail-rspawn/qmail-remote     원격전달처리
+  qmail-lspawn/qmail-local      로컬전달처리
+  qmail-send                    큐처리
+  qmail-clean                   큐청소
+
+  모듈방식에는 단점도 있습니다.  단일구성체의 MTA와 달리, 모듈간
+  상호작용은 잘정의되어있어서 모듈은 최소한의 필요정보만 서로
+  교환합니다.  이는 대개 디버깅목적으로 Sendmail이 동작궤적을
+  표준출력으로 내보냅니다.  한 sendmail바이너리가 삽입, 큐,
+  앨이어스처리, .forward파일처리, SMTP를 통한 원격송부 등을
+  다하기때문에, 메세지를 전달할때까지의 전체전달을 쉽게 추적할 수
+  있습니다.  큐메일에 동등한 능력은 없고, 모듈에서 모듈로 "디벅"플랙을
+  건네주는 것을 구현하려면 엄청나게 코드를 고쳐야 하고, 더 복잡해집니다.
+
+  6.4.2.  파일구조
+
+  /var/qmail이 큐메일파일구조의 근본입니다.  큐메일을 컴파일할때 바꿀
+  수는 있지만, 다른 애드민이 무엇인가를 어디에서 찾아야 할 지 알게
+  그대로 두어야 좋습니다.  큐메일트리의 일부 또는 전부를 다른곳에 꼭
+  놓고 싶으면, 심볼릭링크를 이용하는 것이 낳습니다.  자세한 내용은
+  설치항목의 디렉토리만들기항목을 보시기 바랍니다.
+
+  톱레벨 섭디렉토리입니다.
+
+  디렉토리     내용
+  alias        시스템전반의 앨리어스에 대한 .qmail파일
+  bin          프로그램바이너리와 스크립트
+  boot         기동스크립트
+  control      설정파일
+  doc          문서 (맨페지제외)
+  man          맨페지
+  queue        보내기전메세지의 큐
+  users        큐메일사용자 데이터베이스 파일
+
+  6.4.3.  큐구조
+
+  컴파일디렉토리의 INTERNALS파일에 큐의 자세한 내용을 더 잘
+  설명해놓았습니다.  다음은 큐구조의 좀더 넓은 개요입니다.
+
+  섭디렉토리   내용
+  bounce       영구전달에러
+  info*        송신자주소를 봉투하기
+  intd         qmail-queue의 봉투진행
+  local*       로컬봉투수신자주소
+  lock         lock 파일
+  mess*        메세지파일
+  pid          qmail-queue가 i-node번호를 얻기 위해 사용
+  remote*      원격봉투송신자주소
+  todo         완전봉투
+
+  ----------------------------------------------------------------------------------------
+  유의점: 디렉토리에 "*"표시가 있으면 (conf-split-1)까지 "0", "1", ..., 등으로 된
+          분할섭디렉토리를 갖고 있는데, conf-split은 컴파일디렉토리의 conf-split파일에
+          포함된 컴파일시설정입니다. 기본은 23입니다.  이렇게 디렉토리를 쪼개는 것은 매우
+          바쁜서버에서 단일디렉토리의 파일수를 줄이기 위해서입니다.
+  ----------------------------------------------------------------------------------------
+
+  아이노드번호에 따라서 섭디렉토리하의 파일들을 이름짓습니다.  이것이
+  뜻하는 바는, 표준 유닉스 유틸리티인 mv, dump/restore, tar 등을 써서
+  수동으로 그것들을 움직이지 못합니다.  큐파일을 정확하게 이름바꾸는
+  사용자공헌 유틸리티가 <http://www.qmail.org>에 두어개 있습니다.
+
+  ----------------------------------------------------------------------------------
+  유의점: 큐메일이 가동중에는 큐메일파일을 수정하지 않아야 좋습니다.  큐를 수정하려면,
+          먼저 큐메일을 멈추고, 큐를 조심하여 다루고, 다시 큐메일을 가동하십시오.
+  ----------------------------------------------------------------------------------
+
+  6.4.4.  사진
+
+  /var/qmail/doc에 PIC로 이름을 시작하는 파일들이 죽 있습니다.  이들은
+  큐메일이 감당하는 다양한 상태의 문장"사진"입니다.  다양한 모듈을 통한
+  통제흐름을 보여주며, 복잡한 설정을 만들고 디버깅하는 데 큰 도움이
+  됩니다.
+
+  파일이름                 개요
+  PIC.local2alias     로컬앨리어스에 전달한 로컬삽입메세지
+  PIC.local2ext       확장주소로 전달한 로컬삽입메세지
+  PIC.local2local     로컬사용자에게 전달한 로컬삽입메세지
+  PIC.local2rem       원격주소로 전달한 로컬삽입메세지
+  PIC.local2virt      로컬버추얼도메인상의 주소로 전달한 로컬삽입메세지
+  PIC.nullclient      널클라이언트에 삽입한 메세지
+  PIC.relaybad        로컬호스트를 중계로 사용하는 시도의 실패
+  PIC.relaygood       로컬호스트를 중계로 사용하는 시도의 성공
+  PIC.rem2local       SMTP를 통해 받은 로컬사용자에로의 메세지
+
+  이 파일들은 다음에서 온라인으로 구할 수 있습니다.
+
+  o  <http://www.qmail.org/man/index.html>
+
+  큐메일의 진짜사진을 원하신다면, Andre Opperman의 "대형큐메일사진"을
+  <http://www.nrg4u.com/>에서 보십시오.
+
+  6.5.  어쩌다 한번씩 묻는 질문들
+
+  이것들은 자주 묻지는 않지만 중요하고 대답하기도 쉽지 않은
+  질문들입니다.
+
+  6.5.1.  큐메일은 지연메세지를 어느 정도 자주 보냅니까?
+
+  메세지마다 재시도시간표가 있습니다.  메세지가 전달불능으로 오래
+  있을수록, 큐메일은 그것을 덜 자주 보내려고 합니다.  재시도시간표는
+  설정할 수 없습니다.  다음 테이블은 원격수신자에게 가는 전달불능인
+  메세지가 바운스될때까지의 재시도시간표를 보여줍니다.  로컬메세지는
+  비슷하지만, 더 잦은 시간표를 사용합니다.
+
+       전달시도           초 날-시:분:초
+           1               0  0-00:00:00
+           2             400  0-00:06:40
+           3            1600  0-00:26:40
+           4            3600  0-01:00:00
+           5            6400  0-01:46:40
+           6           10000  0-02:46:40
+           7           14400  0-04:00:00
+           8           19600  0-05:26:40
+           9           25600  0-07:06:40
+           10          32400  0-09:00:00
+           11          40000  0-11:06:40
+           12          48400  0-13:26:40
+           13          57600  0-16:00:00
+           14          67600  0-18:46:40
+           15          78400  0-21:46:40
+           16          90000  1-01:00:00
+           17         102400  1-04:26:40
+           18         115600  1-08:06:40
+           19         129600  1-12:00:00
+           20         144400  1-16:06:40
+           21         160000  1-20:26:40
+           22         176400  2-01:00:00
+           23         193600  2-05:46:40
+           24         211600  2-10:46:40
+           25         230400  2-16:00:00
+           26         250000  2-21:26:40
+           27         270400  3-03:06:40
+           28         291600  3-09:00:00
+           29         313600  3-15:06:40
+           30         336400  3-21:26:40
+           31         360000  4-04:00:00
+           32         384400  4-10:46:40
+           33         409600  4-17:46:40
+           34         435600  5-01:00:00
+           35         462400  5-08:26:40
+           36         490000  5-16:06:40
+           37         518400  6-00:00:00
+           38         547600  6-08:06:40
+           39         577600  6-16:26:40
+           40         608400  7-01:00:00
+
+  6.5.2.  저는 MX가 많은 대형사이트에 매일을 보내지 못하는데 왜그렇죠?
+
+  다음의 메세지를 받는다면,
+
+  deferral: CNAME_lookup_failed_temporarily._(#4.4.3)/
+
+  문제는 큐메일이 대형네임서버질의응답을 처리하지 못해서입니다.  패치를
+  설치해서 고칩니다.  고급주제에서 패치를 보시기 바랍니다.
+
+  어떤사람은 이런시스템에 닿는데 문제가 없는데 왜그러냐고 질문할 수도
+  있습니다.  원래, 타이밍과 로컬네임서버에 한 질의순서에 의거하여,
+  "aol.com"에 대한 수도 있습니다.
+
+  A와 MX레코드가 시간초과하면 "그럴수도" 있지만, NS로코드는 그렇지
+  않습니다.  .COM서버는 2틀의 수명시한 (TTL)을 설정해놓지만, AOL은
+  레코드에 1시간의 수명시한을 설정해놓으므로, 덜바쁜 네임서버에서 이러한
+  일이 종종 일어납니다.  더바쁜 네임서버는 특정시간에 그 레코드들은
+  캐쉬에 갖고 있기 때문에 패치하지 않은 큐메일이 CNAME을 점검하려는
+  시도를 무색하게 합니다.
+
+  더좋은 시험은 nosuchuser@large-mx.ckdhr.com으로 멜을 보내는 겁니다.
+  그 서버가 당신의 큐를 청소하고, ckdhr.com에서 바운스하는 것으로
+  끝나면, 당신의 MTA는 512바잇을 넘기는 MX 리스트를 갖는 호스트로 멜을
+  보낼 수 있습니다.  (단일 수명시한이며 512바잇을 넘기는 단일 RRset을
+  사용해서, 이문제를 다른 질의의 타이밍과 순서에 의지하지 않고 볼 수
+  있습니다.)
+
+  6.5.3.  QUEUE_EXTRA?
+
+  컴파일시설변수로서 매전달에 추가하는 추가수신인을 적습니다.  본래
+  로깅하려고 사용합니다.  예를 들면, FAQ에는 QUEUE_EXTRA를 써서 드나는
+  메세지를 전부 보관하는 방법을 설명합니다.
+
+  QUEUE_EXTRA를 사용하려면, extra.h를 편집해서 "T수신인\0"형식으로
+  수신인을 추가하고, QUEUE_EXTRALEN에 QUEUE_EXTRA의 길이를 적습니다.
+  ("\0"은 한문자로 계산됩니다.)  예를 들면 다음과 같습니다.
+
+    #define QUEUE_EXTRA "Tlog\0"
+    #define QUEUE_EXTRALEN 5
+
+  큐메일이 운행중이면 중지시킵니다.  설치항목의 큐메일스크립트를
+  설치하셨으면, 다음과 같이 하십시오.
+
+    /usr/local/sbin/qmail stop
+
+  큐메일스크립트가 없으시면, 기동/중지 스크립트를 사용하시든지,
+  TERM신호를 qmail-send에 보내십시오.
+
+  그다음에 다음과 같이 해서 큐메일을 재컴파일하십시오.
+
+    make setup check
+
+  원하시는 대로  alias/.qmail-log을 채우십시오.  예를 들어, Message-ID를
+  록하려면 다음과 같이 합니다.
+
+    | awk '/^$/ { exit } /^[mM][eE][sS][sS][aA][gG][eE]-/ { print }'
+
+  끝으로, 큐메일을 재가동합니다.
+
+  6.6.  에러메세지
+
+  큐메일에러메세지와 그 의밉니다.
+
+  괄호안의 에러코드에 관한 설명은 RFC 1893을 보십시오.
+
+  이 부록은 완전하지 않습니다.
+
+      qmail-local
+
+     o  "Unable to fork: reason. (#4.3.0)"
+
+     o  "Unable to read message: reason. (#4.3.0)"
+
+     o  "Unable to open filename: reason. (#4.3.0)"
+
+     o  "Temporary error on maildir delivery. (#4.3.0)"
+
+     o  "Unable to open filename: reason. (#4.2.1)"
+
+     o  "Unable to write filename: reason. (#4.3.0)"
+
+     o  "Unable to run /bin/sh: reason. (#4.3.0)"
+
+     o  "Unable to stat home directory: reason. (#4.3.0)"
+
+     o  "Unable to switch to directory: reason. (#4.3.0)"
+
+      qmail-smtpd
+
+     o  "555 syntax error (#5.5.4)"
+
+      qmail.c
+
+     o  "Zqq write error or disk full (#4.3.0)"
+
+     o  "Zqq read error (#4.3.0)"
+
+      spawn.c
+
+     o  "Internal error: delnum negative. (#4.3.5)"
+
+     o  "Internal error: delnum too big. (#4.3.5)"
+
+     o  "Internal error: delnum in use. (#4.3.5)"
+
+     o  "Internal error: messid has nonnumerics. (#5.3.5)"
+
+     o  "Internal error: messid too long. (#5.3.5)"
+
+     o  "Internal error: messid too short. (#5.3.5)"
+
+  6.7.  의외의 실수
+
+  큐메일신참자는 다음과 같은 문제들을 자주 만납니다.
+
+  6.7.1.  큐메일은 수퍼유저에게 멜을 전달하지 않습니다.
+
+  qmail-local이 특권사용자로서 명령을 실행하는 가능성을 막기위해서,
+  큐메일은 UID가 0인 모든 사용자를 무시합니다.  이것은 qmail-getpw
+  맨페지에 설명되어 있습니다.
+
+  그렇다고 큐메일이 root@example.com에 전달하지 않는다는 것은 아니고,
+  다만 전달은 비특권사용자에 의해 처리되어야 한다는 것입니다.  으례,
+   /alias/.qmail-root을 채워서 root에 대한 앨리어스를 만듦니다.
+
+  6.7.2.  큐메일은 홈디렉토리가 없는 사용자에게 멜을 전달하지 않습니다.
+
+  또하나의 보안특징이고, 좋은 습관입니다.  qmail-getpw맨페지에 설명되어
+  있습니다.
+
+  6.7.3.  큐메일은 사용자이름에 대문자를 쓰는 사용자에게 멜을 전달하지
+  않습니다.
+
+  큐메일은 주소에서 "@"의 왼쪽에 있는 모든 것인 "로컬부분"을 소문자로
+  변환합니다.  맨페지에는 설명되어 있지 않지만, 코드는 그렇게 합니다.
+  대문자를 갖는 사용자를 무시한다는 사실은 qmail-getpw맨페지에 기록되어
+  있습니다.
+
+  6.7.4.  큐메일은 홈디렉토리에 그룹이나 기타사용자에게 쓰기를 허락하는
+  사용자에게 멜을 전달하지 않습니다.
+
+  또하나의 보안특징입니다.  qmail-local맨페지에 설명되어 있습니다.
+  컴파일시 conf-patrn 컴파일 컨피그파일을 통해서 재지정할 수 있습니다.
+
+  6.7.5.  큐메일은 확장주소의 점(.)을 콜론(:)으로 바꿉니다.
+
+  또하나의 보안특징입니다.  확장주소가 파일트리를 ".."로 백업하는것을
+  막는 것이 목적입니다.  콜론으로 바꾸기 때문에, 큐메일은 사용자의
+  .qmail파일 모두가 홈디렉토리에 있게 합니다.  qmail-local맨페지에
+  기록했습니다.
+
+  6.7.6.  큐메일은 확장주소의 대문자를 소문자로 바꿉니다.
+
+  큐메일은 주소의 로컬부분을 모두 소문자로 만든다는 또하나의 사실입니다.
+  qmail-local맨페지에 설명했습니다.
+
+  6.7.7.  큐메일은 /etc/hosts를 사용하지 않습니다.
+
+  큐메일은 호스트네임이 있는 IP주소를 결정하기 위해서 /etc/hosts를
+  사용하지 않습니다.  control파일에 있는 이름을 사용하면, 큐메일은
+  네임서버에 접근할 수 있어야 합니다.
+
+  그래도 네임서버에 접근할 수 없는 시스템에서도 큐메일을 운영할 수
+  있습니다.  control파일에 있는 호스트는 IP주소로 적을 수도 있는데,
+  대괄호 ([])로 둘러싸야 합니다.  예를 들면 다음과 같습니다.
+
+    [10.1.2.219]
+
+  사실, 대괄오가 언제나 필요하지는 않지만, 사용해야 좋은 방법입니다.
+
+  6.7.8.  큐메일은 SMTP활동을 록하지 않습니다.
+
+  여러 이유로 해서, 큐메일은 SMTP접속, 거절, 무효명령, 또는 유효명령
+  등을 록하지 않습니다.  tcpserver로 접속을 록할 수 있고, recordio로
+  SMTP대화 전부를 록할 수 있습니다.  recordio는 ucspi-tcp패케지의
+  일부입니다.  절차는
+  <http://pobox.com/~djb/qmail/faq/servers.html#recordio>의 FAQ에
+  설명되어 있습니다.
+
+  6.7.9.  큐메일은 지연통지를 만들지 않습니다.
+
+  Sendmail은 수시간내에, 통상 4시간내에, 메세지를 전달할 수 없으면,
+  작성자에게 지연통지를 보냅니다.  이 통지는 바운스메세지같아
+  보입니다만, 아직 전달이 영구실패했다는 것을 가리키지는 않습니다.
+
+  큐메일은 이런 경고를 보내지 않습니다.  전달불능메세지는 큐에서
+  큐수명시간을 다 보낸다음에야만 작성자에게 돌려집니다.
+
+  6.7.10.  큐메일은 /var/qmail/queue/lock/trigger가 틀린접근권한이거나
+  보통파일이면 늦어집니다.
+
+  qmail-queue와 qmail-send는 /var/qmail/queue/lock/trigger라는
+  네임파잎은 통해서 의사소통합니다.  이 파잎이 엉망이 되면, qmail-send는
+  반시간정도 새메세지를 통보하지 않습니다.
+
+  올바르게 설치되었다는 것을 확신하는 가장 좋은 방법은 소스디렉토리에서
+  "make check"을 실행하는 것입니다.  그것이 가능하지 않다면, 다음과 같은
+  지 확인하십시오.
+
+  # ls -l /var/qmail/queue/lock/trigger
+  prw--w--w-   1 qmails   qmail           0 Jul  5 21:25 /var/qmail/queue/lock/trigger
+
+  줄의 앞에 (네임파잎을 알리는) "p", 모드 (특히 전체쓰기허가), 소유자와
+  그룹 등에 각별히 유의해 보시기 바랍니다.
+
+  6.8.  lwq에 대한 FAQ
+
+  --------------------------------------------------------------------------------
+  역자추가: 다음의 주소에서 최근의 질의응답을 참고하실 수 있습니다. (05 Apr 2000)
+            http://www.faqts.com/knowledge-base/index.phtml/fid/139/lang/en
+  --------------------------------------------------------------------------------
+
+  6.8.1.  lwq의 소유자는?
+
+  lwq는 Copyright 1999 David E. Sill입니다.
+
+  6.8.2.  lwq의 라이센스는?
+
+  lwq는 OpenContent License version 1.0에 포함됩니다.  완전한 라이센스에
+  대해서는 <http://www.opencontent.org/opl.shtml>를 보십시오.  본래,
+  수정판을 재배포한다면 그판도 OpenContent License에 포함된다는 조건하에
+  lwq를 복사, 재배포, 수정할 수 있습니다.
+
+  6.8.3.  lwq의 새판을 구할 수 있다는 것은 어떻게 통지받을 수 있습니까?
+
+  lwq-announce-subscribe@sws1.ctd.ornl.gov에 메세지를 보내서 lwq-
+  announce멜링리스트에 가입하십시오.
+
+  6.8.4.  lwq공헌자와 팬은 어디서 이야기할 수 있습니까?
+
+  lwq-subscribe@sws1.ctd.ornl.gov에 메세지를 보내서 lwq 멜링리스트에
+  가입하십시오.
+
+  6.8.5.  lwq는 다른 언어로 번역되었습니까?
+
+  lwq를 번역하는데 관심있으시면, 제게 알려주셔서 노력의 중복을 막고,
+  조화할 수 있게 해주십시오.  또한 제가 SDF소스문서를 번역하시는 분께
+  드려서, 번역이 SDF로도 될 수 있게 할 수 있습니다.  (이것이 왜 중요한
+  지 다음질문을 보시기 바랍니다.)
+
+  또한, lwq를 번역하시는 분들은 lwq멜링리스트에 가입하셔서 (전의 질문을
+  보십시오.)  번역에 관한 논점을 토론하고 공지사항을 만들 수 있도록
+  하시길 권장합니다.
+
+  6.8.6.  lwq는 HTML이외에 포스트스크립트, PDF, 평범한글, 또는
+  다른형태로도 구할 수 있습니까?
+
+  그렇습니다.  다른 형태는
+  <http://Web.InfoAve.net/~dsill/qmail.html>에서 찾을 수 있습니다.
+
+  6.8.7.  lwq를 사용했더니, 시스템파괴, 하드디스크삭제, 백발을 했습니다.
+
+  죄송합니다.  정말이지 미안합니다.  그렇지만 lwq는 어떤 보증도
+  없습니다.  위에서 말씀드린 OpenContent License를 보시기 바랍니다.
+  저는 이것을 쓴다고 해서 어떤 보상을 받지 않았고, 다만 큐메일공동체에
+  무언가 유익한 것을 공헌하고 싶었을 뿐입니다.
+
+  사실, 이것은 FAQ가 아닙니다.  진짜로는, 이것이 NAQ (Never Asked
+  Question)이길 바랍니다.
+
+   [하나 받으십시오!]
+

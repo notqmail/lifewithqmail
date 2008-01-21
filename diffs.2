@@ -1,0 +1,155 @@
+365,366c365,366
+< http://starbase.neosoft.com/~claird/comp.mail.misc/MTA_comparison.html.
+< Another detailed comparison is available at
+---
+> http://phaseit.net/claird/comp.mail.misc/MTA_comparison.html. Another
+> detailed comparison is available at
+810d809
+<     mv daemontools-0.76.tar.gz /package
+811a811
+>     mv daemontools-0.76.tar.gz /package
+844c844,845
+< For example, a more distributed layout can be achieved by doing:
+---
+> For example, the qmail configuration files can be stored in /etc/qmail
+> by doing:
+846,847d846
+<     mkdir /var/qmail
+<     ln -s /usr/man /var/qmail/man
+850d848
+<     ln -s /usr/sbin /var/qmail/bin
+963a962,967
+> Note: On a small local LAN you might want to use a pseudo domain such
+> as ".local". E.g., if your hostname is "mash", you could do
+> ./config-fast mash.local. If you do this, be sure to configure qmail
+> to use a valid Internet domain name in return addresses. (See section
+> 3, Configuration.)
+> 
+1202,1204c1206,1211
+< On Linux and System V systems, you'll also need to link the script
+< into the init.d directory and a couple of "rc" directories. The init.d
+< is probably one of the following:
+---
+> 2.8.2.1.1. rc links
+> -------------------
+> 
+> On most Linux and System V systems, you'll also need to link the
+> script into the init.d directory and a couple of "rc" directories. The
+> init.d is probably one of the following:
+1240c1247,1248
+< that should work for your system.
+---
+> that should work for your system. Also note that the results of these
+> ln commands are independent of your current working directory.
+1283,1284c1291,1292
+< feature of the above script. Also, that's -l (dash ell), not -1 (dash
+< one).
+---
+> feature of the above script. Also, that's -1 (dash one) on the LOCAL
+> line and -l (dash ell) on the tcpserver line.
+1447c1455
+< and doublecheck your work.
+---
+> and double check your work.
+1449,1451c1457,1477
+< Next, follow the instructions in TEST.deliver and TEST.receive to
+< verify that it's working correctly. Note that using these
+< instructions, logging will be accomplished by multilog, not splogger.
+---
+> It sometimes help to run a service manually in order to find
+> configuration problems. For example, if your qmail-smtpd/log service
+> isn't running, do:
+> 
+>     cd /service/qmail-smtpd/log
+>     svc -d .
+>     ./run
+>     if no errors, enter a line of text and press ENTER
+>     if still no errors, enter CTRL-D (end of file)
+> 
+> At this point, you should be able to identify the problem and fix it.
+> Once that's done, return to the service's directory, if necessary, and
+> do:
+> 
+>     svc -u .
+> 
+> Once the services are all up with >1 second uptime, follow the
+> instructions in TEST.deliver and TEST.receive to verify that they're
+> working correctly. Note that using these instructions, logging will be
+> accomplished by multilog to /var/log/qmail, not splogger to something
+> like /var/log/maillog.
+2558c2584,2607
+< 5.6.2.1. splogger
+---
+> 5.6.2.1. multilog
+> -----------------
+> 
+> multilog, which is part of the daemontools package, logs messages to a
+> series of files in a specified directory.
+> 
+> The log directory is specified on the multilog command line, so you
+> can find it by examining your qmail startup scripts.
+> 
+> The number of files in the log directory, and the maximum size of each
+> file, are determined by multilog options. The log file names are the
+> TAI (Temps Atomique International) timestamps of the time at which the
+> file was started. The tai64nlocal command, also from daemontools,
+> converts TAI timestamps into local, human-readable timestamps.
+> 
+> A typical multilog log entry looks like:
+> 
+> @4000000038c3eeb104a6ecf4 delivery 153: success: did_1+0+0/
+> 
+> "@4000000038c3eeb104a6ecf4" is the optional, but recommended, TAI
+> timestamp. "delivery 153: success: did_1+0+0/" is the log message
+> itself.
+> 
+> 5.6.2.2. splogger
+2592,2614d2640
+< 5.6.2.2. multilog
+< -----------------
+< 
+< multilog, which is part of the daemontools package, logs messages to a
+< series of files in a specified directory.
+< 
+< The log directory is specified on the multilog command line, so you
+< can find it by examining your qmail startup script.
+< 
+< The number of files in the log directory, and the maximum size of each
+< file, are determined by multilog options. The log file names are the
+< TAI (Temps Atomique International) timestamps of the time at which the
+< file was started. The tai64nlocal command, also from daemontools,
+< converts TAI timestamps into local, human-readable timestamps.
+< 
+< A typical multilog log entry looks like:
+< 
+< @4000000038c3eeb104a6ecf4 delivery 153: success: did_1+0+0/
+< 
+< "@4000000038c3eeb104a6ecf4" is the optional, but recommended, TAI
+< timestamp. "delivery 153: success: did_1+0+0/" is the log message
+< itself.
+< 
+2858a2885,2886
+> o    Scott Gifford
+> 
+2867c2895
+< http://www.mincom.com/mtr/sdf/ for more information.
+---
+> http://search.cpan.org/author/IANC/sdf-2.001/ for more information.
+2997c3025
+< e-mail users are all to familiar with Unsolicited Bulk E-mail (UBE),
+---
+> e-mail users are all too familiar with Unsolicited Bulk E-mail (UBE),
+3712a3741,3749
+> G.12. qmail-send or tcpserver stop working if logs back up
+> ----------------------------------------------------------
+> 
+> If you're logging to a supervised log service, as described in section
+> 2, and the log service fails for any reason: disk full, typo in the
+> run script, log directory configuration error, etc., the pipeline will
+> eventually fill up, causing the service to block, or hang. Fix the
+> problem (see Troubleshooting) and everything will return to normal.
+> 
+3719c3756
+< This is LWQ version 2002-08-25.
+---
+> This is LWQ version 2002-09-03.

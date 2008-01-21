@@ -1,0 +1,170 @@
+300,302c300,301
+< Cameron Laird has a web page comparing these and other free and
+< commercial MTA's at
+< {{URL:http://phaseit.net/claird/comp.mail.misc/MTA_comparison.html}}.
+---
+> Jonathan de Boyne Pollard has reviews of many Unix MTAs at
+> {{URL:http://homepages.tesco.net/~J.deBoynePollard/Reviews/UnixMTSes/}}.
+473a473,486
+> !block note
+> The I<qmail> list uses a utility called F<qsecretary> to verify that
+> messages posted to the list are not spam. Each message posted to the
+> list will result in an e-mail confirmation request from
+> F<qsecretary>. Read the message and follow the directions to confirm
+> your message--usually just replying to the F<qsecretary> message will
+> do the trick. Regular list posters often automate this process using
+> autoresponders like Charles Cazabon's I<pymsgauth>, available from
+> {{URL:http://www.qcc.ca/~charlesc/software/pymsgauth/pymsgauth.html}}.
+> I<pymsgauth> verifies that message sent to the I<qmail> list really
+> came from you, so it won't automatically confirm forged messages sent
+> to the list in your name.
+> !endblock
+> 
+1027c1040
+<       svc -u /service/qmail-send
+---
+>       svc -u /service/qmail-send /service/qmail-send/log
+1032c1045
+<       svc -u /service/qmail-smtpd
+---
+>       svc -u /service/qmail-smtpd /service/qmail-smtpd/log
+1043c1056
+<     svc -d /service/qmail-smtpd
+---
+>     svc -d /service/qmail-smtpd /service/qmail-smtpd/log
+1045c1058
+<     svc -d /service/qmail-send
+---
+>     svc -d /service/qmail-send /service/qmail-send/log
+1085c1098
+<     svc -d /service/qmail-smtpd
+---
+>     svc -d /service/qmail-smtpd /service/qmail-smtpd/log
+1087c1100
+<     svc -t /service/qmail-send
+---
+>     svc -t /service/qmail-send /service/qmail-send/log
+1089c1102
+<     svc -u /service/qmail-smtpd
+---
+>     svc -u /service/qmail-smtpd /service/qmail-send/log
+1271a1285,1286
+> The F</service> directory is created when I<daemontools> is installed.
+> 
+1323a1339,1348
+> !block note 
+> If you're using an RPM-based Linux distribution like Red Hat, removing
+> the MTA package might cause problems down the road. Utilities that
+> update the system might try to reinstall Sendmail, or MUA packages
+> might not install because they can't tell an MTA is installed. Mate
+> Wierdl provides a stub package called "fake_mta" that can be installed to
+> prevent these problems. Simply install the RPM available from
+> {{URL:http://www.csi.hu/mw/fake_mta-1-1memphis.noarch.rpm}}.
+> !endblock
+> 
+1329a1355,1365
+> If something is running, make sure it's not I<qmail> by doing:
+> 
+> >    qmailctl stop
+> 
+> The repeat the F<netstat> check:
+> 
+> >    netstat -a | grep smtp
+> 
+> If you still get output from that command you'll have to locate the
+> culprit and fix it before I<qmail>'s SMTP service will run.
+> 
+1398c1434
+< direcotories, or links. Go back through the installation step-by-step
+---
+> directories, or links. Go back through the installation step-by-step
+1401c1437
+< It sometimes help to run a service manually in order to find
+---
+> It sometimes helps to run a service manually in order to find
+1424a1461,1468
+> !block note
+> If you chose maildir mailbox format as the default delivery method,
+> you will need to create a F<Maildir> directory in your home directory
+> and F<alias>'s home directory before trying these instructions. See the
+> {{CMD[jump="#maildir-delivery"]maildir}} section to see how to
+> properly create this directory.
+> !endblock
+> 
+1637a1682,1686
+> The {{CMD[jump="#gotchas"]Gotchas}} appendix covers a
+> couple of tricky cases regarding the usage of alias--aliases
+> containing uppercase characters and dots ('.')--and F<man dot-qmail>
+> contains complete documentation of the usage of F<.qmail> files.
+> 
+1950,1952d1998
+< The F<sendmail> man page provided with I<qmail> describes how to use
+< the program.
+< 
+2336c2382
+< Dan Bernstein came up with a solution to this problems called VERP
+---
+> Dan Bernstein came up with a solution to this problem called VERP
+3519c3565
+< requires locally-injected messages to use Unix newlines (CR
+---
+> requires locally-injected messages to use Unix newlines (LF
+3531a3578,3591
+> A2[id="smtp-rejection"]F<qmail-smtpd> doesn't validate the local part
+> of an address.
+> 
+> If F<example.com> is listed in F<control/rcpthosts>, mail to
+> F<I<anything>@example.com> will be accepted during the SMTP
+> session. If F<I<anything>> isn't a valid user or alias, I<qmail> will
+> send a bounce message to the envelope sender address.
+> 
+> Some simpleminded relaying tests assume that if a message is accepted,
+> it will be delivered. That's wrong. If someone claims that your system
+> is an open relay, demand to see a copy of message relayed through
+> it--including the complete header, especially the Received
+> fields--then compare them with your logs.
+> 
+3536c3596
+< This is LWQ version 2002-09-03.
+---
+> This is LWQ version 2003-01-04.
+3540c3600
+< U<[[DOC_TITLE]]> is Copyright 1999-2002 David E. Sill
+---
+> U<[[DOC_TITLE]]> is Copyright 1999-2003 David E. Sill
+3566,3596c3626,3628
+< Maybe. LWQ has been translated to Spanish:
+< 
+< * {{URL:http://www.es.qmail.org/documentacion/usuarios/lwq}}
+< 
+< To Korean:
+< 
+< * {{URL:http://kldp.org/Translations/html/Life_With_Qmail-KLDP/Life_With_Qmail-KLDP.html}}
+< 
+< To Polish:
+< 
+< * {{URL:http://globi.graff.com.pl/lwq/}}
+< 
+< To Italian:
+< 
+< * {{URL:http://medialab.freaknet.org/~elibus/lwq.html}}
+< 
+< And to Russian:
+< 
+< * {{URL:http://reanand.terrashare.com/qmail/lwq.htm}}
+< 
+< Other translations are in the works.
+< 
+< If you're interested in translating U<[[DOC_TITLE]]>, let me know so I
+< can coordinate and prevent duplication of effort. I can also provide
+< translators a copy of the SDF source document so translations can also
+< be done in SDF. I<(See the next question for one reason why that's>
+< I<important.)>
+< 
+< I also recommend that people translating LWQ join the F<lwq> mailing
+< list (see the previous question) so they can discuss translation
+< issues and make announcements.
+---
+> Maybe. LWQ has been translated into a few languages. See
+> {{URL:http://lifewithqmail.org/trans.html}} for more information about LWQ
+> translations.

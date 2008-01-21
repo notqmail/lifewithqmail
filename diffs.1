@@ -1,0 +1,330 @@
+87,88c87,88
+< http://www.news.com/News/Item/0,4,36217,00.html?owv for information
+< regarding the lawsuit.
+---
+> http://www.news.com/News/Item/0,4,36217,00.html?owv or
+> http://cr.yp.to/export.html for information regarding the lawsuit.
+365a366,367
+> Another detailed comparison is available at
+> http://www.geocities.com/mailsoftware42/.
+444,445c446
+< see http://www.amazon.com/exec/obidos/ASIN/1893115402/davesill or
+< http://www1.fatbrain.com/asp/BookInfo/BookInfo.asp?theisbn=1893115402&from=WVE177.
+---
+> see http://www.amazon.com/exec/obidos/ASIN/1893115402/davesill.
+450,451c451,452
+< John Levine is writing a qmail book for O'Reilly & Associates
+< (http://www.oreilly.com/) which should be available later this year.
+---
+> John Levine is reportedly writing a qmail book for O'Reilly &
+> Associates (http://www.oreilly.com/).
+529,530c530,531
+< The main qmail mailing list. Discussion and questions/answers on most
+< things related to qmail, except those with their own lists. Read
+---
+> The main qmail mailing list. For discussion and questions/answers on
+> most things related to qmail, except those with their own lists. Read
+539c540,541
+<      take?
+---
+>      take? If this is a new installation, tell how you installed
+>      qmail.
+612a615,621
+> Safely running an Internet-accesible network service is not easy. An
+> improperly configured service can put the host system at risk of
+> attack or can be used to attack other sites--potentially exposing the
+> administrator to legal liability. The more you know about how your
+> network services work, the more likely they are to be properly
+> configured and secure.
+> 
+643c652
+< source code tarball, not a Red Hat "RPM" or other "self-installing"
+---
+> source code tarball, not a Red Hat RPM or other self-installing
+682a692,701
+> o    A safe filesystem for the queue. qmail's reliability guarantee
+>      requires that the queue reside on a filesystem with traditional
+>      BSD FFS semantics. Most modern local filesystems meet these
+>      requirements with one important exception: the link() system call
+>      is often asynchronous--meaning that the results of the link()
+>      operation might not have been written to disk when the link()
+>      call returns. Bruce Guenter's syncdir library can be used to work
+>      around this problem. See syncdir in the Related Packages appendix
+>      for more information.
+> 
+716c735,736
+< Retrieve these files using your web browser or FTP client.
+---
+> Retrieve these files using your web browser, web client (e.g., wget),
+> or FTP client.
+789a810
+>     mv daemontools-0.76.tar.gz /package
+843c864
+<     cp INSTALL.ids  IDS
+---
+>     cp INSTALL.ids IDS
+1251,1252c1272,1274
+< if [ -z "$QMAILDUID" -o -z "$NOFILESGID" -o -z "$MAXSMTPD" ]; then
+<     echo QMAILDUID, NOFILESGID, or MAXSMTPD is unset in
+---
+> LOCAL=`head -1 /var/qmail/control/me`
+> if [ -z "$QMAILDUID" -o -z "$NOFILESGID" -o -z "$MAXSMTPD" -o -z "$LOCAL" ]; then
+>     echo QMAILDUID, NOFILESGID, MAXSMTPD, or LOCAL is unset in
+1257c1279
+<     /usr/local/bin/tcpserver -v -R -l 0 -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
+---
+>     /usr/local/bin/tcpserver -v -R -l "$LOCAL" -x /etc/tcp.smtp.cdb -c "$MAXSMTPD" \
+1353c1375
+< no output:
+---
+> no output (unless the qmail-smtpd service is running):
+1421c1443,1447
+< All four services should be "up" for more than a second.
+---
+> All four services should be "up" for more than a second. If they're
+> not, you've probably got a typo in the associated run script or you
+> skipped one or more steps in creating the necessary files,
+> direcotories, or links. Go back through the installation step-by-step
+> and doublecheck your work.
+1449a1476,1478
+> concurrencyincoming none           /service/qmail-smtpd/run max simultaneous
+>                                                      incoming SMTP
+>                                                      connections
+1454a1484,1485
+> defaultdelivery   none             /var/qmail/rc     default .qmail
+>                                                      file
+1599a1631,1635
+> Send qmail-send a HUP (hangup) signal to tell it to reread locals. If
+> you have qmailctl, you can do:
+> 
+>     qmailctl reload
+> 
+1606c1642
+< generally not true that messages sent to joe@example.net will end up
+---
+> generally not true that messages sent to joe@example.net should end up
+1635a1672,1678
+> After modifying virtualdomains, send qmail-send a HUP (hangup) signal
+> to tell it to reread the file. If you have qmailctl, you can do:
+> 
+>     qmailctl reload
+> 
+> Don't forget to add virtual domains to rcpthosts, too.
+> 
+1648c1691
+< pseudo-user on all qmail systems whose home directory is
+---
+> pseudo-user on all qmail systems whose home directory is usually
+1654c1697
+<     echo tom > /var/qmail/alias/.qmail-info
+---
+>     echo \&tom > /var/qmail/alias/.qmail-info
+1690,1691c1733,1734
+< What this means is that messages received for address will run as user
+< user, with the specified uid and gid, and the file
+---
+> What this means is that messages received for address will be
+> delivered as user user, with the specified uid and gid, and the file
+1703,1705c1746,1748
+< prefixrest will run as user user, with the specified uid and gid, and
+< the file directory/.qmaildashprependrest will specify how the messages
+< are to be delivered.
+---
+> prefixrest will be delivered as user user, with the specified uid and
+> gid, and the file directory/.qmaildashprependrest will specify how the
+> messages are to be delivered.
+1713c1756
+< (CDB) file called cdb in /var/qmail/users. CDB is binary format that
+---
+> (CDB) file called cdb in /var/qmail/users. CDB is a binary format that
+1747a1791,1801
+> 3.8. Virus Scanning
+> -------------------
+> 
+> Jason Haar has written Qmail-Scanner, a content scanning harness for
+> qmail. See http://qmail-scanner.sourceforge.net/ for more information.
+> 
+> Qmail-Scanner includes a simple built-in scanner, but serious scanning
+> requires a separate virus scanner--either one of the supported
+> commercial scanners or Tomasz Kojm's free Clam Antivirus scanner,
+> available from http://clamav.elektrapro.com/.
+> 
+1805,1809c1859,1863
+< "Mbox" is qmail-speak for the standard UNIX mailbox format, in which
+< multiple messages are stored in a single file and messages are headed
+< with a "From " line. This line looks like a header field, but it isn't
+< one: it's just something the delivery agent adds so mail readers can
+< tell where each message begins.
+---
+> Mbox is the standard UNIX mailbox format in which multiple messages
+> are stored in a single file and messages are headed with a "From "
+> line. This line looks like a header field, but it isn't one: it's just
+> something the delivery agent adds so mail readers can tell where each
+> message begins.
+1832c1886
+< "Maildir" is a mailbox format created by Dan Bernstein to address the
+---
+> Maildir is a mailbox format created by Dan Bernstein to address the
+1923c1977
+< Mail users don't usually use the MTA directly to send messages.
+---
+> Mail users usually don't use the MTA directly to send messages.
+1954c2008
+< For many years, Sendmail was theUNIX MTA. It was so ubiquitous, that
+---
+> For many years, Sendmail was the UNIX MTA. It was so ubiquitous, that
+2175c2229
+<     |/usr/local/bin/qmail-procmail dave
+---
+>     |/usr/local/bin/qmail-procmail
+2373c2427
+< it'll take a lot longer *and* use more network bandwidth.
+---
+> it'll take a lot longer and use more network bandwidth.
+2395c2449,2450
+< multiple RCPT, the simplicity and VERP advantages outweigh that.
+---
+> multiple RCPT, the simplicity and VERP advantages outweigh that
+> overall.
+2412,2418c2467,2473
+< When a message is undeliverable, the MTA that determines that is
+< supposed to return a bounce message to the envelope return path (ERP).
+< The bounce message should include the address of the recipient, the
+< reason the message is undeliverable, and whether the problem is
+< temporary or permanent. Some MTA's don't do the right thing, though.
+< They might send the bounce the address in the From header field, or
+< the bounce might not identify the recipient.
+---
+> When a message is undeliverable, the MTA responsiblle is supposed to
+> return a bounce message to the envelope return path (ERP). The bounce
+> message should include the address of the recipient, the reason the
+> message is undeliverable, and whether the problem is temporary or
+> permanent. Some MTA's don't do the right thing, though. They might
+> send the bounce to the address in the From header field, or the bounce
+> might not identify the recipient.
+2428,2431c2483,2486
+< Dan Bernstein came up with something called VERP (Variable Envelope
+< Return Path). Using VERPs, each message sent to each subscriber to a
+< list has a unique return path. This allows a bounce handler to
+< identify the problem subscriber.
+---
+> Dan Bernstein came up with a solution to this problems called VERP
+> (Variable Envelope Return Path). Using VERPs, each message sent to
+> each subscriber to a list has a unique return path. This allows a
+> bounce handler to identify the problem subscriber.
+2581c2636
+< Line 2 says that the message is from dave@sill.org and is 189 bytes.
+---
+> Line 2 says that the message is from dave@sill.org and is 2343 bytes.
+2646,2648c2701,2703
+< Majordomo is the most popular UNIX MLM. It works fine with qmail
+< provided a few simple changes are made. Russ Allbery has written a FAQ
+< about qmail/Majordomo available from
+---
+> Majordomo is one of the most popular UNIX MLMs. It works fine with
+> qmail provided a few simple changes are made. Russ Allbery has written
+> a FAQ about qmail/Majordomo available from
+2906c2961
+< http://cr.yp.to/daemontools/daemontools-0.70.tar.gz.
+---
+> http://cr.yp.to/daemontools/daemontools-0.76.tar.gz.
+2969c3024
+<         -u $QMAILDUID -g $NOFILESGID 0 smtp /var/qmail/bin/rblsmtpd\
+---
+>         -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp /usr/local/bin/rblsmtpd\
+3073a3129,3141
+> B.13. syncdir
+> -------------
+> 
+> syncdir is small library that makes the link() system call
+> synchronous. This is necessary when using qmail with the queue on a
+> filesystem that doesn't perform link() synchronously, such as Linus's
+> ext2fs, Reiserfs, SGI's XFS, and BSD FFS with softupdates.
+> 
+> syncdir was written br Bruce Guenter and is available from
+> http://untroubled.org/syncdir/. Installation instructions are
+> available from
+> http://www.ornl.gov/its/archives/mailing-lists/qmail/2001/12/msg00949.html.
+> 
+3334c3402,3403
+< remote*                            remote envelope sender addresses
+---
+> remote*                            remote envelope recipient
+>                                    addresses
+3526,3569d3594
+< qmail-local
+< 
+< o    "Unable to fork: reason. (#4.3.0)"
+< 
+< o    "Unable to read message: reason. (#4.3.0)"
+< 
+< o    "Unable to open filename: reason. (#4.3.0)"
+< 
+< o    "Temporary error on maildir delivery. (#4.3.0)"
+< 
+< o    "Unable to open filename: reason. (#4.2.1)"
+< 
+< o    "Unable to write filename: reason. (#4.3.0)"
+< 
+< o    "Unable to run /bin/sh: reason. (#4.3.0)"
+< 
+< o    "Unable to stat home directory: reason. (#4.3.0)"
+< 
+< o    "Unable to switch to directory: reason. (#4.3.0)"
+< 
+< qmail-smtpd
+< 
+< o    "555 syntax error (#5.5.4)"
+< 
+< qmail.c
+< 
+< o    "Zqq write error or disk full (#4.3.0)"
+< 
+< o    "Zqq read error (#4.3.0)"
+< 
+< spawn.c
+< 
+< o    "Internal error: delnum negative. (#4.3.5)"
+< 
+< o    "Internal error: delnum too big. (#4.3.5)"
+< 
+< o    "Internal error: delnum in use. (#4.3.5)"
+< 
+< o    "Internal error: messid has nonnumerics. (#5.3.5)"
+< 
+< o    "Internal error: messid too long. (#5.3.5)"
+< 
+< o    "Internal error: messid too short. (#5.3.5)"
+< 
+3573c3598
+< These frequently cause problem for qmail newbies.
+---
+> These "gotchas" frequently cause problems for qmail newbies.
+3678a3704,3712
+> G.11. Carriage Return/Linefeed (CRLF) line breaks don't work
+> ------------------------------------------------------------
+> 
+> qmail-inject and other local injection mechanisms like sendmail don't
+> work right when messages are injected with DOS-style carriage
+> return/linefeed (CRLF) line breaks. Unlike Sendmail, qmail requires
+> locally-injected messages to use Unix newlines (CR only). This is a
+> common problem with PHP scripts.
+> 
+3685c3719
+< This is LWQ version 2001-12-29.
+---
+> This is LWQ version 2002-08-25.
+3690c3724
+< Life with qmail is Copyright 1999-2001 David E. Sill
+---
+> Life with qmail is Copyright 1999-2002 David E. Sill
+3729a3764,3767
+> To Italian:
+> 
+> o    http://medialab.freaknet.org/~elibus/lwq.html
+> 
+3749,3750c3787
+< Yes, alternative formats can be found at
+< http://www.lifewithqmail.org/.
+---
+> Yes, alternative formats can be found at http://lifewithqmail.org/.
