@@ -3947,7 +3947,7 @@ U<[[DOC_TITLE]]> is Copyright 1999-2007 David E. Sill
 A2[id="lwq-license"]How is U<[[DOC_TITLE]]> licensed?
 
 U<[[DOC_TITLE]]> is covered by the OpenContent License, version
-1.0. See {{URL:http://www.opencontent.org/opl.shtml}} for the full
+1.0. See {{URL:http://web.archive.org/web/20140208120104/http://www.opencontent.org/opl.shtml}} for the full
 license. Basically, you can copy, redistribute, or modify
 U<[[DOC_TITLE]]> provided that modified versions, if redistributed,
 are also covered by the OpenContent License.
@@ -4117,5 +4117,5 @@ A3[id="2003-08-16"]What changed in the 2003-08-16 version of LWQ?
 
 !block inline
 <a href="http://www.opencontent.org/"> <img
-src="http://www.opencontent.org/takeone.gif" border=0 alt="Take One!"></a>
+src="http://web.archive.org/web/20140208120104if_/http://www.opencontent.org/takeone.gif" border=0 alt="Take One!"></a>
 !endblock
