@@ -4456,10 +4456,11 @@ L<http://Web.InfoAve.Net/~dsill/dave/>
 How is B<Life with qmail> licensed?
 
 B<Life with qmail> is covered by the OpenContent License, version 1.0.
-See L<http://www.opencontent.org/opl.shtml> for the full license.
-Basically, you can copy, redistribute, or modify B<Life with qmail>
-provided that modified versions, if redistributed, are also covered by
-the OpenContent License.
+See
+L<http://web.archive.org/web/20140208120104/http://www.opencontent.org/opl.shtml>
+for the full license. Basically, you can copy, redistribute, or modify
+B<Life with qmail> provided that modified versions, if redistributed,
+are also covered by the OpenContent License.
 
 How can I be notified when new releases of LWQ are made available?
 
@@ -4745,5 +4746,5 @@ Fixed a couple typos in the QMTP section. Thanks to Marek Gutkowski.
 
 =for html <a href="http://www.opencontent.org/"> <img
 
-=for html src="http://www.opencontent.org/takeone.gif" border=0 alt="Take One!"></a>
+=for html src="http://web.archive.org/web/20140208120104if_/http://www.opencontent.org/takeone.gif" border=0 alt="Take One!"></a>
 

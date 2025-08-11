@@ -4158,10 +4158,11 @@ H.3. How is Life with qmail licensed?
 -------------------------------------
 
 Life with qmail is covered by the OpenContent License, version 1.0.
-See http://www.opencontent.org/opl.shtml for the full license.
-Basically, you can copy, redistribute, or modify Life with qmail
-provided that modified versions, if redistributed, are also covered by
-the OpenContent License.
+See
+http://web.archive.org/web/20140208120104/http://www.opencontent.org/opl.shtml
+for the full license. Basically, you can copy, redistribute, or modify
+Life with qmail provided that modified versions, if redistributed, are
+also covered by the OpenContent License.
 
 H.4. How can I be notified when new releases of LWQ are made available?
 -----------------------------------------------------------------------
